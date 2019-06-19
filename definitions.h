@@ -32,8 +32,8 @@ typedef double Realf;
 #else
 typedef float Realf;
 
-#include "compression/test_compression.h"
-typedef CompressedValue Compf;         //defines logarithmically compressed float 
+#include "compression/log_compression.h"
+typedef CompressedValue Compf;         //defines compressed float 
 #endif
 
 
