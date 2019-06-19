@@ -68,7 +68,7 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
           vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
           if (blockContainer.size() == 0) continue;
           
-          const Realf* data       = blockContainer.getData();
+          const Compf* data       = blockContainer.getData();
           const Real* blockParams = blockContainer.getParameters();
           const Real mass = getObjectWrapper().particleSpecies[popID].mass;
           const Real charge = getObjectWrapper().particleSpecies[popID].charge;
@@ -111,7 +111,7 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
        vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
        if (blockContainer.size() == 0) continue;
        
-       const Realf* data       = blockContainer.getData();
+       const Compf* data       = blockContainer.getData();
        const Real* blockParams = blockContainer.getParameters();
        const Real mass = getObjectWrapper().particleSpecies[popID].mass;
        
@@ -184,7 +184,7 @@ void calculateMoments_R_maxdt(
 
           vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
           if (blockContainer.size() == 0) continue;
-          const Realf* data       = blockContainer.getData();
+          const Compf* data       = blockContainer.getData();
           const Real* blockParams = blockContainer.getParameters();
           const Real mass = getObjectWrapper().particleSpecies[popID].mass;
           const Real charge = getObjectWrapper().particleSpecies[popID].charge;
@@ -273,7 +273,7 @@ void calculateMoments_R_maxdt(
        
          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
          if (blockContainer.size() == 0) continue;
-         const Realf* data       = blockContainer.getData();
+         const Compf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
          const Real mass = getObjectWrapper().particleSpecies[popID].mass;
 
@@ -341,7 +341,7 @@ void calculateMoments_V(
 
          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
          if (blockContainer.size() == 0) continue;
-         const Realf* data       = blockContainer.getData();
+         const Compf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
          const Real mass = getObjectWrapper().particleSpecies[popID].mass;
          const Real charge = getObjectWrapper().particleSpecies[popID].charge;
@@ -393,7 +393,7 @@ void calculateMoments_V(
 
          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
          if (blockContainer.size() == 0) continue;
-         const Realf* data       = blockContainer.getData();
+         const Compf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
          const Real mass = getObjectWrapper().particleSpecies[popID].mass;
 

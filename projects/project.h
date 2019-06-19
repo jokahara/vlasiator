@@ -24,8 +24,8 @@
 #define PROJECT_H
 
 #include "../spatial_cell.hpp"
-#include <dccrg.hpp>
-#include <dccrg_cartesian_geometry.hpp>
+#include "dccrg.hpp"
+#include "dccrg_cartesian_geometry.hpp"
 
 namespace projects {
    class Project {

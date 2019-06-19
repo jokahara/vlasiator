@@ -292,7 +292,7 @@ namespace SBC {
          for (int t=0; t<3; ++t) dV[t] /= WID;
 
          // Pointer to source data
-         const Realf* srcData = nbrBlockContainer.getData(srcLID);
+         const Compf* srcData = nbrBlockContainer.getData(srcLID);
 
          Real V_trgt[3];
          for (unsigned int k=0; k<WID; ++k) for (unsigned int j=0; j<WID; ++j) for (unsigned int i=0; i<WID; ++i) {
@@ -350,7 +350,7 @@ namespace SBC {
                cerr << i_trgtBlock[0] << ' ' << i_trgtBlock[1] << ' ' << i_trgtBlock[2] << " (";
                cerr << ii << ' ' << jj << ' ' << kk << ")" << endl;
                */
-               Realf* data = blockContainer.getData(trgtLID);
+               Compf* data = blockContainer.getData(trgtLID);
                data[cellIndex(ii,jj,kk)] += srcData[cellIndex(i,j,k)];
             }
          } // for-loops over phase-space cells in source block

@@ -265,7 +265,7 @@ inline void copy_trans_block_data(
     const uint popID) { 
 
    /*load pointers to blocks and prefetch them to L1*/
-   Realf* blockDatas[VLASOV_STENCIL_WIDTH * 2 + 1];
+   Compf* blockDatas[VLASOV_STENCIL_WIDTH * 2 + 1];
    for (int b = -VLASOV_STENCIL_WIDTH; b <= VLASOV_STENCIL_WIDTH; ++b) {
       SpatialCell* srcCell = source_neighbors[b + VLASOV_STENCIL_WIDTH];
       const vmesh::LocalID blockLID = srcCell->get_velocity_block_local_id(blockGID,popID);
@@ -293,7 +293,7 @@ inline void copy_trans_block_data(
    for (int b = -VLASOV_STENCIL_WIDTH; b <= VLASOV_STENCIL_WIDTH; ++b) {
       if(blockDatas[b + VLASOV_STENCIL_WIDTH] != NULL) {
          Realv blockValues[WID3];
-         const Realf* block_data = blockDatas[b + VLASOV_STENCIL_WIDTH];
+         const Compf* block_data = blockDatas[b + VLASOV_STENCIL_WIDTH];
          // Copy data to a temporary array and transpose values so that mapping is along k direction.
          // spatial source_neighbors already taken care of when
          // creating source_neighbors table. If a normal spatial cell does not
@@ -600,7 +600,7 @@ bool trans_map_1d(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
             if(spatial_cell->sysBoundaryFlag == sysboundarytype::NOT_SYSBOUNDARY) {
                const vmesh::LocalID blockLID = allCellsBlockLocalID[celli];
                if (blockLID != vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID>::invalidLocalID()) {
-                  Realf* blockData = spatial_cell->get_data(blockLID, popID);
+                  Compf* blockData = spatial_cell->get_data(blockLID, popID);
                   for(int i = 0; i < WID3; i++) {
                      blockData[i] = 0.0;
                   }
@@ -626,7 +626,7 @@ bool trans_map_1d(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
                      // TODO add loss counter
                      continue;
                   }
-                  Realf* blockData = spatial_cell->get_data(blockLID, popID);
+                  Compf* blockData = spatial_cell->get_data(blockLID, popID);
                   for(int i = 0; i < WID3 ; i++) {
                      blockData[i] += targetBlockData[(celli * 3 + ti) * WID3 + i];
                   }
@@ -662,7 +662,7 @@ void update_remote_mapping_contribution(
    const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_NEIGHBORHOOD_ID);
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
-   vector<Realf*> receiveBuffers;
+   vector<Compf*> receiveBuffers;
    
    //normalize
    if(direction > 0) direction = 1;
@@ -724,7 +724,7 @@ void update_remote_mapping_contribution(
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
          mcell->neighbor_number_of_blocks = ccell->get_number_of_velocity_blocks(popID);
-         mcell->neighbor_block_data = (Realf*) aligned_malloc(mcell->neighbor_number_of_blocks * WID3 * sizeof(Realf), 64);
+         mcell->neighbor_block_data = (Compf*) aligned_malloc(mcell->neighbor_number_of_blocks * WID3 * sizeof(Compf), 64);
          
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data);
@@ -755,7 +755,7 @@ void update_remote_mapping_contribution(
       // the target grid in the temporary block container
       for (size_t c=0; c < receive_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
-         Realf *blockData = spatial_cell->get_data(popID);
+         Compf *blockData = spatial_cell->get_data(popID);
           
 #pragma omp for 
          for(unsigned int cell = 0; cell<VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
@@ -768,7 +768,7 @@ void update_remote_mapping_contribution(
       // process
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
-         Realf * blockData = spatial_cell->get_data(popID);
+         Compf * blockData = spatial_cell->get_data(popID);
            
 #pragma omp for nowait
          for(unsigned int cell = 0; cell< VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {

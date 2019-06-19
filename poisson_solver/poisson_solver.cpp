@@ -140,7 +140,7 @@ namespace poisson {
          if (blockContainer.size() == 0) continue;
 
          const Real charge       = getObjectWrapper().particleSpecies[popID].charge;
-         const Realf* data       = blockContainer.getData();
+         const Compf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
 
          // Sum charge density over all phase-space cells
@@ -179,7 +179,7 @@ namespace poisson {
             if (blockContainer.size() == 0) continue;
 
             const Real charge       = getObjectWrapper().particleSpecies[popID].charge;
-            const Realf* data       = blockContainer.getData();
+            const Compf* data       = blockContainer.getData();
             const Real* blockParams = blockContainer.getParameters();
 
             // Sum charge density over all phase-space cells

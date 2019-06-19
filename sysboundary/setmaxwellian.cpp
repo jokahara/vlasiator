@@ -239,7 +239,7 @@ namespace SBC {
          Bz = buffer[7];
 
          vector<vmesh::GlobalID> blocksToInitialize = this->findBlocksToInitialize(popID,templateCell, rho, T, Vx, Vy, Vz);
-         Realf* data = templateCell.get_data(popID);
+         Compf* data = templateCell.get_data(popID);
 
          for(vmesh::GlobalID i=0; i<blocksToInitialize.size(); ++i) {
             const vmesh::GlobalID blockGID = blocksToInitialize[i];

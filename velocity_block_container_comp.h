@@ -32,11 +32,12 @@
    #include <sstream>
 #endif
 
-#include "definitions.h"
+#include "compression/log_compression.h"
 
 namespace vmesh {
     
    static const double BLOCK_ALLOCATION_FACTOR = 1.1;
+   typedef LogCompressedValue Compf;
    
    template<typename LID>
    class VelocityBlockContainer {
@@ -76,7 +77,7 @@ namespace vmesh {
     private:
       void exitInvalidLocalID(const LID& localID,const std::string& funcName) const;
       void resize();
-   
+
       std::vector<Compf,aligned_allocator<Compf,WID3> > block_data;
       Compf null_block_data[WID3];
       LID currentCapacity;

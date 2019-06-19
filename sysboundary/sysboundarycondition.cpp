@@ -275,8 +275,8 @@ namespace SBC {
       //just copy data to existing blocks, no modification of to blocks allowed
       for (vmesh::LocalID blockLID=0; blockLID<to->get_number_of_velocity_blocks(popID); ++blockLID) {
          const vmesh::GlobalID blockGID = to->get_velocity_block_global_id(blockLID,popID);
-//          const Realf* fromBlock_data = from->get_data(from->get_velocity_block_local_id(blockGID) );
-         Realf* toBlock_data = to->get_data(blockLID,popID);
+//          const Compf* fromBlock_data = from->get_data(from->get_velocity_block_local_id(blockGID) );
+         Compf* toBlock_data = to->get_data(blockLID,popID);
          if (from->get_velocity_block_local_id(blockGID,popID) == from->invalid_local_id()) {
             for (unsigned int i = 0; i < VELOCITY_BLOCK_LENGTH; i++) {
                toBlock_data[i] = 0.0; //block did not exist in from cell, fill with zeros.
@@ -291,7 +291,7 @@ namespace SBC {
             creal dvyCell = blockParameters[BlockParams::DVY];
             creal dvzCell = blockParameters[BlockParams::DVZ];
             
-            std::array<Realf*,27> flowtoCellsBlockCache = getFlowtoCellsBlock(flowtoCells, blockGID, popID);
+            std::array<Compf*,27> flowtoCellsBlockCache = getFlowtoCellsBlock(flowtoCells, blockGID, popID);
             
             for (uint kc=0; kc<WID; ++kc) {
                for (uint jc=0; jc<WID; ++jc) {
@@ -312,7 +312,7 @@ namespace SBC {
                            for(int dvz = 0 ; dvz <= 1; dvz++) {
                               const int flowToId = nbrID(dvx * vxCellSign, dvy * vyCellSign, dvz * vzCellSign);
                               if(flowtoCells.at(flowToId)){
-                                 value = min(value, flowtoCellsBlockCache.at(flowToId)[cell]);
+                                 value = min(value, (float) flowtoCellsBlockCache.at(flowToId)[cell]);
                               }
                            }
                         }
@@ -443,7 +443,7 @@ namespace SBC {
             if (to->sysBoundaryLayer != 1) continue;
 
             const Real* blockParameters = incomingCell->get_block_parameters(popID);
-            const Realf* fromData = incomingCell->get_data(popID);
+            const Compf* fromData = incomingCell->get_data(popID);
             for (vmesh::LocalID incBlockLID=0; incBlockLID<incomingCell->get_number_of_velocity_blocks(popID); ++incBlockLID) {
                // Check where cells are
                creal vxBlock = blockParameters[BlockParams::VXCRD];
@@ -464,7 +464,7 @@ namespace SBC {
                }
                
                // Pointer to target block data
-               Realf* toData = to->get_data(toBlockLID,popID);
+               Compf* toData = to->get_data(toBlockLID,popID);
 
                // Add values from source cells
                for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
@@ -770,13 +770,13 @@ namespace SBC {
       return flowtoCells;
    }
    
-   std::array<Realf*,27> SysBoundaryCondition::getFlowtoCellsBlock(
+   std::array<Compf*,27> SysBoundaryCondition::getFlowtoCellsBlock(
       const std::array<SpatialCell*,27> flowtoCells,
       const vmesh::GlobalID blockGID,
       const uint popID
    ) {
       phiprof::start("getFlowtoCellsBlock");
-      std::array<Realf*,27> flowtoCellsBlock;
+      std::array<Compf*,27> flowtoCellsBlock;
       flowtoCellsBlock.fill(NULL);
       for (uint i=0; i<27; i++) {
          if(flowtoCells.at(i)) {

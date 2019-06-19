@@ -655,7 +655,7 @@ namespace SBC {
       for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
          const IonosphereSpeciesParameters& sP = this->speciesParams[popID];
          const vector<vmesh::GlobalID> blocksToInitialize = findBlocksToInitialize(templateCell,popID);
-         Realf* data = templateCell.get_data(popID);
+         Compf* data = templateCell.get_data(popID);
          
          for (size_t i = 0; i < blocksToInitialize.size(); i++) {
             const vmesh::GlobalID blockGID = blocksToInitialize.at(i);

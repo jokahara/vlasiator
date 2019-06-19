@@ -1,0 +1,465 @@
+Wed Jun 19 14:25:58 2019 
+(MAIN) Starting simulation with 1 MPI processes and 4 OpenMP threads per process
+
+Wed Jun 19 14:25:58 2019 
+	 Zoltan 3.83 initialized successfully
+
+Wed Jun 19 14:25:59 2019 
+(INIT): Starting initial load balance.
+
+Wed Jun 19 14:26:00 2019 
+(INIT): Set initial state.
+
+Wed Jun 19 14:26:20 2019 
+(TIMESTEP) New dt = 0.149729 computed on step 0 at 0s   Maximum possible dt (not including  vlasovsolver CFL 0.8-0.99 or fieldsolver CFL 0.01-0.011) in {r, v, BE} was 7.46269 0.0836476 3.57071  Including subcycling { v, BE}  was 0.167295 178.536 
+
+Wed Jun 19 14:26:24 2019 
+(MAIN): Starting main simulation loop.
+
+Wed Jun 19 14:26:24 2019 
+(MEM) Resident per node (avg, min, max): 0.829025 0.829025 0.829025
+(MEM) High water mark per node (GiB) avg: 0.829025 min: 0.829025 max: 0.829025 sum (TiB): 0.000809595 on 1 nodes
+---------- tstep = 0 t = 0 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:26:24 2019 
+(IO): Writing spatial cell and reduced system data to disk, tstep = 0 t = 0
+
+Wed Jun 19 14:26:28 2019 
+(writeGrid) Wrote 23.6312 MB in 0.0272477 seconds, approximate data rate is 867.275 MB/s
+(IO): .... done!
+
+Wed Jun 19 14:26:35 2019 
+---------- tstep = 1 t = 0.149729 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:26:42 2019 
+---------- tstep = 2 t = 0.299458 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:26:48 2019 
+---------- tstep = 3 t = 0.449188 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:26:55 2019 
+---------- tstep = 4 t = 0.598917 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:02 2019 
+---------- tstep = 5 t = 0.748646 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:09 2019 
+---------- tstep = 6 t = 0.898375 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:16 2019 
+---------- tstep = 7 t = 1.0481 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:23 2019 
+---------- tstep = 8 t = 1.19783 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:30 2019 
+---------- tstep = 9 t = 1.34756 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:38 2019 
+---------- tstep = 10 t = 1.49729 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:45 2019 
+---------- tstep = 11 t = 1.64702 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:52 2019 
+---------- tstep = 12 t = 1.79675 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:27:59 2019 
+---------- tstep = 13 t = 1.94648 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:06 2019 
+---------- tstep = 14 t = 2.09621 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:13 2019 
+---------- tstep = 15 t = 2.24594 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:20 2019 
+---------- tstep = 16 t = 2.39567 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:27 2019 
+---------- tstep = 17 t = 2.5454 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:34 2019 
+---------- tstep = 18 t = 2.69513 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:42 2019 
+---------- tstep = 19 t = 2.84485 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:49 2019 
+---------- tstep = 20 t = 2.99458 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:28:56 2019 
+---------- tstep = 21 t = 3.14431 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:04 2019 
+---------- tstep = 22 t = 3.29404 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:11 2019 
+---------- tstep = 23 t = 3.44377 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:19 2019 
+---------- tstep = 24 t = 3.5935 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:26 2019 
+---------- tstep = 25 t = 3.74323 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:34 2019 
+---------- tstep = 26 t = 3.89296 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:41 2019 
+---------- tstep = 27 t = 4.04269 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:49 2019 
+---------- tstep = 28 t = 4.19242 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:29:56 2019 
+---------- tstep = 29 t = 4.34215 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:04 2019 
+---------- tstep = 30 t = 4.49188 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:12 2019 
+---------- tstep = 31 t = 4.64161 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:19 2019 
+---------- tstep = 32 t = 4.79133 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:27 2019 
+---------- tstep = 33 t = 4.94106 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:35 2019 
+---------- tstep = 34 t = 5.09079 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:43 2019 
+---------- tstep = 35 t = 5.24052 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:51 2019 
+---------- tstep = 36 t = 5.39025 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:30:59 2019 
+---------- tstep = 37 t = 5.53998 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:07 2019 
+---------- tstep = 38 t = 5.68971 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:15 2019 
+---------- tstep = 39 t = 5.83944 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:23 2019 
+---------- tstep = 40 t = 5.98917 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:31 2019 
+---------- tstep = 41 t = 6.1389 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:38 2019 
+---------- tstep = 42 t = 6.28863 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:46 2019 
+---------- tstep = 43 t = 6.43836 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:31:53 2019 
+---------- tstep = 44 t = 6.58809 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:01 2019 
+---------- tstep = 45 t = 6.73781 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:09 2019 
+---------- tstep = 46 t = 6.88754 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:17 2019 
+---------- tstep = 47 t = 7.03727 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:25 2019 
+---------- tstep = 48 t = 7.187 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:33 2019 
+---------- tstep = 49 t = 7.33673 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:41 2019 
+---------- tstep = 50 t = 7.48646 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:32:41 2019 
+(LB): Start load balance, tstep = 50 t = 7.48646
+
+Wed Jun 19 14:32:43 2019 
+(LB): ... done!
+
+Wed Jun 19 14:32:52 2019 
+---------- tstep = 51 t = 7.63619 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:00 2019 
+---------- tstep = 52 t = 7.78592 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:08 2019 
+---------- tstep = 53 t = 7.93565 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:16 2019 
+---------- tstep = 54 t = 8.08538 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:24 2019 
+---------- tstep = 55 t = 8.23511 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:33 2019 
+---------- tstep = 56 t = 8.38484 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:41 2019 
+---------- tstep = 57 t = 8.53456 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:49 2019 
+---------- tstep = 58 t = 8.68429 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:33:57 2019 
+---------- tstep = 59 t = 8.83402 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:05 2019 
+---------- tstep = 60 t = 8.98375 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:13 2019 
+---------- tstep = 61 t = 9.13348 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:21 2019 
+---------- tstep = 62 t = 9.28321 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:29 2019 
+---------- tstep = 63 t = 9.43294 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:38 2019 
+---------- tstep = 64 t = 9.58267 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:46 2019 
+---------- tstep = 65 t = 9.73239 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:34:54 2019 
+---------- tstep = 66 t = 9.88212 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:02 2019 
+---------- tstep = 67 t = 10.0319 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:10 2019 
+---------- tstep = 68 t = 10.1816 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:18 2019 
+---------- tstep = 69 t = 10.3313 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:26 2019 
+---------- tstep = 70 t = 10.481 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:34 2019 
+---------- tstep = 71 t = 10.6308 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:42 2019 
+---------- tstep = 72 t = 10.7805 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:51 2019 
+---------- tstep = 73 t = 10.9302 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:35:59 2019 
+---------- tstep = 74 t = 11.08 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:07 2019 
+---------- tstep = 75 t = 11.2297 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:15 2019 
+---------- tstep = 76 t = 11.3794 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:24 2019 
+---------- tstep = 77 t = 11.5291 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:32 2019 
+---------- tstep = 78 t = 11.6789 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:40 2019 
+---------- tstep = 79 t = 11.8286 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:49 2019 
+---------- tstep = 80 t = 11.9783 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:36:57 2019 
+---------- tstep = 81 t = 12.1281 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:37:05 2019 
+---------- tstep = 82 t = 12.2778 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:37:14 2019 
+---------- tstep = 83 t = 12.4275 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:37:22 2019 
+---------- tstep = 84 t = 12.5772 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:37:31 2019 
+---------- tstep = 85 t = 12.727 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:37:45 2019 
+---------- tstep = 86 t = 12.8767 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:37:54 2019 
+---------- tstep = 87 t = 13.0264 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:02 2019 
+---------- tstep = 88 t = 13.1762 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:11 2019 
+---------- tstep = 89 t = 13.3259 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:20 2019 
+---------- tstep = 90 t = 13.4756 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:28 2019 
+---------- tstep = 91 t = 13.6253 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:37 2019 
+---------- tstep = 92 t = 13.7751 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:45 2019 
+---------- tstep = 93 t = 13.9248 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:38:54 2019 
+---------- tstep = 94 t = 14.0745 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:39:02 2019 
+---------- tstep = 95 t = 14.2243 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:39:11 2019 
+---------- tstep = 96 t = 14.374 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:39:19 2019 
+---------- tstep = 97 t = 14.5237 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:39:27 2019 
+---------- tstep = 98 t = 14.6734 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:39:36 2019 
+---------- tstep = 99 t = 14.8232 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:39:44 2019 
+---------- tstep = 100 t = 14.9729 dt = 0.149729 FS cycles = 4 ----------
+(TIME) current walltime/step 8.00515 s
+(TIME) current walltime/simusecond 53.4642 s
+(TIME) Estimated completion time is Wed Jun 19 14:44:15 2019
+
+(MEM) Resident per node (avg, min, max): 0.887524 0.887524 0.887524
+(MEM) High water mark per node (GiB) avg: 0.887524 min: 0.887524 max: 0.887524 sum (TiB): 0.000866722 on 1 nodes
+
+Wed Jun 19 14:39:44 2019 
+(LB): Start load balance, tstep = 100 t = 14.9729
+
+Wed Jun 19 14:39:47 2019 
+(LB): ... done!
+
+Wed Jun 19 14:39:55 2019 
+---------- tstep = 101 t = 15.1226 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:04 2019 
+---------- tstep = 102 t = 15.2724 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:12 2019 
+---------- tstep = 103 t = 15.4221 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:21 2019 
+---------- tstep = 104 t = 15.5718 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:29 2019 
+---------- tstep = 105 t = 15.7215 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:38 2019 
+---------- tstep = 106 t = 15.8713 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:46 2019 
+---------- tstep = 107 t = 16.021 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:40:55 2019 
+---------- tstep = 108 t = 16.1707 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:04 2019 
+---------- tstep = 109 t = 16.3205 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:12 2019 
+---------- tstep = 110 t = 16.4702 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:21 2019 
+---------- tstep = 111 t = 16.6199 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:30 2019 
+---------- tstep = 112 t = 16.7696 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:38 2019 
+---------- tstep = 113 t = 16.9194 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:47 2019 
+---------- tstep = 114 t = 17.0691 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:41:56 2019 
+---------- tstep = 115 t = 17.2188 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:05 2019 
+---------- tstep = 116 t = 17.3686 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:13 2019 
+---------- tstep = 117 t = 17.5183 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:22 2019 
+---------- tstep = 118 t = 17.668 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:31 2019 
+---------- tstep = 119 t = 17.8177 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:40 2019 
+---------- tstep = 120 t = 17.9675 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:49 2019 
+---------- tstep = 121 t = 18.1172 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:42:58 2019 
+---------- tstep = 122 t = 18.2669 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:43:07 2019 
+---------- tstep = 123 t = 18.4167 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:43:16 2019 
+---------- tstep = 124 t = 18.5664 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:43:25 2019 
+---------- tstep = 125 t = 18.7161 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:43:35 2019 
+---------- tstep = 126 t = 18.8659 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:43:44 2019 
+---------- tstep = 127 t = 19.0156 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:43:53 2019 
+---------- tstep = 128 t = 19.1653 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:02 2019 
+---------- tstep = 129 t = 19.315 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:11 2019 
+---------- tstep = 130 t = 19.4648 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:21 2019 
+---------- tstep = 131 t = 19.6145 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:30 2019 
+---------- tstep = 132 t = 19.7642 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:39 2019 
+---------- tstep = 133 t = 19.914 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:48 2019 
+---------- tstep = 134 t = 20.0637 dt = 0.149729 FS cycles = 4 ----------
+
+Wed Jun 19 14:44:48 2019 
+(IO): Writing spatial cell and reduced system data to disk, tstep = 134 t = 20.0637
+
+Wed Jun 19 14:44:54 2019 
+(writeGrid) Wrote 26.2697 MB in 0.0221331 seconds, approximate data rate is 1.1869 GB/s
+(IO): .... done!
+
+Wed Jun 19 14:44:54 2019 
+(MAIN): All timesteps calculated.
+	 (TIME) total run time 1110.2 s, total simulated time 20.0637 s
+	 (TIME) seconds per timestep 8.2851, seconds per simulated second 55.334
+
+Wed Jun 19 14:44:54 2019 
+(MAIN): Exiting.
+

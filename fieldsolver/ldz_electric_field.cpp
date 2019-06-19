@@ -766,8 +766,8 @@ void calculateEdgeElectricFieldX(
    if ((RKCase == RK_ORDER1) || (RKCase == RK_ORDER2_STEP2)) {
       //compute maximum timestep for fieldsolver in this cell (CFL=1)
       Real min_dx=std::numeric_limits<Real>::max();
-      min_dx=min(min_dx,technicalGrid.DY);
-      min_dx=min(min_dx,technicalGrid.DZ);
+      min_dx=min((double)min_dx,technicalGrid.DY);
+      min_dx=min((double)min_dx,technicalGrid.DZ);
       //update max allowed timestep for field propagation in this cell, which is the minimum of CFL=1 timesteps
       if (maxV != ZERO) technicalGrid.get(i,j,k)->maxFsDt = min(technicalGrid.get(i,j,k)->maxFsDt,min_dx/maxV);
    }
@@ -1123,8 +1123,8 @@ void calculateEdgeElectricFieldY(
    if ((RKCase == RK_ORDER1) || (RKCase == RK_ORDER2_STEP2)) {
       //compute maximum timestep for fieldsolver in this cell (CFL=1)      
       Real min_dx=std::numeric_limits<Real>::max();;
-      min_dx=min(min_dx,technicalGrid.DX);
-      min_dx=min(min_dx,technicalGrid.DZ);
+      min_dx=min((double)min_dx,technicalGrid.DX);
+      min_dx=min((double)min_dx,technicalGrid.DZ);
       //update max allowed timestep for field propagation in this cell, which is the minimum of CFL=1 timesteps
       if (maxV!=ZERO) technicalGrid.get(i,j,k)->maxFsDt=min(technicalGrid.get(i,j,k)->maxFsDt,min_dx/maxV);
    }
@@ -1485,8 +1485,8 @@ void calculateEdgeElectricFieldZ(
    if ((RKCase == RK_ORDER1) || (RKCase == RK_ORDER2_STEP2)) {
       //compute maximum timestep for fieldsolver in this cell (CFL=1)
       Real min_dx=std::numeric_limits<Real>::max();;
-      min_dx=min(min_dx,technicalGrid.DX);
-      min_dx=min(min_dx,technicalGrid.DY);
+      min_dx=min((double)min_dx,technicalGrid.DX);
+      min_dx=min((double)min_dx,technicalGrid.DY);
       //update max allowed timestep for field propagation in this cell, which is the minimum of CFL=1 timesteps
       if(maxV!=ZERO) technicalGrid.get(i,j,k)->maxFsDt=min(technicalGrid.get(i,j,k)->maxFsDt,min_dx/maxV);
    }

@@ -21,9 +21,9 @@
  */
 
 #include <unordered_set>
-#include "vectorclass.h"
+#include "libraries/vectorclass/vectorclass.h"
 
-#include "spatial_cell.hpp"
+#include "spatial_cell_comp.hpp"
 #include "velocity_blocks.h"
 #include "object_wrapper.h"
 
@@ -857,7 +857,7 @@ namespace spatial_cell {
    }
 
    void SpatialCell::merge_values_recursive(const uint popID,vmesh::GlobalID parentGID,vmesh::GlobalID blockGID,
-                                            uint8_t refLevel,bool recursive,const Compf* data,
+                                            uint8_t refLevel,bool recursive,const Realf* data,
 					    std::set<vmesh::GlobalID>& blockRemovalList) {
       #ifdef DEBUG_SPATIAL_CELL
       if (blockGID == invalid_global_id()) {
@@ -910,7 +910,7 @@ namespace spatial_cell {
          }
          #endif
 
-         Compf* myData = populations[activePopID].blockContainer.getData(blockLID);
+         Realf* myData = populations[activePopID].blockContainer.getData(blockLID);
          if (parentGID == blockGID) {
             // If we enter here, the block is at the lowest refinement level.
             // If the block does not have enough content, flag it for removal
@@ -930,9 +930,9 @@ namespace spatial_cell {
       bool removeBlock = false;
       for (int k_oct=0; k_oct<2; ++k_oct) for (int j_oct=0; j_oct<2; ++j_oct) for (int i_oct=0; i_oct<2; ++i_oct) {
          // Copy data belonging to the octant to a temporary array:
-         Compf array[WID3];
+         Realf array[WID3];
          for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
-            array[vblock::index(i,j,k)] = data[vblock::index(i_oct*2+i/2,j_oct*2+j/2,k_oct*2+k/2)];
+            array[vblock::index(i,j,k)] =   data[vblock::index(i_oct*2+i/2,j_oct*2+j/2,k_oct*2+k/2)];
          }
          
          // Send the data to the child:
@@ -978,7 +978,7 @@ namespace spatial_cell {
             const vmesh::LocalID  blockLID = populations[popID].vmesh.getLocalID(blockGID);
             if (blockLID == invalid_local_id()) continue;
             
-            const Compf* data = populations[popID].blockContainer.getData(blockLID);
+            const Realf* data = populations[popID].blockContainer.getData(blockLID);
             merge_values_recursive(popID,blockGID,blockGID,refLevel,true,data,blockRemovalList);
          }
       }
@@ -1006,7 +1006,7 @@ namespace spatial_cell {
          return;
       }
 
-      Compf* targetData = get_data(popID)+targetLID*SIZE_VELBLOCK;
+      Realf* targetData = get_data(popID)+targetLID*SIZE_VELBLOCK;
 
       // Add data from all same level blocks
       vector<vmesh::GlobalID> neighborIDs;

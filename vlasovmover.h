@@ -30,8 +30,8 @@
 using namespace spatial_cell;
 
 #include <stdint.h>
-#include <dccrg.hpp>
-#include <dccrg_cartesian_geometry.hpp>
+#include "libraries/dccrg/dccrg.hpp"
+#include "libraries/dccrg/dccrg_cartesian_geometry.hpp"
 
 void calculateAcceleration(
                            dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid,

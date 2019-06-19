@@ -269,10 +269,22 @@ bool writeVelocityDistributionData(const uint popID,Writer& vlsvWriter,
       
       // Get the number of blocks in this cell
       const uint64_t arrayElements = SC->get_number_of_velocity_blocks(popID);
-      char* arrayToWrite = reinterpret_cast<char*>(SC->get_data(popID));
 
-      // Add a subarray to write
-      vlsvWriter.addMultiwriteUnit(arrayToWrite, arrayElements); // Note: We told beforehands that the vectorsize = WID3 = 64
+      if (!arrayElements) 
+         vlsvWriter.addMultiwriteUnit(NULL, 0);
+      else {
+         std::vector<Realf> realData;
+         const uint64_t currentIndex = realData.size();
+         Compf* compData = SC->get_data(popID);
+         
+         // Uncompress data block
+         for (uint i = 0; i < arrayElements*WID3; i++) 
+            realData.push_back(compData[i]);
+
+         // Add a subarray to write
+         char* arrayToWrite = reinterpret_cast<char*>(realData.data() + currentIndex);
+         vlsvWriter.addMultiwriteUnit(arrayToWrite, arrayElements); // Note: We told beforehands that the vectorsize = WID3 = 64
+      }
    }
    if (cells.size() == 0) {
       vlsvWriter.addMultiwriteUnit(NULL, 0); //Dummy write to avoid hang in end multiwrite

@@ -31,7 +31,11 @@
 typedef double Realf;
 #else
 typedef float Realf;
+
+#include "compression/test_compression.h"
+typedef CompressedValue Compf;         //defines logarithmically compressed float 
 #endif
+
 
 //set general floating point precision here. Default is single precision, use -DDP to set double precision
 #ifdef DP

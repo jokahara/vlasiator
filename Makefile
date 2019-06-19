@@ -1,16 +1,10 @@
 #set default architecture, can be overridden from the compile line
 ARCH = ${VLASIATOR_ARCH}
 #set FP precision to SP (single) or DP (double)
-FP_PRECISION = DP
+FP_PRECISION = SP
 #Set floating point precision for distribution function to SPF (single) or DPF (double)
 DISTRIBUTION_FP_PRECISION = SPF
 #override flags if we are building testpackage:
-
-ifneq (,$(findstring testpackage,$(MAKECMDGOALS)))
-	MATHFLAGS =
-	FP_PRECISION = DP
-	DISTRIBUTION_FP_PRECISION = DPF
-endif
 
 
 include MAKE/Makefile.${ARCH}
@@ -228,6 +222,16 @@ cleantools:
 	rm -rf vlsv2silo_${FP_PRECISION} vlsvextract_${FP_PRECISION}  vlsvdiff_${FP_PRECISION} 
 
 # Rules for making each object file needed by the executable
+
+# My files
+#-----------------------------------------------------------
+
+test.o: ${DEPS_COMMON} test.cpp 
+	${CMP} ${CXXFLAGS} ${FLAGS} ${MATHFLAGS} -c test.cpp ${INC_DCCRG} ${INC_ZOLTAN} ${INC_BOOST} ${INC_EIGEN}
+test: test.o
+	${CMP} ${CXXFLAGS} ${FLAGS} ${MATHFLAGS} -o test test.o
+
+#-----------------------------------------------------------
 
 version.cpp: FORCE
 	./generate_version.sh "${CMP}" "${CXXFLAGS}" "${FLAGS}" "${INC_MPI}" "${INC_DCCRG}" "${INC_FSGRID}" "${INC_ZOLTAN}" "${INC_BOOST}"

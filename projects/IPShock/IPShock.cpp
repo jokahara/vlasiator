@@ -31,8 +31,8 @@ Previous development version name was UtuShock
 #include <cmath>
 
 #include <vector>
-#include "vectorclass.h"
-#include "vector3d.h"
+#include "../../libraries/vectorclass/vectorclass.h"
+#include "../../libraries/vectorclass/vector3d.h"
 
 #include "../../common.h"
 #include "../../readparameters.h"

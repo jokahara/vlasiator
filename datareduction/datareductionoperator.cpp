@@ -417,7 +417,7 @@ namespace DRO {
          Real thread_nvzvz_sum = 0.0;
          
          const Real* parameters  = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
          
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); n++) {
@@ -491,7 +491,7 @@ namespace DRO {
          Real thread_nvyvz_sum = 0.0;
          
          const Real* parameters = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
          
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); n++) {               
@@ -664,7 +664,7 @@ namespace DRO {
       {
          Real threadMax = std::numeric_limits<Real>::min();
          
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
          
          #pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); ++n) {
@@ -718,7 +718,7 @@ namespace DRO {
       {
          Real threadMin = std::numeric_limits<Real>::max();
          
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
 
          #pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); ++n) {
@@ -873,7 +873,7 @@ namespace DRO {
          Real thread_n_sum = 0.0;
          
          const Real* parameters = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
          
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); ++n) {
@@ -920,7 +920,7 @@ namespace DRO {
          Real thread_n_sum = 0.0;
 
          const Real* parameters = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
          
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); ++n) {
@@ -991,7 +991,7 @@ namespace DRO {
          Real thread_nvzvz_sum = 0.0;
          
          const Real* parameters = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
       
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); ++n) {
@@ -1052,7 +1052,7 @@ namespace DRO {
          Real thread_nvyvz_sum = 0.0;
          
          const Real* parameters = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
       
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); ++n) {
@@ -1540,7 +1540,7 @@ namespace DRO {
 	 std::vector<Real> thread_count(nChannels,0.0);
 
          const Real* parameters  = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
 
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); n++) {
@@ -1563,7 +1563,7 @@ namespace DRO {
 	       const Real normV = sqrt(VX*VX + VY*VY + VZ*VZ);
 	       const Real VdotB_norm = (B[0]*VX + B[1]*VY + B[2]*VZ)/normV;
 	       Real countAndGate = floor(VdotB_norm/cosAngle);  // gate function: 0 outside loss cone, 1 inside
-	       countAndGate = max(0.,countAndGate);
+	       countAndGate = max(0.f,countAndGate);
 	       const Real energy = 0.5 * getObjectWrapper().particleSpecies[popID].mass * normV*normV; // in SI
 	       
 	       // Find the correct energy bin number to update
@@ -1657,7 +1657,7 @@ namespace DRO {
          Real thread_E2_sum = 0.0;
          
          const Real* parameters  = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
+         const Compf* block_data = cell->get_data(popID);
         
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); n++) {

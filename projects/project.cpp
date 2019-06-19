@@ -291,7 +291,7 @@ namespace projects {
       creal dz = cell->parameters[CellParams::DZ];
 
       const Real* parameters = cell->get_block_parameters(popID);
-      Realf* data = cell->get_data(popID);
+      Compf* data = cell->get_data(popID);
       
       creal vxBlock = parameters[blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VXCRD];
       creal vyBlock = parameters[blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VYCRD];
@@ -420,7 +420,7 @@ namespace projects {
    void Project::rescaleDensity(spatial_cell::SpatialCell* cell,const uint popID) const {
       // Re-scale densities
       Real sum = 0.0;
-      Realf* data = cell->get_data(popID);
+      Compf* data = cell->get_data(popID);
       const Real* blockParams = cell->get_block_parameters(popID);
       for (vmesh::LocalID blockLID=0; blockLID<cell->get_number_of_velocity_blocks(popID); ++blockLID) {
          Real tmp = 0.0;

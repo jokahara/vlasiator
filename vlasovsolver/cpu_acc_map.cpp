@@ -216,7 +216,7 @@ bool map_1d(SpatialCell* spatial_cell,
 */
    Vec values[(3 * ( MAX_BLOCKS_PER_DIM / 2 + 1)) * WID3 / VECL];
    /*pointers to target block datas*/
-   Realf *blockIndexToBlockData[MAX_BLOCKS_PER_DIM];
+   Compf *blockIndexToBlockData[MAX_BLOCKS_PER_DIM];
    bool isTargetBlock[MAX_BLOCKS_PER_DIM];
    bool isSourceBlock[MAX_BLOCKS_PER_DIM];
 
@@ -539,11 +539,23 @@ bool map_1d(SpatialCell* spatial_cell,
                   
                   
                   if(dimension == 2) {
-                     Realf* targetDataPointer = blockIndexToBlockData[blockK] + j * cell_indices_to_id[1] + gk_mod_WID * cell_indices_to_id[2];
+                     Compf* tempDataPointer = blockIndexToBlockData[blockK] + j * cell_indices_to_id[1] + gk_mod_WID * cell_indices_to_id[2];
+                     Realf temp[sizeof(Vec)/sizeof(float)];
+                     for (int i = 0; i < sizeof(Vec)/sizeof(float); i++)
+                     {
+                        temp[i] = tempDataPointer[i];
+                     }
+                     Realf* targetDataPointer = temp;
+
                      Vec targetData;
                      targetData.load_a(targetDataPointer);
                      targetData += target_density_r - target_density_l;                  
                      targetData.store_a(targetDataPointer);
+
+                     for (int i = 0; i < sizeof(Vec)/sizeof(float); i++)
+                     {
+                        tempDataPointer[i] = targetDataPointer[i];
+                     }
                   }
                   else{
                      // total value of integrand

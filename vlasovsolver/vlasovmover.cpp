@@ -250,7 +250,7 @@ void calculateAcceleration(const uint popID,const uint globalMaxSubcycles,const 
       //adjust blocks.
       Real subcycleDt;
       if( (step + 1) * maxVdt > dt) {
-         subcycleDt = max(dt - step * maxVdt, 0.0);
+         subcycleDt = max(dt - step * maxVdt, 0.0f);
       } else{
          subcycleDt = maxVdt;
       }

@@ -54,7 +54,8 @@ Spatial cell class for Vlasiator that supports a variable number of velocity blo
 
 #include "amr_refinement_criteria.h"
 #include "velocity_blocks.h"
-#include "velocity_block_container.h"
+#include "velocity_block_container_comp.h"
+using vmesh::Compf;
 
 #include "logger.h"
 extern Logger logFile;
@@ -358,7 +359,7 @@ namespace spatial_cell {
       //SpatialCell& operator=(const SpatialCell&);
       
       bool compute_block_has_content(const vmesh::GlobalID& block,const uint popID) const;
-      void merge_values_recursive(const uint popID,vmesh::GlobalID parentGID,vmesh::GlobalID blockGID,uint8_t refLevel,bool recursive,const Compf* data,
+      void merge_values_recursive(const uint popID,vmesh::GlobalID parentGID,vmesh::GlobalID blockGID,uint8_t refLevel,bool recursive,const Realf* data,
 				  std::set<vmesh::GlobalID>& blockRemovalList);
 
       static int activePopID;
@@ -776,7 +777,7 @@ namespace spatial_cell {
       }
       #endif
 
-      const Compf* ptr = NULL;
+      const Realf* ptr = NULL;
       uint8_t refLevel;
       vmesh::LocalID i_block,j_block,k_block;
       vmesh.getIndices(blockGID,refLevel,i_block,j_block,k_block);
@@ -988,7 +989,7 @@ namespace spatial_cell {
       }
 
       // Copy values from this block:
-      const Compf* ptr = src + blockLID*WID3;
+      const Realf* ptr = src + blockLID*WID3;
       for (unsigned int k=0; k<WID; ++k) for (unsigned int j=0; j<WID; ++j) for (unsigned int i=0; i<WID; ++i) {
          array[vblock::padIndex<PAD>(i+PAD,j+PAD,k+PAD)] = ptr[vblock::index(i,j,k)];
       }
