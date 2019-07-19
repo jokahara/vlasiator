@@ -7,7 +7,7 @@ DISTRIBUTION_FP_PRECISION = SPF
 #override flags if we are building testpackage:
 
 
-include MAKE/${ARCH}
+include MAKE/Makefile.${ARCH}
 
 
 
