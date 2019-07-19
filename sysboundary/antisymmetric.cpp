@@ -268,17 +268,14 @@ namespace SBC {
       
       // Clear data in this cell
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID>& vmesh    = mpiGrid[cellID]->get_velocity_mesh(popID);
-      vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = mpiGrid[cellID]->get_velocity_blocks(popID);
+      vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = mpiGrid[cellID]->get_block_container(popID);
       vmesh.clear();
       blockContainer.clear();
       
       // Get data from neighbor cell
       const CellID nbrID = mpiGrid.mapping.get_cell_from_indices(indices,0);
       const vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID>& nbrVmesh    = mpiGrid[nbrID]->get_velocity_mesh(popID);
-      const vmesh::VelocityBlockContainer<vmesh::LocalID>& nbrBlockContainer = mpiGrid[nbrID]->get_velocity_blocks(popID);
-
-      //cerr << "BOUNDARY CELL " << cellID << " HAS " << vmesh.size() << " BLOCKS BEFORE COPY NBR " << nbrID << " HAS ";
-      //cerr << nbrVmesh.size() << endl;
+      const vmesh::VelocityBlockContainer<vmesh::LocalID>& nbrBlockContainer = mpiGrid[nbrID]->get_block_container(popID);
       
       // vx,vz components are untouched, vy is both mirrored (vy -> -vy)
       // and copied (vy -> vy).
@@ -292,14 +289,14 @@ namespace SBC {
          for (int t=0; t<3; ++t) dV[t] /= WID;
 
          // Pointer to source data
-         const Compf* srcData = nbrBlockContainer.getData(srcLID);
+         Realf temp[WID3];
+         const Realf* srcData = nbrBlockContainer.getData(srcLID, temp);
 
          Real V_trgt[3];
          for (unsigned int k=0; k<WID; ++k) for (unsigned int j=0; j<WID; ++j) for (unsigned int i=0; i<WID; ++i) {
 //            if (V[1] + (j+0.5)*dV[1] > 0) continue;
 
             for (int dir=-1; dir<0; dir+=2) {
-//            for (int dir=-1; dir<2; dir+=2) {
                V_trgt[0] =  V[0] + (i+0.5)*dV[0];
                V_trgt[1] = (V[1] + (j+0.5)*dV[1]) * dir;
                V_trgt[2] =  V[2] + (k+0.5)*dV[2];
@@ -328,35 +325,14 @@ namespace SBC {
                const int ii = static_cast<int>((V_trgt[0] - V_trgt_block[0]) / dV_trgt_block[0]);
                const int jj = static_cast<int>((V_trgt[1] - V_trgt_block[1]) / dV_trgt_block[1]);
                const int kk = static_cast<int>((V_trgt[2] - V_trgt_block[2]) / dV_trgt_block[2]);
-            
-               /*bool ok = true;
-               if (ii < 0 || ii >= WID) ok = false;
-               if (jj < 0 || jj >= WID) ok = false;
-               if (kk < 0 || kk >= WID) ok = false;
-               if (ok == false) {
-                  cerr << "ERROR " << ii << ' ' << jj << ' ' << kk << endl;
-                  exit(1);               
-               }*/
-
-               /*uint8_t ref=0;
-               vmesh::LocalID i_srcBlock[3];
-               nbrVmesh.getIndices(srcGID,ref,i_srcBlock[0],i_srcBlock[1],i_srcBlock[2]);
-            
-               vmesh::LocalID i_trgtBlock[3];
-               vmesh.getIndices(trgtGID,ref,i_trgtBlock[0],i_trgtBlock[1],i_trgtBlock[2]);
-            
-               cerr << "\t src indices: " << i_srcBlock[0] << ' ' << i_srcBlock[1] << ' ' << i_srcBlock[2] << " (";
-               cerr << i << ' ' << j << ' ' << k << ") trgt ";
-               cerr << i_trgtBlock[0] << ' ' << i_trgtBlock[1] << ' ' << i_trgtBlock[2] << " (";
-               cerr << ii << ' ' << jj << ' ' << kk << ")" << endl;
-               */
-               Compf* data = blockContainer.getData(trgtLID);
-               data[cellIndex(ii,jj,kk)] += srcData[cellIndex(i,j,k)];
+               
+               float tempData[WID3];
+               blockContainer.getData(trgtLID, tempData);
+               tempData[cellIndex(ii,jj,kk)] += srcData[cellIndex(i,j,k)];
+               blockContainer.setData(trgtLID, tempData);
             }
          } // for-loops over phase-space cells in source block
       } // for-loop over velocity blocks in neighbor cell
-      
-      //cerr << "BOUNDARY CELL HAS " << vmesh.size() << " velocity blocks" << endl;
    }
 
    void Antisymmetric::getFaces(bool* faces) {

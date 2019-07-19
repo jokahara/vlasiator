@@ -206,8 +206,11 @@ namespace spatial_cell {
                const Real DV3 = block_parameters[BlockParams::DVX]
                  * block_parameters[BlockParams::DVY]
                  * block_parameters[BlockParams::DVZ];
+
                Real sum=0;
-               for (unsigned int i=0; i<WID3; ++i) sum += get_data(popID)[blockLID*SIZE_VELBLOCK+i];
+               Realf temp[WID3];
+               const Realf* data = get_data(blockLID, popID, temp);
+               for (unsigned int i=0; i<WID3; ++i) sum += data[i];
                this->populations[popID].RHOLOSSADJUST += DV3*sum;
 	       
                // and finally remove block
@@ -301,9 +304,11 @@ namespace spatial_cell {
                  * block_parameters[BlockParams::DVY]
                  * block_parameters[BlockParams::DVZ];
                Real sum=0;
-               for (unsigned int i=0; i<WID3; ++i) sum += get_data(popID)[blockLID*SIZE_VELBLOCK+i];
+               Realf data[WID3];
+               get_data(blockLID, popID, data);
+               for (unsigned int i=0; i<WID3; ++i) sum += data[i];
                this->populations[popID].RHOLOSSADJUST += DV3*sum;
-	       
+
                // and finally remove block
                this->remove_velocity_block(blockGID,popID);
             }
@@ -410,36 +415,26 @@ namespace spatial_cell {
       // First create the parent (coarse) block and grab pointer to its data.
       // add_velocity_block initializes data to zero values.
       if (add_velocity_block(parent,popID) == false) return;
+
+      Realf parent_data[WID3], data[WID3];
       vmesh::LocalID parentLID = populations[popID].vmesh.getLocalID(parent);
-      Compf* parent_data = get_data(popID)+parentLID*SIZE_VELBLOCK;
+      get_data(parentLID, popID, parent_data);
 
       // Calculate children (fine) block local IDs, some of the children may not exist
       for (size_t c=0; c<children.size(); ++c) {
          vmesh::LocalID childrenLID = populations[popID].vmesh.getLocalID(children[c]);
          if (childrenLID == SpatialCell::invalid_local_id()) continue;
-         Compf* data = get_data(popID)+childrenLID*SIZE_VELBLOCK;
+         get_data(childrenLID, popID, data);
 
          const int i_oct = c % 2;
          const int j_oct = (c/2) % 2;
          const int k_oct = c / 4;
 
-         /*for (int k=0; k<WID; k+=2) for (int j=0; j<WID; j+=2) for (int i=0; i<WID; i+=2) {
-            cerr << "\t" << i_oct*2+i/2 << ' ' << j_oct*2+j/2 << ' ' << k_oct*2+k/2 << " gets values from" << endl;
-            
-            // Sum the values in 8 cells that correspond to the same call in parent block
-            Realf sum = 0;
-            for (int kk=0; kk<2; ++kk) for (int jj=0; jj<2; ++jj) for (int ii=0; ii<2; ++ii) {
-               cerr << "\t\t" << i+ii << ' ' << j+jj << ' ' << k+kk << endl;
-               sum += data[vblock::index(i+ii,j+jj,k+kk)];
-            }
-
-            parent_data[vblock::index(i_oct*2+i/2,j_oct*2+j/2,k_oct*2+k/2)] = sum/8;
-         }*/
-
          for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
             parent_data[vblock::index(i_oct*2+i/2,j_oct*2+j/2,k_oct*2+k/2)] += data[vblock::index(i,j,k)]/8.0;
          }
       }
+      set_data(parentLID, popID, parent_data);
 
       // Remove the children
       for (size_t c=0; c<children.size(); ++c) {
@@ -479,7 +474,7 @@ namespace spatial_cell {
          // Evaluate refinement criterion for all blocks
          for (size_t b=0; b<blocks[r].size(); ++b) {
             const vmesh::GlobalID blockGID = blocks[r][b];
-            fetch_data<1>(blockGID,populations[popID].vmesh,get_data(popID),array);
+            fetch_data<1>(blockGID,populations[popID].vmesh,get_blocks(popID),array);
             if (refCriterion->evaluate(array,popID) < Parameters::amrCoarsenLimit) coarsenList.insert(blockGID);
          }
 
@@ -545,7 +540,8 @@ namespace spatial_cell {
             
       bool has_content = false;
       const Real velocity_block_min_value = getVelocityBlockMinValue(popID);
-      const Compf* block_data = populations[popID].blockContainer.getData(blockLID);
+      Realf temp[WID3];
+      const Realf* block_data = populations[popID].blockContainer.getData(blockLID, temp);
       for (unsigned int i=0; i<VELOCITY_BLOCK_LENGTH; ++i) {
          if (block_data[i] >= velocity_block_min_value) {
             has_content = true;
@@ -612,7 +608,7 @@ namespace spatial_cell {
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_LIST_STAGE1) != 0) {
             //first copy values in case this is the send operation
             populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
-
+         
             // send velocity block list size
             displacements.push_back((uint8_t*) &(populations[activePopID].N_blocks) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
@@ -650,7 +646,7 @@ namespace spatial_cell {
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
-            displacements.push_back((uint8_t*) get_data(activePopID) - (uint8_t*) this);
+            displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);
             block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * populations[activePopID].blockContainer.size());
          }
 
@@ -857,7 +853,7 @@ namespace spatial_cell {
    }
 
    void SpatialCell::merge_values_recursive(const uint popID,vmesh::GlobalID parentGID,vmesh::GlobalID blockGID,
-                                            uint8_t refLevel,bool recursive,const Compf* data,
+                                            uint8_t refLevel,bool recursive,const Realf* data,
 					    std::set<vmesh::GlobalID>& blockRemovalList) {
       #ifdef DEBUG_SPATIAL_CELL
       if (blockGID == invalid_global_id()) {
@@ -910,7 +906,6 @@ namespace spatial_cell {
          }
          #endif
 
-         Compf* myData = populations[activePopID].blockContainer.getData(blockLID);
          if (parentGID == blockGID) {
             // If we enter here, the block is at the lowest refinement level.
             // If the block does not have enough content, flag it for removal
@@ -921,7 +916,10 @@ namespace spatial_cell {
              blockRemovalList.insert(blockGID);*/
          } else {
             // Merge values to this block
+            Realf myData[WID3];
+            get_data(blockLID, activePopID, myData);
             for (uint i=0; i<WID3; ++i) myData[i] += data[i];
+            set_data(blockLID, activePopID, myData);
          }
          return;
       }
@@ -930,7 +928,7 @@ namespace spatial_cell {
       bool removeBlock = false;
       for (int k_oct=0; k_oct<2; ++k_oct) for (int j_oct=0; j_oct<2; ++j_oct) for (int i_oct=0; i_oct<2; ++i_oct) {
          // Copy data belonging to the octant to a temporary array:
-         Compf array[WID3];
+         Realf array[WID3];
          for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
             array[vblock::index(i,j,k)] = data[vblock::index(i_oct*2+i/2,j_oct*2+j/2,k_oct*2+k/2)];
          }
@@ -978,316 +976,14 @@ namespace spatial_cell {
             const vmesh::LocalID  blockLID = populations[popID].vmesh.getLocalID(blockGID);
             if (blockLID == invalid_local_id()) continue;
             
-            const Compf* data = populations[popID].blockContainer.getData(blockLID);
-            merge_values_recursive(popID,blockGID,blockGID,refLevel,true,data,blockRemovalList);
+            Realf data[WID3];
+            merge_values_recursive(popID,blockGID,blockGID,refLevel,true,get_data(blockLID, popID, data),blockRemovalList);
          }
       }
       
       cerr << "should remove " << blockRemovalList.size() << " blocks" << endl;
       for (set<vmesh::GlobalID>::const_iterator it=blockRemovalList.begin(); it!=blockRemovalList.end(); ++it) {
          //remove_velocity_block(*it);
-      }
-   }
-   
-   void SpatialCell::add_values(const vmesh::GlobalID& targetGID,
-                                std::unordered_map<vmesh::GlobalID,Realf[(WID+2)*(WID+2)*(WID+2)]>& sourceData,
-                                const uint popID) {
-      #ifdef DEBUG_SPATIAL_CELL
-      if (popID >= populations.size()) {
-         std::cerr << "ERROR, popID " << popID << " exceeds populations.size() " << populations.size() << " in ";
-         std::cerr << __FILE__ << ":" << __LINE__ << std::endl;             
-         exit(1);
-      }
-      #endif
-      
-      vmesh::LocalID targetLID = get_velocity_block_local_id(targetGID,popID);
-      if (targetLID == SpatialCell::invalid_local_id()) {
-         std::cerr << "error has occurred" << std::endl;
-         return;
-      }
-
-      Compf* targetData = get_data(popID)+targetLID*SIZE_VELBLOCK;
-
-      // Add data from all same level blocks
-      vector<vmesh::GlobalID> neighborIDs;
-      populations[popID].vmesh.getNeighborsAtSameLevel(targetGID,neighborIDs);
-
-      std::unordered_map<vmesh::GlobalID,Realf[(WID+2)*(WID+2)*(WID+2)]>::iterator it;
-
-      it = sourceData.find(neighborIDs[vblock::nbrIndex( 0, 0, 0)]); // This block
-      if (it != sourceData.end()) {
-         Realf* source = it->second;
-         for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j,k)] += source[vblock::padIndex<1>(i+1,j+1,k+1)];
-         }
-      }
-      
-      // ***** face neighbors ***** //
-      for (int i_off=-1; i_off<2; i_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(i_off,0,0)]);
-         if (it == sourceData.end()) continue;
-         
-         uint i_trgt = 0;
-         uint i_src  = WID+1;
-         if (i_off > 0) {i_trgt = WID-1; i_src=0;}
-         Realf* source = it->second;
-         for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) {
-            targetData[vblock::index(i_trgt,j,k)] += source[vblock::padIndex<1>(i_src,j+1,k+1)];
-         }
-      }
-      
-      for (int j_off=-1; j_off<2; j_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(0,j_off,0)]);
-         if (it == sourceData.end()) continue;
-
-         uint j_trgt = 0;
-         uint j_src  = WID+1;
-         if (j_off > 0) {j_trgt = WID-1; j_src=0;}
-         Realf* source = it->second;
-         for (uint k=0; k<WID; ++k) for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j_trgt,k)] += source[vblock::padIndex<1>(i+1,j_src,k+1)];
-         }
-      }
-      
-      for (int k_off=-1; k_off<2; k_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(0,0,k_off)]);
-         if (it == sourceData.end()) continue;
-         
-         uint k_trgt = 0;
-         uint k_src  = WID+1;
-         if (k_off > 0) {k_trgt = WID-1; k_src=0;}
-         Realf* source = it->second;
-         for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j,k_trgt)] += source[vblock::padIndex<1>(i+1,j+1,k_src)];
-         }
-      }
-
-      // ***** edge neighbors ***** //
-      for (int j_off=-1; j_off<2; j_off+=2) for (int i_off=-1; i_off<2; i_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(i_off,j_off,0)]);
-         if (it == sourceData.end()) continue;
-         Realf* source = it->second;
-         
-         const uint i_trgt = max(i_off,0) * (WID-1);
-         const uint j_trgt = max(j_off,0) * (WID-1);
-         const uint i_src  = max(-i_off,0) * (WID+1);
-         const uint j_src  = max(-j_off,0) * (WID+1);
-         for (uint k=0; k<WID; ++k) {
-            targetData[vblock::index(i_trgt,j_trgt,k)] += source[vblock::padIndex<1>(i_src,j_src,k+1)];
-         }
-      }
-      
-      for (int k_off=-1; k_off<2; k_off+=2) for (int i_off=-1; i_off<2; i_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(i_off,0,k_off)]);
-         if (it == sourceData.end()) continue;
-         Realf* source = it->second;
-         
-         const uint i_trgt = max(i_off,0) * (WID-1);
-         const uint k_trgt = max(k_off,0) * (WID-1);
-         const uint i_src  = max(-i_off,0) * (WID+1);
-         const uint k_src  = max(-k_off,0) * (WID+1);
-         for (uint j=0; j<WID; ++j) {
-            targetData[vblock::index(i_trgt,j,k_trgt)] += source[vblock::padIndex<1>(i_src,j+1,k_src)];
-         }
-      }
-      
-      for (int k_off=-1; k_off<2; k_off+=2) for (int j_off=-1; j_off<2; j_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(0,j_off,k_off)]);
-         if (it == sourceData.end()) continue;
-         Realf* source = it->second;
-         
-         const uint j_trgt = max(j_off,0) * (WID-1);
-         const uint k_trgt = max(k_off,0) * (WID-1);
-         const uint j_src  = max(-j_off,0) * (WID+1);
-         const uint k_src  = max(-k_off,0) * (WID+1);
-         for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j_trgt,k_trgt)] += source[vblock::padIndex<1>(i+1,j_src,k_src)];
-         }
-      }
-
-      // ***** corner neighbors ***** //
-      for (int k_off=-1; k_off<2; k_off+=2) for (int j_off=-1; j_off<2; j_off+=2) for (int i_off=-1; i_off<2; i_off+=2) {
-         it = sourceData.find(neighborIDs[vblock::nbrIndex(i_off,j_off,k_off)]);
-         if (it == sourceData.end()) continue;
-
-         const int i_trgt = max(i_off,0) * (WID-1);
-         const int j_trgt = max(j_off,0) * (WID-1);
-         const int k_trgt = max(k_off,0) * (WID-1);
-         const int i_src  = max(-i_off,0) * (WID+1);
-         const int j_src  = max(-j_off,0) * (WID+1);
-         const int k_src  = max(-k_off,0) * (WID+1);
-         Realf* source = it->second;
-         targetData[vblock::index(i_trgt,j_trgt,k_trgt)] += source[vblock::padIndex<1>(i_src,j_src,k_src)];
-         
-         source[vblock::padIndex<1>(i_src,j_src,k_src)]=0;
-      }
-      
-      // Exit if the block is at base grid level
-      if (populations[popID].vmesh.getRefinementLevel(targetGID) == 0) {
-         return;
-      }
-      const int octant = populations[popID].vmesh.getOctant(targetGID);
-      
-      int parentIndex[3];
-      parentIndex[2] = 1 + 2*(octant / 4);
-      parentIndex[1] = 1 + 2*((octant - 4*(octant/4))/2);
-      parentIndex[0] = 1 + 2*(octant % 2);
-      
-      // Add data from all coarser blocks
-      const Realf face_mul = 2.0;
-      const Realf edge_mul = 4.0;
-      const Realf corn_mul = 8.0;
-
-      const vmesh::GlobalID targetParentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex( 0, 0, 0)] );
-      vmesh::GlobalID parentGID = targetParentGID;
-      
-      it = sourceData.find(parentGID);
-      if (it != sourceData.end()) {
-         Realf* source = it->second;
-         for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j,k)] += source[vblock::padIndex<1>(parentIndex[0]+i/2,parentIndex[1]+j/2,parentIndex[2]+k/2)];
-         }
-         
-         for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) source[vblock::padIndex<1>(parentIndex[0]+i/2,parentIndex[1]+j/2,parentIndex[2]+k/2)]=0;
-      }
-      
-      // ***** face neighbors ***** //
-      for (int i_off=-1; i_off<2; i_off+=2) {
-         parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(i_off,0,0)] );
-         if (parentGID == targetParentGID) continue;
-         it = sourceData.find(parentGID);
-         if (it == sourceData.end()) continue;
-
-         const uint i_trgt = max( i_off,0) * (WID-1);
-         const uint i_src  = max(-i_off,0) * (WID+1);
-         
-         Realf* source = it->second;
-         for (uint k=0; k<WID; ++k) for (uint j=0; j<WID; ++j) {
-            targetData[vblock::index(i_trgt,j,k)] += face_mul*source[vblock::padIndex<1>(i_src,parentIndex[1]+j/2,parentIndex[2]+k/2)];
-         }
-      }
-
-      for (int j_off=-1; j_off<2; j_off+=2) {
-         parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(0,j_off,0)] );
-         if (parentGID == targetParentGID) continue;
-         it = sourceData.find(parentGID);
-         if (it == sourceData.end()) continue;
-         
-         const uint j_trgt = max( j_off,0) * (WID-1);
-         const uint j_src  = max(-j_off,0) * (WID+1);
-         
-         Realf* source = it->second;
-         for (uint k=0; k<WID; ++k) for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j_trgt,k)] += face_mul*source[vblock::padIndex<1>(parentIndex[0]+i/2,j_src,parentIndex[2]+k/2)];
-         }
-      }
-      
-      for (int k_off=-1; k_off<2; k_off+=2) {
-         parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(0,0,k_off)] );
-         if (parentGID == targetParentGID) continue;
-         it = sourceData.find(parentGID);
-         if (it == sourceData.end()) continue;
-         
-         const uint k_trgt = max( k_off,0) * (WID-1);
-         const uint k_src  = max(-k_off,0) * (WID+1);
-         
-         Realf* source = it->second;
-         for (uint j=0; j<WID; ++j) for (uint i=0; i<WID; ++i) {
-            targetData[vblock::index(i,j,k_trgt)] += face_mul*source[vblock::padIndex<1>(parentIndex[0]+i/2,parentIndex[1]+j/2,k_src)];
-         }
-      }
-
-      // ***** edge neighbors ***** //
-      // A refined block in an octant is only allowed copy 
-      // values from one coarser edge neighbor
-      int i_off,j_off,k_off;
-      if (octant == 0 || octant == 4) {i_off=-1; j_off=-1;}
-      if (octant == 1 || octant == 5) {i_off=+1; j_off=-1;}
-      if (octant == 2 || octant == 6) {i_off=-1; j_off=+1;}
-      if (octant == 3 || octant == 7) {i_off=+1; j_off=+1;}
-      Realf* source = NULL;
-      parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(i_off,j_off,0)] );
-      if (parentGID != targetParentGID) {
-         it = sourceData.find(parentGID);
-         if (it != sourceData.end()) {
-            source = it->second;
-            const uint i_trgt = max(i_off,0) * (WID-1);
-            const uint j_trgt = max(j_off,0) * (WID-1);
-            const uint i_src  = max(-i_off,0) * (WID+1);
-            const uint j_src  = max(-j_off,0) * (WID+1);
-            for (uint k=0; k<WID; ++k) {
-               targetData[vblock::index(i_trgt,j_trgt,k)] += edge_mul*source[vblock::padIndex<1>(i_src,j_src,parentIndex[2]+k/2)];
-            }
-         }
-      }
-      
-      if (octant == 0 || octant == 2) {i_off=-1; k_off=-1;}
-      if (octant == 1 || octant == 3) {i_off=+1; k_off=-1;}
-      if (octant == 4 || octant == 6) {i_off=-1; k_off=+1;}
-      if (octant == 5 || octant == 7) {i_off=+1; k_off=+1;}
-      source = NULL;
-      parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(i_off,0,k_off)] );
-      if (parentGID != targetParentGID) {
-         it = sourceData.find(parentGID);
-         if (it != sourceData.end()) {
-            source = it->second;
-            const uint i_trgt = max(i_off,0) * (WID-1);
-            const uint k_trgt = max(k_off,0) * (WID-1);
-            const uint i_src  = max(-i_off,0) * (WID+1);
-            const uint k_src  = max(-k_off,0) * (WID+1);
-            for (uint j=0; j<WID; ++j) {
-               targetData[vblock::index(i_trgt,j,k_trgt)] += edge_mul*source[vblock::padIndex<1>(i_src,parentIndex[1]+j/2,k_src)];
-            }
-         }
-      }
-
-      if (octant == 0 || octant == 1) {j_off=-1; k_off=-1;}
-      if (octant == 2 || octant == 3) {j_off=+1; k_off=-1;}
-      if (octant == 4 || octant == 5) {j_off=-1; k_off=+1;}
-      if (octant == 6 || octant == 7) {j_off=+1; k_off=+1;}
-      source = NULL;
-      parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(0,j_off,k_off)] );
-      if (parentGID != targetParentGID) {
-         it = sourceData.find(parentGID);
-         if (it != sourceData.end()) {
-            source = it->second;
-            const uint j_trgt = max(j_off,0) * (WID-1);
-            const uint k_trgt = max(k_off,0) * (WID-1);
-            const uint j_src  = max(-j_off,0) * (WID+1);
-            const uint k_src  = max(-k_off,0) * (WID+1);
-            for (uint i=0; i<WID; ++i) {
-               targetData[vblock::index(i,j_trgt,k_trgt)] += edge_mul*source[vblock::padIndex<1>(parentIndex[0]+i/2,j_src,k_src)];
-            }
-         }
-      }
-      
-      // ***** corner neighbors ***** //
-      // A refined block in an octant is allowed to copy
-      // values from a single coarser corner neighbor
-      switch (octant) {
-       case 0: i_off=-1; j_off=-1; k_off=-1; break;
-       case 1: i_off=+1; j_off=-1; k_off=-1; break;
-       case 2: i_off=-1; j_off=+1; k_off=-1; break;
-       case 3: i_off=+1; j_off=+1; k_off=-1; break;
-       case 4: i_off=-1; j_off=-1; k_off=+1; break;
-       case 5: i_off=+1; j_off=-1; k_off=+1; break;
-       case 6: i_off=-1; j_off=+1; k_off=+1; break;
-       case 7: i_off=+1; j_off=+1; k_off=+1; break;
-      }
-      source = NULL;
-      parentGID = populations[popID].vmesh.getParent( neighborIDs[vblock::nbrIndex(i_off,j_off,k_off)] );
-      if (parentGID != targetParentGID) {
-         it = sourceData.find(parentGID);
-         if (it != sourceData.end()) {
-            source = it->second;
-            const int i_trgt = max(i_off,0) * (WID-1);
-            const int j_trgt = max(j_off,0) * (WID-1);
-            const int k_trgt = max(k_off,0) * (WID-1);
-            const int i_src  = max(-i_off,0) * (WID+1);
-            const int j_src  = max(-j_off,0) * (WID+1);
-            const int k_src  = max(-k_off,0) * (WID+1);
-            targetData[vblock::index(i_trgt,j_trgt,k_trgt)] += corn_mul*source[vblock::padIndex<1>(i_src,j_src,k_src)];
-         }
       }
    }
    

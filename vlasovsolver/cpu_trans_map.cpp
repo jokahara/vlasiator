@@ -265,12 +265,13 @@ inline void copy_trans_block_data(
     const uint popID) { 
 
    /*load pointers to blocks and prefetch them to L1*/
-   Compf* blockDatas[VLASOV_STENCIL_WIDTH * 2 + 1];
+   Realf *blockDatas[VLASOV_STENCIL_WIDTH * 2 + 1];
+   Realf tempData[VLASOV_STENCIL_WIDTH * 2 + 1][WID3];
    for (int b = -VLASOV_STENCIL_WIDTH; b <= VLASOV_STENCIL_WIDTH; ++b) {
       SpatialCell* srcCell = source_neighbors[b + VLASOV_STENCIL_WIDTH];
       const vmesh::LocalID blockLID = srcCell->get_velocity_block_local_id(blockGID,popID);
       if (blockLID != srcCell->invalid_local_id()) {
-         blockDatas[b + VLASOV_STENCIL_WIDTH] = srcCell->get_data(blockLID,popID);
+         blockDatas[b + VLASOV_STENCIL_WIDTH] = srcCell->get_data(blockLID, popID, tempData[b + VLASOV_STENCIL_WIDTH]);
          //prefetch storage pointers to L1
          _mm_prefetch((char *)(blockDatas[b + VLASOV_STENCIL_WIDTH]), _MM_HINT_T0);
          _mm_prefetch((char *)(blockDatas[b + VLASOV_STENCIL_WIDTH]) + 64, _MM_HINT_T0);
@@ -293,7 +294,7 @@ inline void copy_trans_block_data(
    for (int b = -VLASOV_STENCIL_WIDTH; b <= VLASOV_STENCIL_WIDTH; ++b) {
       if(blockDatas[b + VLASOV_STENCIL_WIDTH] != NULL) {
          Realv blockValues[WID3];
-         const Compf* block_data = blockDatas[b + VLASOV_STENCIL_WIDTH];
+         const Realf* block_data = blockDatas[b + VLASOV_STENCIL_WIDTH];
          // Copy data to a temporary array and transpose values so that mapping is along k direction.
          // spatial source_neighbors already taken care of when
          // creating source_neighbors table. If a normal spatial cell does not
@@ -600,10 +601,7 @@ bool trans_map_1d(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
             if(spatial_cell->sysBoundaryFlag == sysboundarytype::NOT_SYSBOUNDARY) {
                const vmesh::LocalID blockLID = allCellsBlockLocalID[celli];
                if (blockLID != vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID>::invalidLocalID()) {
-                  Compf* blockData = spatial_cell->get_data(blockLID, popID);
-                  for(int i = 0; i < WID3; i++) {
-                     blockData[i] = 0.0;
-                  }
+                  spatial_cell->clear_block(blockLID, popID);
                }
             }
          }
@@ -626,13 +624,14 @@ bool trans_map_1d(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
                      // TODO add loss counter
                      continue;
                   }
-                  Compf* blockData = spatial_cell->get_data(blockLID, popID);
+                  Realf blockData[WID3]; 
+                  spatial_cell->get_data(blockLID, popID, blockData);
                   for(int i = 0; i < WID3 ; i++) {
                      blockData[i] += targetBlockData[(celli * 3 + ti) * WID3 + i];
                   }
+                  spatial_cell->set_data(blockLID, popID, blockData);
                }
             }
-         
          }
          phiprof::stop(t2);
 
@@ -662,7 +661,7 @@ void update_remote_mapping_contribution(
    const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_NEIGHBORHOOD_ID);
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
-   vector<Compf*> receiveBuffers;
+   vector<cBlock*> receiveBuffers;
    
    //normalize
    if(direction > 0) direction = 1;
@@ -670,7 +669,7 @@ void update_remote_mapping_contribution(
    for (size_t c=0; c<remote_cells.size(); ++c) {
       SpatialCell *ccell = mpiGrid[remote_cells[c]];
       //default values, to avoid any extra sends and receives
-      ccell->neighbor_block_data = ccell->get_data(popID);
+      ccell->neighbor_block_data = ccell->get_blocks(popID);
       ccell->neighbor_number_of_blocks = 0;
    }
 
@@ -678,7 +677,7 @@ void update_remote_mapping_contribution(
    for (size_t c=0; c<local_cells.size(); ++c) {
       SpatialCell *ccell = mpiGrid[local_cells[c]];
       //default values, to avoid any extra sends and receives
-      ccell->neighbor_block_data = ccell->get_data(popID);
+      ccell->neighbor_block_data = ccell->get_blocks(popID);
       ccell->neighbor_number_of_blocks = 0;
       CellID p_ngbr,m_ngbr;
       switch (dimension) {
@@ -713,7 +712,7 @@ void update_remote_mapping_contribution(
             //mapped to if 1) it is a valid target,
             //2) is remote cell, 3) if the source cell in center was
             //translated
-            ccell->neighbor_block_data = pcell->get_data(popID);
+            ccell->neighbor_block_data = pcell->get_blocks(popID);
             ccell->neighbor_number_of_blocks = pcell->get_number_of_velocity_blocks(popID);
             send_cells.push_back(p_ngbr);
          }
@@ -724,7 +723,7 @@ void update_remote_mapping_contribution(
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
          mcell->neighbor_number_of_blocks = ccell->get_number_of_velocity_blocks(popID);
-         mcell->neighbor_block_data = (Compf*) aligned_malloc(mcell->neighbor_number_of_blocks * WID3 * sizeof(Compf), 64);
+         mcell->neighbor_block_data = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks * sizeof(cBlock), 1);
          
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data);
@@ -755,11 +754,15 @@ void update_remote_mapping_contribution(
       // the target grid in the temporary block container
       for (size_t c=0; c < receive_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
-         Compf *blockData = spatial_cell->get_data(popID);
           
 #pragma omp for 
-         for(unsigned int cell = 0; cell<VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
-            blockData[cell] += receiveBuffers[c][cell];
+         for(unsigned int cell = 0; cell<spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
+            Realf temp[WID3], buffer[WID3];
+            spatial_cell->get_data(cell, popID, temp);
+            receiveBuffers[c][cell].get(buffer);
+
+            for (size_t i = 0; i < WID3; i++) temp[i] += buffer[i];
+            spatial_cell->set_data(cell, popID, temp);
          }
       }
        
@@ -768,12 +771,11 @@ void update_remote_mapping_contribution(
       // process
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
-         Compf * blockData = spatial_cell->get_data(popID);
            
 #pragma omp for nowait
-         for(unsigned int cell = 0; cell< VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
+         for(unsigned int cell = 0; cell < spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
             // copy received target data to temporary array where target data is stored.
-            blockData[cell] = 0;
+            spatial_cell->clear_block(cell, popID);
          }
       }
    }

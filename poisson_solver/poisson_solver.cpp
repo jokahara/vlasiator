@@ -136,17 +136,18 @@ namespace poisson {
       // Iterate all particle species
       for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
          Real rho_q_spec=0;
-         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
+         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
          if (blockContainer.size() == 0) continue;
 
          const Real charge       = getObjectWrapper().particleSpecies[popID].charge;
-         const Compf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
 
          // Sum charge density over all phase-space cells
          for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
             Real sum = 0.0;
-            for (uint i=0; i<WID3; ++i) sum += data[blockLID*WID3+i];
+            Realf temp[WID3];
+            const Realf* data = blockContainer.getData(blockLID, temp);
+            for (uint i=0; i<WID3; ++i) sum += data[i];
 
             const Real DV3 
                = blockParams[blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS+BlockParams::DVX]
@@ -175,18 +176,19 @@ namespace poisson {
          // Iterate all particle species
          for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
             Real rho_q_spec=0;
-            vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
+            vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
             if (blockContainer.size() == 0) continue;
 
             const Real charge       = getObjectWrapper().particleSpecies[popID].charge;
-            const Compf* data       = blockContainer.getData();
             const Real* blockParams = blockContainer.getParameters();
 
             // Sum charge density over all phase-space cells
             #pragma omp for
             for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
                Real sum = 0.0;
-               for (uint i=0; i<WID3; ++i) sum += data[blockLID*WID3+i];
+               Realf temp[WID3];
+               const Realf* data = blockContainer.getData(blockLID, temp);
+               for (uint i=0; i<WID3; ++i) sum += data[i];
 
                const Real DV3 
                   = blockParams[blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS+BlockParams::DVX]
@@ -229,7 +231,7 @@ namespace poisson {
       
       size_t phaseSpaceCells=0;
       for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID)
-         phaseSpaceCells += cell->get_velocity_blocks(popID).size()*WID3;
+         phaseSpaceCells += cell->get_block_container(popID).size()*WID3;
 
       phiprof::stop("Charge Density",phaseSpaceCells,"Phase-space cells");
       return success;

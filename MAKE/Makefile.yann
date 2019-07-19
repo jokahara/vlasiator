@@ -43,7 +43,7 @@ endif
 
 FLAGS =
 #CXXFLAGS = -I $(HOME)/include  -L $(HOME)/lib -g  -funroll-loops -std=c++0x -fopenmp -W -Wall -pedantic -Wno-unused -fabi-version=0 -mavx
-CXXFLAGS = -I $(HOME)/include  -L $(HOME)/lib -O3  -funroll-loops -std=c++0x -fopenmp -W -Wall -Wno-unused -fabi-version=0 -mavx
+CXXFLAGS = -I $(HOME)/include  -L $(HOME)/lib -O3  -funroll-loops -std=c++0x -fopenmp -W -Wall -Wno-unused -fabi-version=0 -mavx -DPAPI_MEM
 MATHFLAGS = -ffast-math
 LDFLAGS = -L $(HOME)/lib
 LIB_MPI = -lgomp 
@@ -51,29 +51,38 @@ LIB_MPI = -lgomp
 
 #======== Libraries ===========
 
-LIBRARY_PREFIX = $(HOME)
-
 INC_BOOST = -I/usr/include/boost/
 LIB_BOOST = -L/usr/lib/x86_64-linux-gnu/ -lboost_program_options
 
-INC_ZOLTAN = -I$(LIBRARY_PREFIX)/include
-LIB_ZOLTAN = -L$(LIBRARY_PREFIX)/lib -lzoltan
+INC_ZOLTAN = -I$(HOME)/vlasiator/libraries/zoltan/src/include
+LIB_ZOLTAN = -L$(HOME)/vlasiator/libraries/zoltan/build/src/ -lzoltan
 
-INC_VLSV = -I$(LIBRARY_PREFIX)/Development/vlsv
-LIB_VLSV = -L$(LIBRARY_PREFIX)/Development/vlsv -lvlsv
+INC_VLSV = -I$(HOME)/vlasiator/libraries/vlsv
+LIB_VLSV = -L$(HOME)/vlasiator/libraries/vlsv -lvlsv
 
-INC_SILO = -I$(LIBRARY_PREFIX)/include
-LIB_SILO = -L$(LIBRARY_PREFIX)/lib -lsilo
+INC_SILO = -I$(HOME)/vlasiator/libraries/include
+LIB_SILO = -L$(HOME)/vlasiator/libraries/lib -lsilo
 
-INC_DCCRG = -I$(LIBRARY_PREFIX)/Codes/dccrg
+INC_DCCRG = -I$(HOME)/vlasiator/libraries/dccrg
 
-INC_FSGRID = -I$(LIBRARY_PREFIX)/Development/fsgrid
+INC_FSGRID = -I$(HOME)/vlasiator/libraries/fsgrid
 
-INC_JEMALLOC = -I$(LIBRARY_PREFIX)/include/jemalloc
-LIB_JEMALLOC = -L$(LIBRARY_PREFIX)/lib -ljemalloc
+INC_JEMALLOC = -I$(HOME)/vlasiator/libraries
+LIB_JEMALLOC = -L$(HOME)/vlasiator/libraries/jemalloc-4.0.4/lib -ljemalloc
 
-LIB_PROFILE = -L$(LIBRARY_PREFIX)/phiprof/lib -lphiprof
-INC_PROFILE = -I$(LIBRARY_PREFIX)/phiprof/include
-INC_TOPO =
+LIB_PROFILE = -L$(HOME)/vlasiator/libraries/phiprof/lib -lphiprof -Wl,-rpath=$(HOME)/vlasiator/libraries/phiprof/lib 
+INC_PROFILE = -I$(HOME)/vlasiator/libraries/phiprof/include
 
-INC_EIGEN = -I$(LIBRARY_PREFIX)/Codes/eigen-eigen-2249f9c22fe8
+INC_EIGEN = -I$(HOME)/vlasiator/libraries/
+
+INC_VECTORCLASS = -I$(HOME)/vlasiator/libraries/vectorclass/
+
+INC_ZFP = -I$(HOME)/vlasiator/compression/zfp/include -I$(HOME)/vlasiator/compression/zfp/array
+LIB_ZFP = -L$(HOME)/vlasiator/compression/zfp/lib -lzfp
+
+SZPATH = /home/local/jokahara/vlasiator/compression/sz
+INC_SZ = -I$(SZPATH)/include
+LIB_SZ = -I$(SZPATH)/include $(SZPATH)/lib/libSZ.a $(SZPATH)/lib/libzlib.a $(SZPATH)/lib/libzstd.a -lm -Wl,-rpath,$(SZPATH)/lib
+
+INC_PAPI =
+LIB_PAPI = -L$(HOME)/libraries/papi -lpapi

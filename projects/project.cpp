@@ -291,7 +291,8 @@ namespace projects {
       creal dz = cell->parameters[CellParams::DZ];
 
       const Real* parameters = cell->get_block_parameters(popID);
-      Compf* data = cell->get_data(popID);
+      Realf data[WID3];
+      cell->get_data(blockLID, popID, data);
       
       creal vxBlock = parameters[blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VXCRD];
       creal vyBlock = parameters[blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VYCRD];
@@ -312,10 +313,11 @@ namespace projects {
                vxCell,vyCell,vzCell,
                dvxCell,dvyCell,dvzCell,popID);
          if (average != 0.0) {
-            data[blockLID*SIZE_VELBLOCK+cellIndex(ic,jc,kc)] = average;
+            data[cellIndex(ic,jc,kc)] = average;
             maxValue = max(maxValue,average);
          }
       }
+      cell->set_data(blockLID, popID, data);
       
       return maxValue;
    }
@@ -367,7 +369,7 @@ namespace projects {
 
             // Fetch block data and nearest neighbors
             Realf array[(WID+2)*(WID+2)*(WID+2)];
-            cell->fetch_data<1>(blockGID,vmesh,cell->get_data(0,popID),array);
+            cell->fetch_data<1>(blockGID,vmesh,cell->get_blocks(popID),array);
 
             // If block should be refined, add it to refine list
             if (refCriterion->evaluate(array,popID) > Parameters::amrRefineLimit) {
@@ -420,10 +422,14 @@ namespace projects {
    void Project::rescaleDensity(spatial_cell::SpatialCell* cell,const uint popID) const {
       // Re-scale densities
       Real sum = 0.0;
-      Compf* data = cell->get_data(popID);
+      cBlock* blocks = cell->get_blocks(popID);
+      const unsigned int n_blocks = cell->get_number_of_velocity_blocks(popID);
+      Realf data[n_blocks * WID3];
       const Real* blockParams = cell->get_block_parameters(popID);
-      for (vmesh::LocalID blockLID=0; blockLID<cell->get_number_of_velocity_blocks(popID); ++blockLID) {
+
+      for (vmesh::LocalID blockLID=0; blockLID<n_blocks; ++blockLID) {
          Real tmp = 0.0;
+         blocks[blockLID].get(&data[blockLID]);
          for (unsigned int i=0; i<WID3; ++i) tmp += data[blockLID*WID3+i];
          const Real DV3 = blockParams[BlockParams::DVX]*blockParams[BlockParams::DVY]*blockParams[BlockParams::DVZ];
          sum += tmp*DV3;
@@ -433,8 +439,11 @@ namespace projects {
       const Real correctSum = getCorrectNumberDensity(cell,popID);
       const Real ratio = correctSum / sum;
       
-      for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
+      for (size_t i=0; i<n_blocks*WID3; ++i) {
          data[i] *= ratio;
+      }
+      for (size_t blockLID=0; blockLID<n_blocks; ++blockLID) {
+         blocks[blockLID].set(&data[blockLID]);
       }
    }
 

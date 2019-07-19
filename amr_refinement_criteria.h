@@ -34,9 +34,7 @@ namespace amr_ref_criteria {
       virtual ~Base();
 
       virtual Realf evaluate(const Realf* velBlock,const uint popID) = 0;
-      virtual void evaluate(const Realf* velBlost,Realf* result,const uint popID);
-      virtual Realf evaluate(const Compf* velBlock,const uint popID) = 0;
-      virtual void evaluate(const Compf* velBlost,Realf* result,const uint popID);
+      virtual void evaluate(const Realf* velBlock,Realf* result,const uint popID);
       virtual bool initialize(const std::string& configRegion) = 0;
       
     protected:
@@ -51,9 +49,7 @@ namespace amr_ref_criteria {
       ~RelativeDifference();
       
       Realf evaluate(const Realf* velBlock,const uint popID);
-      void evaluate(const Realf* velBlost,Realf* result,const uint popID);
-      Realf evaluate(const Compf* velBlock,const uint popID);
-      void evaluate(const Compf* velBlost,Realf* result,const uint popID);
+      void evaluate(const Realf* velBlock,Realf* result,const uint popID);
       bool initialize(const std::string& configRegion);
 
     protected:

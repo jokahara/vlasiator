@@ -215,7 +215,6 @@ namespace SBC {
    ) {
       Real rho, T, Vx, Vy, Vz, Bx=0.0, By=0.0, Bz=0.0, buffer[8];
       
-      
       templateCell.sysBoundaryFlag = this->getIndex();
       templateCell.sysBoundaryLayer = 1;
       
@@ -239,7 +238,6 @@ namespace SBC {
          Bz = buffer[7];
 
          vector<vmesh::GlobalID> blocksToInitialize = this->findBlocksToInitialize(popID,templateCell, rho, T, Vx, Vy, Vz);
-         Compf* data = templateCell.get_data(popID);
 
          for(vmesh::GlobalID i=0; i<blocksToInitialize.size(); ++i) {
             const vmesh::GlobalID blockGID = blocksToInitialize[i];
@@ -259,6 +257,8 @@ namespace SBC {
             creal dy = templateCell.parameters[CellParams::DY];
             creal dz = templateCell.parameters[CellParams::DZ];
          
+            Realf data[WID3];
+            templateCell.get_data(blockLID, popID, data);
             // Calculate volume average of distrib. function for each cell in the block.
             for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
                creal vxCell = vxBlock + ic*dvxCell;
@@ -272,31 +272,28 @@ namespace SBC {
                   for (uint vi=0; vi<speciesParams[popID].nVelocitySamples; ++vi)
                     for (uint vj=0; vj<speciesParams[popID].nVelocitySamples; ++vj)
                       for (uint vk=0; vk<speciesParams[popID].nVelocitySamples; ++vk) {
-                         average +=  maxwellianDistribution(
-                                                            popID,
+                         average +=  maxwellianDistribution(popID,
                                                             rho,
                                                             T,
                                                             vxCell + vi*d_vx - Vx,
                                                             vyCell + vj*d_vy - Vy,
-                                                            vzCell + vk*d_vz - Vz
-                                                           );
+                                                            vzCell + vk*d_vz - Vz);
                       }
                   average /= speciesParams[popID].nVelocitySamples * speciesParams[popID].nVelocitySamples * speciesParams[popID].nVelocitySamples;
                } else {
-                  average =   maxwellianDistribution(
-                                                     popID,
-                                                     rho,
-                                                     T,
-                                                     vxCell + 0.5*dvxCell,
-                                                     vyCell + 0.5*dvyCell,
-                                                     vzCell + 0.5*dvzCell
-                                                    );
+                  average = maxwellianDistribution(popID,
+                                                   rho,
+                                                   T,
+                                                   vxCell + 0.5*dvxCell,
+                                                   vyCell + 0.5*dvyCell,
+                                                   vzCell + 0.5*dvzCell);
                }
                
                if (average != 0.0) {
-                  data[blockLID*WID3+cellIndex(ic,jc,kc)] = average;
+                  data[cellIndex(ic,jc,kc)] = average;
                } 
             } // for-loop over cells in velocity block
+            templateCell.set_data(blockLID, popID, data);
          } // for-loop over velocity blocks
          
          //let's get rid of blocks not fulfilling the criteria here to save

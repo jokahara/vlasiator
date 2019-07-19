@@ -38,11 +38,7 @@ namespace amr_ref_criteria {
    
    Base* relDiffMaker() {return new RelativeDifference;}
    
-   void Base::evaluate(const Realf* velBlost,Realf* result,const uint popID) {
-      for (uint i=0; i<WID3; ++i) result[i] = 0.0;
-   }
-
-   void Base::evaluate(const Compf* velBlost,Realf* result,const uint popID) {
+   void Base::evaluate(const Realf* velBlock,Realf* result,const uint popID) {
       for (uint i=0; i<WID3; ++i) result[i] = 0.0;
    }
 
@@ -71,42 +67,6 @@ namespace amr_ref_criteria {
          f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+2,kc+1)];
          df = evaluate(f_lft,f_cen,f_rgt);
          if (df > maxvalue) maxvalue = df;
-
-         //f_lft = array[vblock::padIndex<PAD>(ic+1,jc+1,kc  )];
-         //f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+1,kc+2)];
-         //df = evaluate(f_lft,f_cen,f_rgt);
-         //if (df > maxvalue) maxvalue = df;
-      }
-      
-      return maxvalue;
-   }
-
-   Realf RelativeDifference::evaluate(const Compf* array,const uint popID) {
-      // How many neighbor data points (per coordinate) the given block includes?
-      const int PAD=1;
-      Realf maxvalue = 0.0;
-
-      for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
-         Realf f_cen = array[vblock::padIndex<PAD>(ic+1,jc+1,kc+1)];
-         
-         #warning In here should we use SpatialCell::getVeloctyBlockMinValue()?
-         if (fabs(f_cen) < getObjectWrapper().particleSpecies[popID].sparseMinValue) continue;
-
-         Realf f_lft = array[vblock::padIndex<PAD>(ic  ,jc+1,kc+1)];
-         Realf f_rgt = array[vblock::padIndex<PAD>(ic+2,jc+1,kc+1)];
-
-         Realf df = evaluate(f_lft,f_cen,f_rgt);
-         if (df > maxvalue) maxvalue = df;
-
-         f_lft = array[vblock::padIndex<PAD>(ic+1,jc  ,kc+1)];
-         f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+2,kc+1)];
-         df = evaluate(f_lft,f_cen,f_rgt);
-         if (df > maxvalue) maxvalue = df;
-
-         //f_lft = array[vblock::padIndex<PAD>(ic+1,jc+1,kc  )];
-         //f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+1,kc+2)];
-         //df = evaluate(f_lft,f_cen,f_rgt);
-         //if (df > maxvalue) maxvalue = df;
       }
       
       return maxvalue;
@@ -129,36 +89,6 @@ namespace amr_ref_criteria {
          f_lft = array[vblock::padIndex<PAD>(ic+1,jc  ,kc+1)];
          f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+2,kc+1)];
          df = max(df,evaluate(f_lft,f_cen,f_rgt));
-
-         //f_lft = array[vblock::padIndex<PAD>(ic+1,jc+1,kc  )];
-         //f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+1,kc+2)];
-         //df = max(df,evaluate(f_lft,f_cen,f_rgt));
-         
-         result[vblock::index(ic,jc,kc)] = df;
-      }
-   }
-
-   void RelativeDifference::evaluate(const Compf* array,Realf* result,const uint popID) {
-      const int PAD=1;
-      for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
-         Realf f_cen = array[vblock::padIndex<PAD>(ic+1,jc+1,kc+1)];
-         #warning In here should we use SpatialCell::getVeloctyBlockMinValue()?
-         if (fabs(f_cen) < getObjectWrapper().particleSpecies[popID].sparseMinValue) {
-            result[vblock::index(ic,jc,kc)] = 0;
-            continue;
-         }
-         
-         Realf f_lft = array[vblock::padIndex<PAD>(ic  ,jc+1,kc+1)];
-         Realf f_rgt = array[vblock::padIndex<PAD>(ic+2,jc+1,kc+1)];
-         Realf df = evaluate(f_lft,f_cen,f_rgt);
-         
-         f_lft = array[vblock::padIndex<PAD>(ic+1,jc  ,kc+1)];
-         f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+2,kc+1)];
-         df = max(df,evaluate(f_lft,f_cen,f_rgt));
-
-         //f_lft = array[vblock::padIndex<PAD>(ic+1,jc+1,kc  )];
-         //f_rgt = array[vblock::padIndex<PAD>(ic+1,jc+1,kc+2)];
-         //df = max(df,evaluate(f_lft,f_cen,f_rgt));
          
          result[vblock::index(ic,jc,kc)] = df;
       }

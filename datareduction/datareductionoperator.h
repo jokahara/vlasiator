@@ -29,9 +29,9 @@
 #include "dccrg.hpp"
 #include "dccrg_cartesian_geometry.hpp"
 
-#include "definitions.h"
-#include "spatial_cell.hpp"
-#include "parameters.h"
+#include "../definitions.h"
+#include "../spatial_cell.hpp"
+#include "../parameters.h"
 using namespace spatial_cell;
 
 namespace DRO {

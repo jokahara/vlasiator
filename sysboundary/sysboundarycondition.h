@@ -28,10 +28,10 @@
 #include "fsgrid.hpp"
 
 #include <vector>
-#include "common.h"
-#include "definitions.h"
-#include "spatial_cell.hpp"
-#include "projects/project.h"
+#include "../common.h"
+#include "../definitions.h"
+#include "../spatial_cell.hpp"
+#include "../projects/project.h"
 
 using namespace spatial_cell;
 using namespace projects;
@@ -186,10 +186,11 @@ namespace SBC {
                const CellID& cellID
          );
 
-         std::array<Compf*,27> getFlowtoCellsBlock(
+         std::array<Realf*,27> getFlowtoCellsBlock(
                const std::array<SpatialCell*,27> flowtoCells,
                const vmesh::GlobalID blockGID,
-               const uint popID
+               const uint popID,
+               Realf container[27][WID3]
          );
       
 

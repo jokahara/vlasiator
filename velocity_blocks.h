@@ -36,14 +36,13 @@ namespace vblock {
       };
    }
 
-   template<int PADDING,int METHOD> void accum_xyz(Compf* array,const Real* coords,const Realf& value);
-
-   template<int PADDING,typename T> void addToFine_x(const T& octant,const T* coarseOffset);
+   //template<int PADDING,int METHOD> void accum_xyz(Realf* array,const Real* coords,const Realf& value);
+   //template<int PADDING,typename T> void addToFine_x(const T& octant,const T* coarseOffset);
    
-   template<int METHOD,typename REAL> Realf interp_xy(const REAL* pos,Compf* data);
-   template<int METHOD,typename REAL> Realf interp_xz(const REAL* pos,Compf* data);
-   template<int METHOD,typename REAL> Realf interp_yz(const REAL* pos,Compf* data);
-   template<int METHOD,typename REAL> Realf interp_xyz(const REAL* pos,Compf* data);
+   template<int METHOD,typename REAL> Realf interp_xy(const REAL* pos,Realf* data);
+   template<int METHOD,typename REAL> Realf interp_xz(const REAL* pos,Realf* data);
+   template<int METHOD,typename REAL> Realf interp_yz(const REAL* pos,Realf* data);
+   template<int METHOD,typename REAL> Realf interp_xyz(const REAL* pos,Realf* data);
    
    template<typename T> T index(const T& i,const T& j,const T& k);
    template<typename T> T nbrIndex(const T& i_off,const T& j_off,const T& k_off);
@@ -52,9 +51,9 @@ namespace vblock {
 
    // ***** DEFINITIONS OF TEMPLATE FUNCTION ***** //
    
-   
+   /* 
    template<int PAD,int METHOD> inline
-   void accum_xyz(Compf* array,const Real* pos,const Realf& value) {
+   void accum_xyz(Realf* array,const Real* pos,const Realf& value) {
       switch (METHOD) {
        case interpmethod::NGP:
 	   {
@@ -115,10 +114,11 @@ namespace vblock {
 	 exit(1);
 	 break;
       }
-   }
+   } */
    
+   /*
    template<int PAD,typename T> inline
-   void addToFine_x(const T& j_fine,const T& k_fine,const T* coarseOffset,Compf* fineArray,const Compf* coarseArray) {
+   void addToFine_x(const T& j_fine,const T& k_fine,const T* coarseOffset,Realf* fineArray,const Realf* coarseArray) {
       /*const T k_coarse = coarseOffset[2] + 2*(octant / 4);
       const T j_coarse = coarseOffset[1] + 2*((octant - 4*(octant/4))/2);
       const T i_coarse = coarseOffset[0] + 2*(octant % 2);*/
@@ -126,14 +126,14 @@ namespace vblock {
       std::cerr << octant << ' ';
       std::cerr << j_fine << ' ' << k_fine << " <- ";
       std::cerr << i_coarse << ' ' << j_coarse << ' ' << k_coarse;
-      std::cerr << std::endl;*/
+      std::cerr << std::endl;*
 
       for (T i_fine=0; i_fine<WID; ++i_fine) {
 	 const T coarseIndex = padIndex<PAD>(coarseOffset[0]+i_fine/2,coarseOffset[1]+j_fine/2,coarseOffset[2]+k_fine/2);
 	 fineArray[index(i_fine,j_fine,k_fine)] += coarseArray[coarseIndex];
 	 //fineArray[index(i_fine,j_fine,k_fine)] += coarseArray[padIndex<PAD>(i_coarse+i_fine/2,j_coarse+j_fine/2,k_coarse+k_fine/2)];
       }
-   }
+   } */
 
    template<typename T> inline
    T nbrIndex(const T& i_off,const T& j_off,const T& k_off) {
@@ -146,7 +146,7 @@ namespace vblock {
    }   
    
    template<int METHOD,typename REAL> inline
-   Realf interp_xy(const REAL* pos,const Compf* data) {
+   Realf interp_xy(const REAL* pos,const Realf* data) {
       switch (METHOD) {
        case interpmethod::NGP:
 	   {
@@ -179,7 +179,7 @@ namespace vblock {
    }
    
    template<int METHOD,typename REAL> inline
-   Realf interp_xz(const REAL* pos,const Compf* data) {
+   Realf interp_xz(const REAL* pos,const Realf* data) {
       switch (METHOD) {
        case interpmethod::NGP:
 	   {
@@ -212,7 +212,7 @@ namespace vblock {
    }
 
    template<int METHOD,typename REAL> inline
-   Realf interp_yz(const REAL* pos,const Compf* data) {
+   Realf interp_yz(const REAL* pos,const Realf* data) {
       switch (METHOD) {
        case interpmethod::NGP:
 	   {
@@ -245,7 +245,7 @@ namespace vblock {
    }
    
    template<int METHOD,typename REAL> inline
-   Realf interp_xyz(const REAL* pos,const Compf* data) {
+   Realf interp_xyz(const REAL* pos,const Realf* data) {
       switch (METHOD) {
        case interpmethod::NGP:
 	   {

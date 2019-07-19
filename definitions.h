@@ -31,11 +31,10 @@
 typedef double Realf;
 #else
 typedef float Realf;
-
-#include "compression/simple_compression.h"
-typedef CompressedValue Compf;         //defines compressed float 
 #endif
 
+#include "compression/zeroes_compression.h"
+typedef CompressedBlock cBlock;
 
 //set general floating point precision here. Default is single precision, use -DDP to set double precision
 #ifdef DP

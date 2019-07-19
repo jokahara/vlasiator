@@ -262,7 +262,7 @@ namespace SBC {
                                                 ) {
       SpatialCell* cell = mpiGrid[cellID];
       cell->get_velocity_mesh(popID)   = templateCell.get_velocity_mesh(popID);
-      cell->get_velocity_blocks(popID) = templateCell.get_velocity_blocks(popID);
+      cell->get_block_container(popID) = templateCell.get_block_container(popID);
    }
 
    void ProjectBoundary::getFaces(bool* faces) {

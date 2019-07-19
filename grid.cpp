@@ -514,20 +514,29 @@ bool adjustVelocityBlocks(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& m
          }
          neighbor_ptrs.push_back(mpiGrid[neighbor_id]);
       }
+      Realf temp[WID3];
       if (getObjectWrapper().particleSpecies[popID].sparse_conserve_mass) {
-         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
-            density_pre_adjust += cell->get_data(popID)[i];
+         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID); ++i) {
+            cell->get_data(i, popID, temp);
+            for (int j = 0; j < WID3; j++) 
+               density_pre_adjust += temp[j];
          }
       }
+      
       cell->adjust_velocity_blocks(neighbor_ptrs,popID);
 
       if (getObjectWrapper().particleSpecies[popID].sparse_conserve_mass) {
-         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
-            density_post_adjust += cell->get_data(popID)[i];
+         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID); ++i) {
+            cell->get_data(i, popID, temp);
+            for (int j = 0; j < WID3; j++) 
+               density_post_adjust += temp[j];
          }
          if (density_post_adjust != 0.0) {
-            for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
-               cell->get_data(popID)[i] *= density_pre_adjust/density_post_adjust;
+            for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID); ++i) {
+               cell->get_data(i, popID, temp);
+               for (int j = 0; j < WID3; j++) 
+                  temp[j] *= density_pre_adjust/density_post_adjust;
+               cell->set_data(i, popID, temp);
             }
          }
       }

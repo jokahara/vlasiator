@@ -28,20 +28,20 @@
 #include "dccrg.hpp"
 #include "dccrg_cartesian_geometry.hpp"
 
-#include "definitions.h"
-#include "common.h"
-#include "spatial_cell.hpp"
+#include "../definitions.h"
+#include "../common.h"
+#include "../spatial_cell.hpp"
 
 using namespace spatial_cell;
 
 // ***** FUNCTION DECLARATIONS ***** //
 
 template<typename REAL> 
-void blockVelocityFirstMoments(const Compf* avgs,const Real* blockParams,
+void blockVelocityFirstMoments(const Realf* avgs,const Real* blockParams,
                                REAL* array);
 
 template<typename REAL> 
-void blockVelocitySecondMoments(const Compf* avgs,const Real* blockParams,
+void blockVelocitySecondMoments(const Realf* avgs,const Real* blockParams,
                                 const REAL v[3],
                                 REAL* array);
 
@@ -68,7 +68,7 @@ void calculateMoments_V(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
  * @param array Array of at least size four where the calculated moments are added.*/
 template<typename REAL> inline
 void blockVelocityFirstMoments(
-        const Compf* avgs,
+        const Realf* avgs,
         const Real* blockParams,
         REAL* array) {
 
@@ -109,7 +109,7 @@ void blockVelocityFirstMoments(
  * @param array Array where the calculated moments are added.*/
 template<typename REAL> inline
 void blockVelocitySecondMoments(
-        const Compf* avgs,
+        const Realf* avgs,
         const Real* blockParams,
         const REAL averageVX,
         const REAL averageVY,

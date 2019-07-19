@@ -1,5 +1,5 @@
 #include <cmath>
-#include <iostream>
+
 // Quite fast, 50 % float compressing with small error.
 // Designed to work for values between 1E-3 - 1E-15.
 class CompressedValue
@@ -7,7 +7,7 @@ class CompressedValue
     private:
         typedef union {     
             float f;
-            long i;
+            uint i;
         } float_int;    // for converting float into integer format
         unsigned short compressed_value;
         
