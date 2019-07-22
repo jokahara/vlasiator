@@ -14,7 +14,7 @@ typedef union {
 
 class CompressedBlock {
     private:
-        unsigned char exp;
+        unsigned int exp;
         typedef struct pair
         {
             unsigned short a, b;
