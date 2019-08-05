@@ -14,7 +14,7 @@ typedef union {
 
 class CompressedBlock {
     private:
-        unsigned char exp: 7;
+        unsigned char exp;
         ushort data[BLOCK_SIZE];
 
     public:
@@ -52,9 +52,9 @@ inline CompressedBlock::CompressedBlock(const CompressedBlock& block) {
 
 // Compresses given data block of size 64
 inline void CompressedBlock::set(float* array) {
-    float max = 0;
+    float max = array[0];
 
-    for (int i = 0; i < BLOCK_SIZE; i++)
+    for (int i = 1; i < BLOCK_SIZE; i++)
     {
         if (array[i] > max) max = array[i];
     }

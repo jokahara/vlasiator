@@ -538,7 +538,7 @@ bool map_1d(SpatialCell* spatial_cell,
                   
                   if(dimension == 2) {
                      Realf* targetDataPointer = blockIndexToBlockData.data() + WID3*blockK + j * cell_indices_to_id[1] + gk_mod_WID * cell_indices_to_id[2];
-                     bool pr = false;
+                     
                      Vec targetData;
                      targetData.load_a(targetDataPointer);
                      targetData += target_density_r - target_density_l;    

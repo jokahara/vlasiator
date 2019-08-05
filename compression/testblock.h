@@ -4,7 +4,7 @@
 class CompressedBlock {
 
     private:
-        std::vector<float> v;
+        float v[64];
         
     public:
         CompressedBlock();
