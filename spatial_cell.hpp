@@ -1255,7 +1255,7 @@ namespace spatial_cell {
          abort();
       }
 
-      std::cerr << "incrementing value" << blockGID << std::endl;
+      std::cerr << "Warning: incrementing spatial cell value in " << __FILE__ << ":" << __LINE__ << std::endl;
       const unsigned int cell = get_velocity_cell(popID,blockGID,vx,vy,vz);
       Realf temp[WID3];
       get_data(blockLID, popID, temp);
@@ -1288,7 +1288,7 @@ namespace spatial_cell {
          blockLID = populations[popID].vmesh.getLocalID(blockGID);
       }
 
-      std::cerr << "incrementing value" << blockGID << std::endl;
+      std::cerr << "Warning: incrementing spatial cell value in " << __FILE__ << ":" << __LINE__ << std::endl;
       Realf temp[WID3];
       get_data(blockLID, popID, temp);
       temp[cell] += value;
