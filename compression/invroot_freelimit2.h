@@ -3,10 +3,6 @@
 
 typedef ushort Compf;
 
-using std::cout;
-using std::endl;
-#define print(x) cout << x << endl
-
 #define BLOCK_SIZE 64
 #define MIN_VALUE 1e-20f
 #define OFFSET 2
