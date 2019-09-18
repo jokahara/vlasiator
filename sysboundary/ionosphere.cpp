@@ -732,7 +732,6 @@ namespace SBC {
       for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
          const IonosphereSpeciesParameters& sP = this->speciesParams[popID];
          const vector<vmesh::GlobalID> blocksToInitialize = findBlocksToInitialize(templateCell,popID);
-         Realf* data = templateCell.get_data(popID);
          
          for (size_t i = 0; i < blocksToInitialize.size(); i++) {
             const vmesh::GlobalID blockGID = blocksToInitialize.at(i);
@@ -752,6 +751,8 @@ namespace SBC {
             creal dy = templateCell.parameters[CellParams::DY];
             creal dz = templateCell.parameters[CellParams::DZ];
          
+            Realf temp[WID3];
+            Realf* data = templateCell.get_data(blockLID, popID, temp);
             // Calculate volume average of distrib. function for each cell in the block.
             for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
                creal vxCell = vxBlock + ic*dvxCell;
@@ -783,9 +784,11 @@ namespace SBC {
                }
 
                if (average !=0.0 ) {
-                  data[blockLID*WID3+cellIndex(ic,jc,kc)] = average;
+                  data[cellIndex(ic,jc,kc)] = average;
                }
             } // for-loop over cells in velocity block
+
+            templateCell.set_data(blockLID, popID, data);
          } // for-loop over velocity blocks
 
          // let's get rid of blocks not fulfilling the criteria here to save memory.

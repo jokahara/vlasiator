@@ -13,7 +13,7 @@ ifneq (,$(findstring testpackage,$(MAKECMDGOALS)))
 endif
 
 
-include MAKE/Makefile.${ARCH}
+include MAKE/Makefile.yann
 
 
 

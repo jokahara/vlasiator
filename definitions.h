@@ -33,6 +33,9 @@ typedef double Realf;
 typedef float Realf;
 #endif
 
+#include "compression/invroot_freelimit2.h"
+typedef CompressedBlock cBlock;
+
 //set general floating point precision here. Default is single precision, use -DDP to set double precision
 #ifdef DP
 typedef double Real;

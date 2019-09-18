@@ -192,7 +192,8 @@ namespace SBC {
          std::array<Realf*,27> getFlowtoCellsBlock(
                const std::array<SpatialCell*,27> flowtoCells,
                const vmesh::GlobalID blockGID,
-               const uint popID
+               const uint popID,
+               Realf container[27][WID3]
          );
       
 

@@ -42,55 +42,11 @@ void loadColumnBlockData(
       }
    }
 
-   /*[[[cog
-import cog
-
-WID = 4
-WID2 = WID * WID
-
-for dimension in range(0, 2):
-    if dimension == 0:    
-      cell_indices_to_id = [ WID2, WID, 1]
-    if dimension == 1:    
-      cell_indices_to_id = [ 1, WID2, WID]
-    if dimension == 2:    
-      cell_indices_to_id = [ 1, WID, WID2]
-
-    cellid_transpose=[]
-    for k in range(0,WID):
-        for j in range(0,WID):
-            for i in range(0,WID):
-                cellid_transpose.append(i * cell_indices_to_id[0] +  j * cell_indices_to_id[1] + k * cell_indices_to_id[2])
-    
-    cog.outl("if(dimension == %s ) {" % dimension)
-    cog.outl("   for (vmesh::LocalID block_k=0; block_k<n_blocks; ++block_k) {")
-    cog.outl("      Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]));")    
-    for vecl in [4, 8, 16]:
-        for accuracy in ["f", "d"]:
-            cog.outl("#ifdef VEC%d%s_AGNER" % (vecl, accuracy.upper()))
-            cell = 0
-            for k in range(0, WID):
-                for planeVector in range(0, WID2/vecl):
-                    cog.out("      values[i_pcolumnv_b(%d, %d, block_k, n_blocks)] = gather%d%s<" % (planeVector, k, vecl, accuracy) )
-                    for vi in range(0,vecl):
-                        cog.out("%d" %cellid_transpose[cell])
-                        if vi < vecl-1:
-                            cog.out(" ,")
-                        cell = cell + 1
-
-                    cog.outl(">(data);")
-            cog.outl("#endif //VEC%d%s_AGNER" % (vecl, accuracy.upper()))                    
-    cog.outl("      //zero old output data")
-    cog.outl("      for (uint i=0; i<WID3; ++i) {")
-    cog.outl("         data[i]=0;")
-    cog.outl("      }")
-    cog.outl("   }")                
-    cog.outl("}")                
-
-    ]]]*/
    if(dimension == 0 ) {
       for (vmesh::LocalID block_k=0; block_k<n_blocks; ++block_k) {
-         Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]));
+         Realf temp[WID3];
+         Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]), temp);
+         
    #ifdef VEC4F_AGNER
          values[i_pcolumnv_b(0, 0, block_k, n_blocks)] = gather4f<0 ,16 ,32 ,48>(data);
          values[i_pcolumnv_b(1, 0, block_k, n_blocks)] = gather4f<4 ,20 ,36 ,52>(data);
@@ -160,14 +116,13 @@ for dimension in range(0, 2):
          values[i_pcolumnv_b(0, 3, block_k, n_blocks)] = gather16d<3 ,19 ,35 ,51 ,7 ,23 ,39 ,55 ,11 ,27 ,43 ,59 ,15 ,31 ,47 ,63>(data);
    #endif //VEC16D_AGNER
          //zero old output data
-         for (uint i=0; i<WID3; ++i) {
-            data[i]=0;
-         }
+         blockContainer.clearBlock(vmesh.getLocalID(blocks[block_k]));
       }
    }
    if(dimension == 1 ) {
       for (vmesh::LocalID block_k=0; block_k<n_blocks; ++block_k) {
-         Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]));
+         Realf temp[WID3];
+         Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]), temp);
    #ifdef VEC4F_AGNER
          values[i_pcolumnv_b(0, 0, block_k, n_blocks)] = gather4f<0 ,1 ,2 ,3>(data);
          values[i_pcolumnv_b(1, 0, block_k, n_blocks)] = gather4f<16 ,17 ,18 ,19>(data);
@@ -237,9 +192,7 @@ for dimension in range(0, 2):
          values[i_pcolumnv_b(0, 3, block_k, n_blocks)] = gather16d<12 ,13 ,14 ,15 ,28 ,29 ,30 ,31 ,44 ,45 ,46 ,47 ,60 ,61 ,62 ,63>(data);
    #endif //VEC16D_AGNER
          //zero old output data
-         for (uint i=0; i<WID3; ++i) {
-            data[i]=0;
-         }
+         blockContainer.clearBlock(vmesh.getLocalID(blocks[block_k]));
       }
    }
 //[[[end]]]
@@ -248,7 +201,9 @@ for dimension in range(0, 2):
       // copy block data for all blocks. Dimension 2 is easy, here
       // data is in the right order
       for (vmesh::LocalID block_k=0; block_k<n_blocks; ++block_k) {
-         Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]));
+         Realf temp[WID3];
+         Realf* __restrict__ data = blockContainer.getData(vmesh.getLocalID(blocks[block_k]), temp);
+
          uint offset = 0;
          for (uint k=0; k<WID; ++k) {
             for(uint planeVector = 0; planeVector < VEC_PER_PLANE; planeVector++){
@@ -257,9 +212,7 @@ for dimension in range(0, 2):
             }
          }
          //zero old output data
-         for (uint i=0; i<WID3; ++i) {
-            data[i]=0;
-         }
+         blockContainer.clearBlock(vmesh.getLocalID(blocks[block_k]));
       }
    }
 }

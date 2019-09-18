@@ -399,9 +399,12 @@ bool _readBlockData(
       }
       mpiGrid[cell]->add_velocity_blocks(blockIdsInCell,popID); //allocate space for all blocks and create them
       //copy avgs data, here a conversion may happen between float and double
-      Realf *cellBlockData=mpiGrid[cell]->get_data(popID);
+      Realf cellBlockData[WID3 * nBlocksInCell];
       for(uint64_t i = 0; i< WID3 * nBlocksInCell ; i++){
          cellBlockData[i] =  avgBuffer[blockBufferOffset*WID3 + i];
+      }
+      for(uint64_t i = 0; i< nBlocksInCell ; i++){
+         mpiGrid[cell]->set_data(i, popID, &cellBlockData[i]);
       }
       blockBufferOffset += nBlocksInCell; //jump to location of next local cell
    }
