@@ -182,30 +182,18 @@ namespace vmesh {
 
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::getData(const LID& blockLID, Realf* array) {
-      #ifdef DEBUG_VBC
-         if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"getData");
-         if (blockLID >= block_data.size()) exitInvalidLocalID(blockLID,"const getData const");
-      #endif
       block_data[blockLID].get(array);
       return array;
    }
    
    template<typename LID> inline
    const Realf* VelocityBlockContainer<LID>::getData(const LID& blockLID, Realf* array) const {
-      #ifdef DEBUG_VBC
-         if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"const getData const");
-         if (blockLID >= block_data.size()) exitInvalidLocalID(blockLID,"const getData const");
-      #endif
       block_data[blockLID].get(array);
       return array;
    }
 
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::setData(const LID& blockLID, Realf* array) {
-      #ifdef DEBUG_VBC
-         if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"setData");
-         if (blockLID >= block_data.size()) exitInvalidLocalID(blockLID,"const setData const");
-      #endif
       block_data[blockLID].set(array);
       return array;
    }

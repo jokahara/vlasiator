@@ -297,8 +297,6 @@ namespace spatial_cell {
       void increment_value(const vmesh::GlobalID& block,const unsigned int cell,const Realf value,const uint popID);
       void set_max_r_dt(const uint popID,const Real& value);
       void set_max_v_dt(const uint popID,const Real& value);
-      //void set_value(const Real vx, const Real vy, const Real vz, const Realf value,const uint popID);
-      //void set_value(const vmesh::GlobalID& block,const unsigned int cell, const Realf value,const uint popID);
       void refine_block(const vmesh::GlobalID& block,std::map<vmesh::GlobalID,vmesh::LocalID>& insertedBlocks,
                         const uint popID);
       bool velocity_block_has_children(const vmesh::GlobalID& blockGID,const uint popID) const;
@@ -1476,7 +1474,6 @@ namespace spatial_cell {
          abort();
       }
 
-      std::cerr << "Warning: incrementing spatial cell value in " << __FILE__ << ":" << __LINE__ << std::endl;
       const unsigned int cell = get_velocity_cell(popID,blockGID,vx,vy,vz);
       Realf temp[WID3];
       get_data(blockLID, popID, temp);

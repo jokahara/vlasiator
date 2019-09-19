@@ -66,7 +66,7 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
     if (skipMoments == false) {
        for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
           vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
-          if (cell->size(popID) == 0) continue;
+          if (blockContainer.size() == 0) continue;
           
           Realf data[WID3];
           const Real* blockParams = blockContainer.getParameters();

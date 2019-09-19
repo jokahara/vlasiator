@@ -538,7 +538,6 @@ bool map_1d(SpatialCell* spatial_cell,
                   target_density_r =
                      v_norm_r * ( a[0] + v_norm_r * ( a[1] + v_norm_r * ( a[2] + v_norm_r * ( a[3] + v_norm_r * a[4] ) ) ) );
                   #endif
-                  //if(target_density_r[0] > 1 || target_density_r[0] < 0) cerr << "r: " << target_density_r[0] << endl;
                   
                   //store values, one element at a time. All blocks
                   //have been created by now.
