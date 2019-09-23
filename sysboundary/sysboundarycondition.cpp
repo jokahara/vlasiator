@@ -502,8 +502,9 @@ namespace SBC {
 
       creal factor = 1.0 / convert<Real>(numberOfCells);
       
-      cell->clear(popID);
-      
+      cell->clear(popID); // set size to 0
+      vector<Realf> tempData;
+
       for (size_t i=0; i<numberOfCells; i++) {
          SpatialCell* incomingCell = mpiGrid[cellList[i]];
          const Real* blockParameters = incomingCell->get_block_parameters(popID);
@@ -517,6 +518,10 @@ namespace SBC {
             creal dvxCell = blockParameters[BlockParams::DVX];
             creal dvyCell = blockParameters[BlockParams::DVY];
             creal dvzCell = blockParameters[BlockParams::DVZ];
+            // get block data
+            Realf incomingData[WID3];
+            incomingCell->get_data(blockLID, popID, incomingData);
+
             for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
                creal vxCellCenter = vxBlock + (ic+convert<Real>(0.5))*dvxCell;
                creal vyCellCenter = vyBlock + (jc+convert<Real>(0.5))*dvyCell;
@@ -526,19 +531,21 @@ namespace SBC {
                if (vNormal >= 0.0) {
                   // Not flowing in, leave as is.
                   cell->increment_value(
+                     tempData.data(),
                      vxCellCenter,
                      vyCellCenter,
                      vzCellCenter,
-                     factor*incomingCell->get_value(vxCellCenter, vyCellCenter, vzCellCenter,popID),
+                     factor*incomingCell->get_value(incomingData, vxCellCenter, vyCellCenter, vzCellCenter, popID),
                      popID
                   );
                } else {
                   // Flowing in, bounce off.
                   cell->increment_value(
+                     tempData.data(),
                      vxCellCenter - 2.0*vNormal*nx,
                      vyCellCenter - 2.0*vNormal*ny,
                      vzCellCenter - 2.0*vNormal*nz,
-                     factor*incomingCell->get_value(vxCellCenter, vyCellCenter, vzCellCenter,popID),
+                     factor*incomingCell->get_value(incomingData, vxCellCenter, vyCellCenter, vzCellCenter, popID),
                      popID
                   );
                }
@@ -546,6 +553,12 @@ namespace SBC {
          } // for-loop over velocity blocks
          blockParameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
       } // for-loop over spatial cells
+      
+      for (uint b = 0; b < tempData.size() / WID3; b++)
+      {
+         cell->add_velocity_block(b, popID);
+         cell->set_data(b, popID, tempData.data() + b*WID3);
+      }
    }
    
    /*! Take neighboring distribution and absorb all parts going in the direction opposite to the normal vector given in.
@@ -572,6 +585,7 @@ namespace SBC {
       creal factor = 1.0 / convert<Real>(numberOfCells);
       
       cell->clear(popID);
+      vector<Realf> tempData;
       
       for (size_t i=0; i<numberOfCells; i++) {
          SpatialCell* incomingCell = mpiGrid[cellList[i]];
@@ -586,6 +600,10 @@ namespace SBC {
             creal dvxCell = blockParameters[BlockParams::DVX];
             creal dvyCell = blockParameters[BlockParams::DVY];
             creal dvzCell = blockParameters[BlockParams::DVZ];
+
+            Realf incomingData[WID3];
+            incomingCell->get_data(blockLID, popID, incomingData);
+
             for (uint kc=0; kc<WID; ++kc) 
                for (uint jc=0; jc<WID; ++jc) 
                   for (uint ic=0; ic<WID; ++ic) {
@@ -597,19 +615,21 @@ namespace SBC {
                      if(vNormal >= 0.0) {
                         // Not flowing in, leave as is.
                         cell->increment_value(
+                           tempData.data(),
                            vxCellCenter,
                            vyCellCenter,
                            vzCellCenter,
-                           factor*incomingCell->get_value(vxCellCenter, vyCellCenter, vzCellCenter),
+                           factor*incomingCell->get_value(incomingData, vxCellCenter, vyCellCenter, vzCellCenter),
                            popID
                         );
                      } else {
                         // Flowing in, bounce off.
                         cell->increment_value(
+                           tempData.data(),
                            vxCellCenter,
                            vyCellCenter,
                            vzCellCenter,
-                           factor*quenchingFactor*incomingCell->get_value(vxCellCenter, vyCellCenter, vzCellCenter),
+                           factor*quenchingFactor*incomingCell->get_value(incomingData, vxCellCenter, vyCellCenter, vzCellCenter),
                            popID
                         );
                      }
@@ -617,6 +637,13 @@ namespace SBC {
          } // for-loop over velocity blocks
          blockParameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
       } // for-loop over spatial cells
+
+      for (uint b = 0; b < tempData.size() / WID3; b++)
+      {
+         cell->add_velocity_block(b, popID);
+         cell->set_data(b, popID, tempData.data() + b*WID3);
+      }
+
    }
 
 

@@ -39,10 +39,10 @@ namespace vblock {
 
    template<int PADDING,typename T> void addToFine_x(const T& octant,const T* coarseOffset);
    
-   template<int METHOD,typename REAL> Realf interp_xy(const REAL* pos,Realf* data);
-   template<int METHOD,typename REAL> Realf interp_xz(const REAL* pos,Realf* data);
-   template<int METHOD,typename REAL> Realf interp_yz(const REAL* pos,Realf* data);
-   template<int METHOD,typename REAL> Realf interp_xyz(const REAL* pos,Realf* data);
+   template<int METHOD,typename REAL> Realf interp_xy(const REAL* pos,const Realf* data);
+   template<int METHOD,typename REAL> Realf interp_xz(const REAL* pos,const Realf* data);
+   template<int METHOD,typename REAL> Realf interp_yz(const REAL* pos,const Realf* data);
+   template<int METHOD,typename REAL> Realf interp_xyz(const REAL* pos,const Realf* data);
    
    template<typename T> T index(const T& i,const T& j,const T& k);
    template<typename T> T nbrIndex(const T& i_off,const T& j_off,const T& k_off);

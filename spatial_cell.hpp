@@ -291,10 +291,10 @@ namespace spatial_cell {
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID>& get_velocity_mesh_temporary();
       vmesh::VelocityBlockContainer<vmesh::LocalID>& get_block_container_temporary();
 
-      Realf get_value(const Real vx,const Real vy,const Real vz,const uint popID) const;
-      Realf get_value(const vmesh::GlobalID& blockGID, const unsigned int cell, const uint popID) const;
-      void increment_value(const Real vx,const Real vy,const Real vz,const Realf value,const uint popID);
-      void increment_value(const vmesh::GlobalID& block,const unsigned int cell,const Realf value,const uint popID);
+      Realf get_value(const Realf* data, const Real vx,const Real vy,const Real vz,const uint popID) const;
+      Realf get_value(const Realf* data, const vmesh::GlobalID& blockGID, const unsigned int cell, const uint popID) const;
+      void increment_value(Realf* data, const Real vx,const Real vy,const Real vz,const Realf value,const uint popID);
+      void increment_value(Realf* data, const vmesh::GlobalID& block,const unsigned int cell,const Realf value,const uint popID);
       void set_max_r_dt(const uint popID,const Real& value);
       void set_max_v_dt(const uint popID,const Real& value);
       void refine_block(const vmesh::GlobalID& block,std::map<vmesh::GlobalID,vmesh::LocalID>& insertedBlocks,
@@ -1447,7 +1447,7 @@ namespace spatial_cell {
     * 
     Creates the velocity block at given coordinates if it doesn't exist.
     */
-   inline void SpatialCell::increment_value(const Real vx,const Real vy,const Real vz,
+   inline void SpatialCell::increment_value(Realf* data, const Real vx,const Real vy,const Real vz,
                                             const Realf value,const uint popID) {
       #ifdef DEBUG_SPATIAL_CELL
       if (popID >= populations.size()) {
@@ -1475,10 +1475,7 @@ namespace spatial_cell {
       }
 
       const unsigned int cell = get_velocity_cell(popID,blockGID,vx,vy,vz);
-      Realf temp[WID3];
-      get_data(blockLID, popID, temp);
-      temp[cell] += value;
-      set_data(blockLID, popID, temp);
+      data[cell] += value;
    }
 
    /*!
@@ -1486,7 +1483,8 @@ namespace spatial_cell {
     * 
     Creates the velocity block if it doesn't exist.
     */
-   inline void SpatialCell::increment_value(const vmesh::GlobalID& blockGID,
+   inline void SpatialCell::increment_value(Realf* data,
+                                            const vmesh::GlobalID& blockGID,
                                             const unsigned int cell,
                                             const Realf value,const uint popID) {
       #ifdef DEBUG_SPATIAL_CELL
@@ -1505,12 +1503,9 @@ namespace spatial_cell {
          }
          blockLID = populations[popID].vmesh.getLocalID(blockGID);
       }
-
+      
       std::cerr << "Warning: incrementing spatial cell value in " << __FILE__ << ":" << __LINE__ << std::endl;
-      Realf temp[WID3];
-      get_data(blockLID, popID, temp);
-      temp[cell] += value;
-      set_data(blockLID, popID, temp);
+      data[cell] += value;
    }
 
    /*!
@@ -1518,7 +1513,7 @@ namespace spatial_cell {
     * 
     * Returns 0 if it doesn't exist.
     */
-   inline Realf SpatialCell::get_value(const Real vx, const Real vy, const Real vz,const uint popID) const {
+   inline Realf SpatialCell::get_value(const Realf* data, const Real vx, const Real vy, const Real vz,const uint popID) const {
       #ifdef DEBUG_SPATIAL_CELL
       if (popID >= populations.size()) {
          std::cerr << "ERROR, popID " << popID << " exceeds populations.size() " << populations.size() << " in ";
@@ -1541,12 +1536,10 @@ namespace spatial_cell {
 
       const unsigned int cell = get_velocity_cell(popID, blockGID, vx, vy, vz);
       
-      Realf temp[WID3];
-      get_data(blockLID, popID, temp);
-      return temp[cell];
+      return data[cell];
    }
 
-   inline Realf SpatialCell::get_value(const vmesh::GlobalID& blockGID, const unsigned int cell, const uint popID) const {
+   inline Realf SpatialCell::get_value(const Realf* data, const vmesh::GlobalID& blockGID, const unsigned int cell, const uint popID) const {
       if (count(blockGID, popID) == 0) {
          return 0.0;
       }
@@ -1558,9 +1551,7 @@ namespace spatial_cell {
             << " block_ptr == NULL" << std::endl; 
          abort();
       }
-      Realf temp[WID3];
-      get_data(blockLID, popID, temp);
-      return temp[cell];
+      return data[cell];
    }
 
    inline bool SpatialCell::checkMesh(const uint popID) {
