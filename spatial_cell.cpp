@@ -642,9 +642,17 @@ namespace spatial_cell {
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
-            // TODO: Make pointer to compressed data!!!
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
-            block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * populations[activePopID].blockContainer.size());
+            block_lengths.push_back(sizeof(cBlock) * populations[activePopID].blockContainer.size());
+
+            #ifdef COMP_SIZE
+            vmesh::VelocityBlockContainer<vmesh::LocalID> blockContainer = get_block_container(activePopID);
+            for (size_t b = 0; b < blockContainer.size(); b++)
+            {
+               displacements.push_back((uint8_t*) blockContainer.getBlocks()[b].getCompressedData() - (uint8_t*) this);   
+               block_lengths.push_back(blockContainer.getBlocks()[b].compressedSize());
+            }
+            #endif
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
@@ -660,7 +668,7 @@ namespace spatial_cell {
                
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * this->neighbor_number_of_blocks[i]);
+                  block_lengths.push_back(sizeof(cBlock) * this->neighbor_number_of_blocks[i]);
                }
                
             }

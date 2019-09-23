@@ -26,6 +26,7 @@ class CompressedBlock {
         void clear();
         
         #define COMP_SIZE
+        Compf* getCompressedData() { return data; };
         size_t compressedSize() const;
 
         inline CompressedBlock& operator=(const CompressedBlock& block) {
