@@ -165,6 +165,9 @@ namespace spatial_cell {
       uint ACCSUBCYCLES;        /*!< number of subcyles for each cell*/
       vmesh::LocalID N_blocks;                                       /**< Number of velocity blocks, used when receiving velocity 
                                                                       * mesh from remote neighbors using MPI.*/
+      #ifdef COMP_SIZE
+      vector<uint16_t> blockSizes;
+      #endif
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> vmesh;     /**< Velocity mesh. Contains all velocity blocks that exist 
                                                                       * in this spatial cell. Cells are identified by their unique 
                                                                       * global IDs.*/

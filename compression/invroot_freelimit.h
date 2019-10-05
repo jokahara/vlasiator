@@ -27,6 +27,7 @@ class CompressedBlock {
         
         #define COMP_SIZE
         Compf* getCompressedData() { return data; };
+        void prepareToReceiveData(size_t size) { clear(); if (size > 0) data = (Compf*) malloc(size); };
         size_t compressedSize() const;
 
         inline CompressedBlock& operator=(const CompressedBlock& block) {
