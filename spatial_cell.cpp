@@ -1022,8 +1022,6 @@ namespace spatial_cell {
 
          #ifdef COMP_SIZE
          populations[popID].blockContainer.prepareBlock(populations[popID].blockSizes.data());
-         #else
-         populations[popID].blockContainer.prepareBlock();
          #endif
       }
    }
