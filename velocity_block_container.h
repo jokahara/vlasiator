@@ -53,7 +53,7 @@ namespace vmesh {
       Realf* setData(const LID& blockLID, Realf* array);
       void clearBlock(const LID& blockLID);
       #ifdef COMP_SIZE
-      void prepareBlock(const uint16_t* sizes);
+      void prepareBlock(const LID& blockLID, const uint16_t size);
       #endif
 
       Real* getParameters();
@@ -208,11 +208,8 @@ namespace vmesh {
    
    #ifdef COMP_SIZE
    template<typename LID> inline
-   void VelocityBlockContainer<LID>::prepareBlock(const uint16_t* sizes) {
-      for (LID blockLID = 0; blockLID < numberOfBlocks; blockLID++)
-      {
-         block_data[blockLID].prepareToReceiveData(sizes[blockLID]);
-      }
+   void VelocityBlockContainer<LID>::prepareBlock(const LID& blockLID, const uint16_t size) {
+         block_data[blockLID].prepareToReceiveData(size);
    }
    #endif
 

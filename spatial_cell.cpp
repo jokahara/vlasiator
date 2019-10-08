@@ -624,10 +624,6 @@ namespace spatial_cell {
 
                #ifdef COMP_SIZE
                populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
-               for (vmesh::LocalID blockLID = 0; blockLID < populations[activePopID].N_blocks; blockLID++)
-               {
-                  populations[activePopID].blockSizes[blockLID] = populations[activePopID].blockContainer.getBlocks()[blockLID].compressedSize();
-               }
                #endif
             }
 
@@ -635,12 +631,21 @@ namespace spatial_cell {
             displacements.push_back((uint8_t*) &(populations[activePopID].vmesh.getGrid()[0]) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::GlobalID) * populations[activePopID].vmesh.size());
 
-            #ifdef COMP_SIZE
+         }
+
+         #ifdef COMP_SIZE
+         if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_LIST_STAGE3) != 0) {
+            if(!receiving) {
+               for (vmesh::LocalID blockLID = 0; blockLID < populations[activePopID].N_blocks; blockLID++)
+               {
+                  populations[activePopID].blockSizes[blockLID] = populations[activePopID].blockContainer.getBlocks()[blockLID].compressedSize();
+               }
+            }
             // send block sizes
             displacements.push_back((uint8_t*) populations[activePopID].blockSizes.data() - (uint8_t*) this);
             block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
-            #endif
          }
+         #endif
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_WITH_CONTENT_STAGE1) !=0) {
             //Communicate size of list so that buffers can be allocated on receiving side
@@ -1021,7 +1026,7 @@ namespace spatial_cell {
          parameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
 
          #ifdef COMP_SIZE
-         populations[popID].blockContainer.prepareBlock(populations[popID].blockSizes.data());
+         populations[popID].blockContainer.prepareBlock(blockLID, populations[popID].blockSizes[blockLID]);
          #endif
       }
    }

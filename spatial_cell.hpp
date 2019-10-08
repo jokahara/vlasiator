@@ -93,6 +93,7 @@ namespace spatial_cell {
       const uint64_t CELL_DERIVATIVES         = (1ull<<1);
       const uint64_t VEL_BLOCK_LIST_STAGE1    = (1ull<<2);
       const uint64_t VEL_BLOCK_LIST_STAGE2    = (1ull<<3);
+      const uint64_t VEL_BLOCK_LIST_STAGE3    = (1ull<<5);
       const uint64_t VEL_BLOCK_DATA           = (1ull<<4);
       const uint64_t VEL_BLOCK_PARAMETERS     = (1ull<<6);
       const uint64_t VEL_BLOCK_WITH_CONTENT_STAGE1  = (1ull<<7); 
@@ -167,6 +168,7 @@ namespace spatial_cell {
                                                                       * mesh from remote neighbors using MPI.*/
       #ifdef COMP_SIZE
       std::vector<uint16_t> blockSizes;
+      //std::vector<Compf> tempBlockdata;
       #endif
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> vmesh;     /**< Velocity mesh. Contains all velocity blocks that exist 
                                                                       * in this spatial cell. Cells are identified by their unique 
