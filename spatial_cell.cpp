@@ -605,12 +605,6 @@ namespace spatial_cell {
             //first copy values in case this is the send operation
             populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
 
-            populations[activePopID].blockSizes.clear();
-            for (size_t b = 0; b < populations[activePopID].N_blocks; b++)
-            {
-               populations[activePopID].blockSizes.push_back(populations[activePopID].blockContainer.getBlocks()[b].compressedSize());
-            }
-
             // send velocity block list size
             displacements.push_back((uint8_t*) &(populations[activePopID].N_blocks) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
@@ -623,17 +617,27 @@ namespace spatial_cell {
                populations[activePopID].vmesh.setNewSize(populations[activePopID].N_blocks);
                populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
             } else {
-                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
-                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
+               //resize to correct size (it will avoid reallocation if it is big enough, I assume)
+               populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
+
+               #ifdef COMP_SIZE
+               populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
+               for (vmesh::LocalID blockLID = 0; blockLID < populations[activePopID].N_blocks; blockLID++)
+               {
+                  populations[activePopID].blockSizes[blockLID] = populations[activePopID].blockContainer.getBlocks()[blockLID].compressedSize();
+               }
+               #endif
             }
 
             // send velocity block list
             displacements.push_back((uint8_t*) &(populations[activePopID].vmesh.getGrid()[0]) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::GlobalID) * populations[activePopID].vmesh.size());
 
+            #ifdef COMP_SIZE
             // send block sizes
             displacements.push_back((uint8_t*) populations[activePopID].blockSizes.data() - (uint8_t*) this);
-            block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].N);
+            block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
+            #endif
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_WITH_CONTENT_STAGE1) !=0) {
@@ -653,25 +657,17 @@ namespace spatial_cell {
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
-         #ifdef COMP_SIZE
+            #ifdef COMP_SIZE
             cBlock* blocks = get_block_container(activePopID).getBlocks();
-            for (size_t b = 0; b < get_block_container(activePopID).size(); b++)
+            for (vmesh::LocalID b = 0; b < get_block_container(activePopID).size(); b++)
             {
-               if (blocks[b].getCompressedData() != NULL)
-               {
-                  displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
-                  block_lengths.push_back(blocks[b].compressedSize());
-               }
-               else
-               {
-                  displacements.push_back(NULL);
-                  block_lengths.push_back(0);
-               }
+               displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
+               block_lengths.push_back(blocks[b].compressedSize());
             }
-         #else
+            #else
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
             block_lengths.push_back(sizeof(cBlock) * populations[activePopID].blockContainer.size());
-         #endif
+            #endif
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
@@ -697,9 +693,9 @@ namespace spatial_cell {
                      }
                   }*/
                #else
+               #endif
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(cBlock) * this->neighbor_number_of_blocks[i]);
-               #endif
                }
                
             }
