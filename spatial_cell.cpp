@@ -615,7 +615,9 @@ namespace spatial_cell {
             if (receiving) {
                //mpi_number_of_blocks transferred earlier
                populations[activePopID].vmesh.setNewSize(populations[activePopID].N_blocks);
+               #ifdef COMP_SIZE
                populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
+               #endif
             } else {
                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
