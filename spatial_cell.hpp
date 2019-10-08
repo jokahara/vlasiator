@@ -93,7 +93,6 @@ namespace spatial_cell {
       const uint64_t CELL_DERIVATIVES         = (1ull<<1);
       const uint64_t VEL_BLOCK_LIST_STAGE1    = (1ull<<2);
       const uint64_t VEL_BLOCK_LIST_STAGE2    = (1ull<<3);
-      const uint64_t VEL_BLOCK_LIST_STAGE3    = (1ull<<5);
       const uint64_t VEL_BLOCK_DATA           = (1ull<<4);
       const uint64_t VEL_BLOCK_PARAMETERS     = (1ull<<6);
       const uint64_t VEL_BLOCK_WITH_CONTENT_STAGE1  = (1ull<<7); 
@@ -285,6 +284,9 @@ namespace spatial_cell {
       uint64_t get_cell_memory_capacity();
       uint64_t get_cell_memory_size();
       void merge_values(const uint popID);
+      #ifdef COMP_SIZE
+      void prepare_block_sizes(const uint popID);
+      #endif
       void prepare_to_receive_blocks(const uint popID);
       bool shrink_to_fit();
       size_t size(const uint popID) const;

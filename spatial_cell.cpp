@@ -578,6 +578,16 @@ namespace spatial_cell {
       return populations[popID].max_dt[species::MAXVDT];
    }
 
+   // Store block sizes before sending MPI datatype
+   void SpatialCell::prepare_block_sizes(const uint popID) {
+
+      populations[popID].blockSizes.resize(populations[popID].N_blocks);
+      for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].N_blocks; blockLID++)
+      {
+         populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
+      }
+   }
+
    /** Get MPI datatype for sending the cell data.
     * @param cellID Spatial cell (dccrg) ID.
     * @param sender_rank Rank of the MPI process sending data from this cell.
@@ -615,37 +625,23 @@ namespace spatial_cell {
             if (receiving) {
                //mpi_number_of_blocks transferred earlier
                populations[activePopID].vmesh.setNewSize(populations[activePopID].N_blocks);
-               #ifdef COMP_SIZE
-               populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
-               #endif
             } else {
                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
-
-               #ifdef COMP_SIZE
-               populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
-               #endif
             }
 
             // send velocity block list
             displacements.push_back((uint8_t*) &(populations[activePopID].vmesh.getGrid()[0]) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::GlobalID) * populations[activePopID].vmesh.size());
 
-         }
-
-         #ifdef COMP_SIZE
-         if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_LIST_STAGE3) != 0) {
-            if(!receiving) {
-               for (vmesh::LocalID blockLID = 0; blockLID < populations[activePopID].N_blocks; blockLID++)
-               {
-                  populations[activePopID].blockSizes[blockLID] = populations[activePopID].blockContainer.getBlocks()[blockLID].compressedSize();
-               }
-            }
+            #ifdef COMP_SIZE
+            populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
             // send block sizes
             displacements.push_back((uint8_t*) populations[activePopID].blockSizes.data() - (uint8_t*) this);
             block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
+            #endif
          }
-         #endif
+
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_WITH_CONTENT_STAGE1) !=0) {
             //Communicate size of list so that buffers can be allocated on receiving side
@@ -665,8 +661,8 @@ namespace spatial_cell {
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
             #ifdef COMP_SIZE
-            cBlock* blocks = get_block_container(activePopID).getBlocks();
-            for (vmesh::LocalID b = 0; b < get_block_container(activePopID).size(); b++)
+            cBlock* blocks = populations[activePopID].blockContainer.getBlocks();
+            for (vmesh::LocalID b = 0; b < size(activePopID); b++)
             {
                if (populations[activePopID].blockSizes[b] > 0)
                {
