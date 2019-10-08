@@ -669,14 +669,14 @@ namespace spatial_cell {
             for (vmesh::LocalID b = 0; b < get_block_container(activePopID).size(); b++)
             {
                displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
-               block_lengths.push_back(blocks[b].compressedSize());
+               block_lengths.push_back(populations[activePopID].blockSizes[b]);
             }
             #else
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
             block_lengths.push_back(sizeof(cBlock) * populations[activePopID].blockContainer.size());
             #endif
          }
-
+         #ifndef COMP_SIZE
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
             /*We are actually transferring the data of a
             * neighbor. The values of neighbor_block_data
@@ -687,26 +687,13 @@ namespace spatial_cell {
             // this->neighbor_number_of_blocks has been initialized to 0, on other ranks it can stay that way.
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
-               
-               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-               #ifdef COMP_SIZE
-               /*
-                  for (size_t b = 0; b < get_block_container(activePopID).size(); b++)
-                  {
-                     if (this->neighbor_block_data[i].getCompressedData() != NULL)
-                     {
-                        displacements.push_back((uint8_t*) this->neighbor_block_data[i].getCompressedData() - (uint8_t*) this);   
-                        block_lengths.push_back(this->neighbor_block_data[i].compressedSize());
-                     }
-                  }*/
-               #else
-               #endif
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(cBlock) * this->neighbor_number_of_blocks[i]);
                }
                
             }
          }
+         #endif
 
          // send  spatial cell parameters
          if ((SpatialCell::mpi_transfer_type & Transfer::CELL_PARAMETERS)!=0){
