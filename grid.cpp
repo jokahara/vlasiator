@@ -472,7 +472,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             CellID cell_id=outgoing_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
             if (cell_id%num_part_transfers!=transfer_part) {
-               cell->prepare_block_sizes(p);
+               cell->prepare_to_transfer_blocks(p);
             }
          }
 
@@ -513,6 +513,16 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             // it will not be used anymore. NOTE: Only clears memory allocated 
             // to the active population.
             if (cell_id % num_part_transfers == transfer_part) cell->clear(p);
+         }
+         if (receives > 0) {
+            for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
+               CellID cell_id=incoming_cells_list[i];
+               SpatialCell* cell = mpiGrid[cell_id];
+               if (cell_id % num_part_transfers == transfer_part) {
+                  // move temporary data to block container
+                  cell->finalize_transfer(p);
+               }
+            }
          }
       } // for-loop over populations
    } // for-loop over transfer parts
