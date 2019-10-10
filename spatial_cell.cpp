@@ -1029,15 +1029,8 @@ namespace spatial_cell {
       Compf* data = populations[popID].tempBlockdata.data();
       for (vmesh::LocalID blockLID = 0; blockLID < size(popID); blockLID++)
       {
-         if (populations[popID].blockSizes[blockLID] > 0)
-         {
-            blocks[blockLID].prepareToReceiveData(populations[popID].blockSizes[blockLID]);
-            Compf* b = blocks[blockLID].getCompressedData();
-            for (int c = 0; c < populations[popID].blockSizes[blockLID]; c++)
-            {
-               b[c] = *data++;
-            }
-         }
+         blocks[blockLID].setCompressedData(data, populations[popID].blockSizes[blockLID]);
+         data += populations[popID].blockSizes[blockLID];
       }
 
       populations[popID].tempBlockdata.clear();
