@@ -581,7 +581,7 @@ namespace spatial_cell {
    // Store block sizes before sending MPI datatype
    void SpatialCell::prepare_to_transfer_blocks(const uint popID) {
 
-      populations[popID].blockSizes.resize(populations[popID].N_blocks);
+      populations[popID].blockSizes.resize(populations[popID].blockContainer.size());
       for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].N_blocks; blockLID++)
       {
          populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
@@ -667,7 +667,7 @@ namespace spatial_cell {
                if (populations[activePopID].blockSizes[b] > 0)
                {
                   displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
-                  block_lengths.push_back(populations[activePopID].blockSizes[b]);
+                  block_lengths.push_back(sizeof(Compf) * populations[activePopID].blockSizes[b]);
                }
             }
             #else
@@ -1016,6 +1016,13 @@ namespace spatial_cell {
          #endif
       }
    }
+
+
+   #ifdef COMP_SIZE
+   void SpatialCell::finalize_transfer(const uint popID) {
+      populations[popID].blockSizes.clear();
+   }
+   #endif
 
    void SpatialCell::refine_block(const vmesh::GlobalID& blockGID,std::map<vmesh::GlobalID,vmesh::LocalID>& insertedBlocks,const uint popID) {
       #ifdef DEBUG_SPATIAL_CELL

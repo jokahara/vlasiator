@@ -166,7 +166,7 @@ namespace spatial_cell {
       vmesh::LocalID N_blocks;                                       /**< Number of velocity blocks, used when receiving velocity 
                                                                       * mesh from remote neighbors using MPI.*/
       #ifdef COMP_SIZE
-      std::vector<uint8_t> blockSizes;
+      std::vector<uint16_t> blockSizes;
       std::vector<Compf> tempBlockdata;
       #endif
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> vmesh;     /**< Velocity mesh. Contains all velocity blocks that exist 
