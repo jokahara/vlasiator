@@ -578,21 +578,13 @@ namespace spatial_cell {
       return populations[popID].max_dt[species::MAXVDT];
    }
 
-   // Store block sizes and move data to temporary location before sending MPI datatype
+   // Store block sizes before sending MPI datatype
    void SpatialCell::prepare_to_transfer_blocks(const uint popID) {
+
       populations[popID].blockSizes.resize(populations[popID].N_blocks);
-      populations[popID].tempBlockdata.clear();
-      
-      cBlock* blocks = populations[popID].blockContainer.getBlocks();
       for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].N_blocks; blockLID++)
       {
-         uint8_t size = blocks[blockLID].compressedSize() / sizeof(Compf);
-         populations[popID].blockSizes[blockLID] = size;
-         for (int i = 0; i < size; i++)
-         {
-            populations[popID].tempBlockdata.push_back(blocks[blockLID].getCompressedData()[i]);
-         }
-         blocks[blockLID].clear();
+         populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
       }
    }
 
@@ -646,7 +638,7 @@ namespace spatial_cell {
             populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
             // send block sizes
             displacements.push_back((uint8_t*) &(populations[activePopID].blockSizes[0]) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(uint8_t) * populations[activePopID].blockSizes.size());
+            block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
             #endif
          }
 
@@ -669,8 +661,15 @@ namespace spatial_cell {
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
             #ifdef COMP_SIZE
-            displacements.push_back((uint8_t*) &(populations[activePopID].tempBlockdata[0]) - (uint8_t*) this);   
-            block_lengths.push_back(sizeof(Compf) * populations[activePopID].tempBlockdata.size());
+            cBlock* blocks = populations[activePopID].blockContainer.getBlocks();
+            for (vmesh::LocalID b = 0; b < size(activePopID); b++)
+            {
+               if (populations[activePopID].blockSizes[b] > 0)
+               {
+                  displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
+                  block_lengths.push_back(populations[activePopID].blockSizes[b]);
+               }
+            }
             #else
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
             block_lengths.push_back(sizeof(cBlock) * populations[activePopID].blockContainer.size());
@@ -1011,31 +1010,12 @@ namespace spatial_cell {
          parameters[BlockParams::VZCRD] = get_velocity_block_vz_min(popID,blockGID);
          populations[popID].vmesh.getCellSize(blockGID,&(parameters[BlockParams::DVX]));
          parameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
+
+         #ifdef COMP_SIZE
+         populations[popID].blockContainer.prepareBlock(blockLID, populations[popID].blockSizes[blockLID]);
+         #endif
       }
-      #ifdef COMP_SIZE
-      int n_data = 0;
-      for (vmesh::LocalID blockLID=0; blockLID<size(popID); ++blockLID) {
-         n_data += populations[popID].blockSizes[blockLID];
-      }
-      populations[popID].tempBlockdata.resize(n_data);
-      #endif
    }
-
-   #ifdef COMP_SIZE
-   void SpatialCell::finalize_transfer(const uint popID) {
-      populations[popID].blockContainer.setSize(populations[popID].blockSizes.size());
-      cBlock* blocks = populations[popID].blockContainer.getBlocks();
-
-      Compf* data = populations[popID].tempBlockdata.data();
-      for (vmesh::LocalID blockLID = 0; blockLID < size(popID); blockLID++)
-      {
-         blocks[blockLID].setCompressedData(data, populations[popID].blockSizes[blockLID]);
-         data += populations[popID].blockSizes[blockLID];
-      }
-
-      populations[popID].tempBlockdata.clear();
-   }
-   #endif
 
    void SpatialCell::refine_block(const vmesh::GlobalID& blockGID,std::map<vmesh::GlobalID,vmesh::LocalID>& insertedBlocks,const uint popID) {
       #ifdef DEBUG_SPATIAL_CELL
