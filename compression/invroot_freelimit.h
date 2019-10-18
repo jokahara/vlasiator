@@ -41,7 +41,7 @@ class CompressedBlock {
         void prepareToReceiveData(size_t size) { 
             clear(); 
             if (size == 0) return;
-            data = (Compf*) malloc(size * sizeof(Compf));
+            data = (Compf*) malloc(size);
         }
 
         inline CompressedBlock& operator=(const CompressedBlock& block) {

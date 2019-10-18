@@ -467,7 +467,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          //Transfer velocity block list
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);
          mpiGrid.continue_balance_load();
-
+         #ifdef COMP_SIZE
          for (unsigned int i=0; i<outgoing_cells_list.size(); i++) {
             CellID cell_id=outgoing_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
@@ -475,7 +475,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
                cell->prepare_to_transfer_blocks(p);
             }
          }
-
+         #endif
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE2);
          mpiGrid.continue_balance_load();
       
@@ -514,6 +514,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             // to the active population.
             if (cell_id % num_part_transfers == transfer_part) cell->clear(p);
          }
+         #ifdef COMP_SIZE
          if (receives > 0) {
             for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
                CellID cell_id=incoming_cells_list[i];
@@ -524,6 +525,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
                }
             }
          }
+         #endif
       } // for-loop over populations
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");

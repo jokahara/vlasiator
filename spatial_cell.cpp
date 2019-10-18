@@ -578,6 +578,7 @@ namespace spatial_cell {
       return populations[popID].max_dt[species::MAXVDT];
    }
 
+   #ifdef COMP_SIZE
    // Store block sizes before sending MPI datatype
    void SpatialCell::prepare_to_transfer_blocks(const uint popID) {
 
@@ -587,6 +588,7 @@ namespace spatial_cell {
          populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
       }
    }
+   #endif
 
    /** Get MPI datatype for sending the cell data.
     * @param cellID Spatial cell (dccrg) ID.
@@ -667,7 +669,7 @@ namespace spatial_cell {
                if (populations[activePopID].blockSizes[b] > 0)
                {
                   displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
-                  block_lengths.push_back(sizeof(Compf) * populations[activePopID].blockSizes[b]);
+                  block_lengths.push_back(populations[activePopID].blockSizes[b]);
                }
             }
             #else
@@ -686,10 +688,10 @@ namespace spatial_cell {
             // this->neighbor_number_of_blocks has been initialized to 0, on other ranks it can stay that way.
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
+               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(cBlock) * this->neighbor_number_of_blocks[i]);
                }
-               
             }
          }
          #endif
