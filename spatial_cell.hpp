@@ -285,7 +285,7 @@ namespace spatial_cell {
       uint64_t get_cell_memory_size();
       void merge_values(const uint popID);
       #ifdef COMP_SIZE
-      void prepare_to_transfer_blocks(const uint popID);
+      void prepare_block_sizes(const uint popID);
       void finalize_transfer(const uint popID);
       #endif
       void prepare_to_receive_blocks(const uint popID);
