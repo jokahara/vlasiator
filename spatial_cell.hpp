@@ -167,7 +167,7 @@ namespace spatial_cell {
                                                                       * mesh from remote neighbors using MPI.*/
       #ifdef COMP_SIZE
       std::vector<uint16_t> blockSizes;
-      std::vector<Compf> tempBlockdata;
+      //std::vector<Compf> tempBlockdata;
       #endif
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> vmesh;     /**< Velocity mesh. Contains all velocity blocks that exist 
                                                                       * in this spatial cell. Cells are identified by their unique 
@@ -340,6 +340,7 @@ namespace spatial_cell {
       std::array<cBlock*,MAX_NEIGHBORS_PER_DIM> neighbor_block_data;       /**< Pointers for translation operator. We can point to neighbor
                                                                                * cell block data. We do not allocate memory for the pointer.*/
       std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_number_of_blocks;
+
       std::map<int,std::set<int>> face_neighbor_ranks;
       uint sysBoundaryFlag;                                                   /**< What type of system boundary does the cell belong to. 
                                                                                * Enumerated in the sysboundarytype namespace's enum.*/
@@ -1590,7 +1591,7 @@ namespace spatial_cell {
       populations[popID].blockContainer.clear();
       #ifdef COMP_SIZE
       populations[popID].blockSizes.clear();
-      populations[popID].tempBlockdata.clear();
+      //populations[popID].tempBlockdata.clear();
       #endif
     }
 

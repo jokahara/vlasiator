@@ -645,6 +645,9 @@ void update_remote_mapping_contribution(
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
    vector<cBlock*> receiveBuffers;
+   #ifdef COMP_SIZE
+   vector<cBlock*> sendBuffers;
+   #endif
 
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
@@ -711,8 +714,27 @@ void update_remote_mapping_contribution(
             //mapped to if 1) it is a valid target,
             //2) is remote cell, 3) if the source cell in center was
             //translated
-            ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
+
+            #ifdef COMP_SIZE
+            cBlock* blocks = pcell->get_blocks(popID);
+            ccell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
+            // copy data to temporary buffer
+            for (int b = 0; b < ccell->neighbor_number_of_blocks[0]; b++)
+            {
+               ccell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
+               Compf* buffer = ccell->neighbor_block_data[0][b].getCompressedData();
+               for (int i = 0; i < blocks[b].compressedSize() / sizeof(Compf); i++)
+               {
+                  buffer[i] = blocks[b].getCompressedData()[i];
+               }
+               //blocks[b].clear();
+            }
+            sendBuffers.push_back(mcell->neighbor_block_data[0]);
+            #else
+            ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
+            #endif
+
             send_cells.push_back(p_ngbr);
          }
       if (m_ngbr != INVALID_CELLID &&
@@ -723,6 +745,12 @@ void update_remote_mapping_contribution(
          //we will here allocate a receive buffer, since we need to aggregate values
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
+         #ifdef COMP_SIZE
+         // allocate largest possible size for the buffer
+         for (int i = 0; i < mcell->neighbor_number_of_blocks[0]; i++) {
+            mcell->neighbor_block_data[0][i].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
+         }
+         #endif
          
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data[0]);
@@ -781,8 +809,17 @@ void update_remote_mapping_contribution(
 
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
+      #ifdef COMP_SIZE
+      receiveBuffers[c]->clear();
+      #endif
       aligned_free(receiveBuffers[c]);
    }
+   #ifdef COMP_SIZE
+   for (size_t c=0; c < sendBuffers.size(); ++c) {
+      receiveBuffers[c]->clear();
+      aligned_free(receiveBuffers[c]);
+   }
+   #endif
 
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
