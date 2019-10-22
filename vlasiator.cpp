@@ -859,12 +859,13 @@ int main(int argn,char* args[]) {
       }
       
       phiprof::start("Spatial-space");
-      
+      std::cerr << "calculateSpatialTranslation" << std::endl;
       if( P::propagateVlasovTranslation) {
          calculateSpatialTranslation(mpiGrid,P::dt);
       } else {
          calculateSpatialTranslation(mpiGrid,0.0);
       }
+      std::cerr << "done!" << std::endl;
       
       phiprof::stop("Spatial-space",computedCells,"Cells");
       
