@@ -646,7 +646,7 @@ void update_remote_mapping_contribution(
    vector<CellID> send_cells;
    vector<cBlock*> receiveBuffers;
    #ifdef COMP_SIZE
-   vector<cBlock*> sendBuffers;
+   //vector<cBlock*> sendBuffers;
    #endif
 
 //    int myRank;   
@@ -715,7 +715,7 @@ void update_remote_mapping_contribution(
             //2) is remote cell, 3) if the source cell in center was
             //translated
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
-
+            /*
             #ifdef COMP_SIZE
             cBlock* blocks = pcell->get_blocks(popID);
             ccell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
@@ -732,8 +732,8 @@ void update_remote_mapping_contribution(
             }
             sendBuffers.push_back(mcell->neighbor_block_data[0]);
             #else
+            #endif*/
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
-            #endif
 
             send_cells.push_back(p_ngbr);
          }
