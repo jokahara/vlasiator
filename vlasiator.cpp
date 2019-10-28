@@ -865,7 +865,7 @@ int main(int argn,char* args[]) {
       } else {
          calculateSpatialTranslation(mpiGrid,0.0);
       }
-      std::cerr << "done!" << std::endl;
+      std::cerr << "Done!" << std::endl;
       
       phiprof::stop("Spatial-space",computedCells,"Cells");
       

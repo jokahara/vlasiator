@@ -97,6 +97,7 @@ void calculateSpatialTranslation(
       phiprof::stop("compute-mapping-z");
 
       trans_timer=phiprof::initializeTimer("update_remote-z","MPI");
+      std::cerr << "update remote z" << std::endl;
       phiprof::start("update_remote-z");
       if(P::amrMaxSpatialRefLevel == 0) {
          update_remote_mapping_contribution(mpiGrid, 2,+1,popID);
@@ -129,6 +130,7 @@ void calculateSpatialTranslation(
       phiprof::stop("compute-mapping-x");
 
       trans_timer=phiprof::initializeTimer("update_remote-x","MPI");
+      std::cerr << "update remote x" << std::endl;
       phiprof::start("update_remote-x");
       if(P::amrMaxSpatialRefLevel == 0) {
          update_remote_mapping_contribution(mpiGrid, 0,+1,popID);
@@ -161,6 +163,7 @@ void calculateSpatialTranslation(
       phiprof::stop("compute-mapping-y");
       
       trans_timer=phiprof::initializeTimer("update_remote-y","MPI");
+      std::cerr << "update remote y" << std::endl;
       phiprof::start("update_remote-y");
       if(P::amrMaxSpatialRefLevel == 0) {
          update_remote_mapping_contribution(mpiGrid, 1,+1,popID);
@@ -173,6 +176,7 @@ void calculateSpatialTranslation(
      
    }
 
+   std::cerr << "done!" << std::endl;
    // MPI_Barrier(MPI_COMM_WORLD);
    // bailout(true, "", __FILE__, __LINE__);
 }
