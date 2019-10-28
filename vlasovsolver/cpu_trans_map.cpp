@@ -783,13 +783,13 @@ void update_remote_mapping_contribution(
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
           
 #pragma omp for 
-         for(unsigned int cell = 0; cell<spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
+         for(unsigned int block = 0; block<spatial_cell->get_number_of_velocity_blocks(popID); ++block) {
             Realf temp[WID3], buffer[WID3];
-            spatial_cell->get_data(cell, popID, temp);
-            receiveBuffers[c][cell].get(buffer);
+            spatial_cell->get_data(block, popID, temp);
+            receiveBuffers[c][block].get(buffer);
 
             for (size_t i = 0; i < WID3; i++) temp[i] += buffer[i];
-            spatial_cell->set_data(cell, popID, temp);
+            spatial_cell->set_data(block, popID, temp);
          }
       }
        
@@ -816,8 +816,8 @@ void update_remote_mapping_contribution(
    }
    #ifdef COMP_SIZE
    for (size_t c=0; c < sendBuffers.size(); ++c) {
-      receiveBuffers[c]->clear();
-      aligned_free(receiveBuffers[c]);
+      sendBuffers[c]->clear();
+      aligned_free(sendBuffers[c]);
    }
    #endif
 
