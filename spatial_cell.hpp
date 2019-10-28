@@ -167,7 +167,6 @@ namespace spatial_cell {
                                                                       * mesh from remote neighbors using MPI.*/
       #ifdef COMP_SIZE
       std::vector<uint16_t> blockSizes;
-      //std::vector<Compf> tempBlockdata;
       #endif
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> vmesh;     /**< Velocity mesh. Contains all velocity blocks that exist 
                                                                       * in this spatial cell. Cells are identified by their unique 
@@ -1591,7 +1590,6 @@ namespace spatial_cell {
       populations[popID].blockContainer.clear();
       #ifdef COMP_SIZE
       populations[popID].blockSizes.clear();
-      //populations[popID].tempBlockdata.clear();
       #endif
     }
 

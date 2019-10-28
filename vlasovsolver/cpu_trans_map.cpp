@@ -759,6 +759,7 @@ void update_remote_mapping_contribution(
 
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
+   std::cerr << "NEIGHBOR_VEL_BLOCK_DATA" << std::endl;
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
    case 0:
@@ -774,6 +775,7 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
+   std::cerr << "done" << std::endl;
    
 #pragma omp parallel
    {
@@ -817,7 +819,7 @@ void update_remote_mapping_contribution(
    #ifdef COMP_SIZE
    for (size_t c=0; c < sendBuffers.size(); ++c) {
       sendBuffers[c]->clear();
-      aligned_free(sendBuffers[c]);
+      aligned_free(receiveBuffers[c]);
    }
    #endif
 

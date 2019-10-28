@@ -466,14 +466,11 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          SpatialCell::setCommunicatedSpecies(p);
 
          //Transfer velocity block list
-         std::cerr << "VEL_BLOCK_LIST_STAGE1" << std::endl;
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);
          mpiGrid.continue_balance_load();
-         std::cerr << "VEL_BLOCK_LIST_STAGE2" << std::endl;
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE2);
          mpiGrid.continue_balance_load();
       
-         std::cerr << "preparing receives" << std::endl;
          int receives = 0;
          for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
             CellID cell_id=incoming_cells_list[i];
@@ -493,14 +490,12 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             phiprof::stop("Preparing receives", 0, "Spatial cells");
          }
          
-         std::cerr << "ALL_DATA" << std::endl;
          //do the actual transfer of data for the set of cells to be transferred
          phiprof::start("transfer_all_data");
          SpatialCell::set_mpi_transfer_type(Transfer::ALL_DATA);
          mpiGrid.continue_balance_load();
          phiprof::stop("transfer_all_data");
 
-         std::cerr << "finalize transfer" << std::endl;
          // Free memory for cells that have been sent (the block data)
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
             CellID cell_id=outgoing_cells_list[i];
@@ -525,6 +520,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          }
          #endif
       } // for-loop over populations
+      std::cerr << "done" << std::endl;
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");
 
