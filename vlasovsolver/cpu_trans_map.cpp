@@ -675,7 +675,6 @@ void update_remote_mapping_contribution(
 
       SpatialCell *ccell = mpiGrid[local_cells[c]];
       //default values, to avoid any extra sends and receives
-      std::cerr << "default values" << std::endl;
       for (uint i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
          if(i == 0) {
             ccell->neighbor_block_data.at(i) = ccell->get_blocks(popID);
@@ -730,7 +729,7 @@ void update_remote_mapping_contribution(
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
          // allocate largest possible size for the buffer
-         std::cerr << "prepare to receive data" << std::endl;
+         std::cerr << "prepare to receive data: " << mcell->neighbor_number_of_blocks[0] << std::endl;
          for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
             mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
          }
