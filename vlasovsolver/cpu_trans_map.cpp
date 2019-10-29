@@ -793,12 +793,12 @@ void update_remote_mapping_contribution(
       }
    }
 
-   std::cerr << "free buffers: " << receiveBuffers.size() << std::endl;
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       std::cerr << "free: " << receiveBuffers[c] << std::endl;
       aligned_free(receiveBuffers[c]);
    }
+   std::cerr << "frees done" << std::endl;
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
    // MPI_Barrier(MPI_COMM_WORLD);
