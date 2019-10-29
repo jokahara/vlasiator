@@ -36,6 +36,14 @@ class CompressedBlock {
             data[0] = 0;
         }
 
+        inline void prepareToReceiveData(size_t size, bool clearData) { 
+            if (clearData) clear(); 
+            else data = NULL;
+            if (size == 0) return;
+            data = (Compf*) malloc(size);
+            data[0] = 0;
+        }
+
         inline CompressedBlock& operator=(const CompressedBlock& block) {
             clear();
             

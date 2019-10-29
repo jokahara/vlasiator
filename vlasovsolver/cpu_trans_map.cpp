@@ -669,7 +669,7 @@ void update_remote_mapping_contribution(
       }
    }
 
-   std::cerr << "prepare arrays" << std::endl;
+   std::cerr << "prepare arrays: " << local_cells.size() << std::endl;
    //TODO: prepare arrays, make parallel by avoidin push_back and by checking also for other stuff
    for (size_t c = 0; c < local_cells.size(); ++c) {
 
@@ -731,13 +731,10 @@ void update_remote_mapping_contribution(
          // allocate largest possible size for the buffer
          std::cerr << "prepare to receive data: " << mcell->neighbor_number_of_blocks[0] << std::endl;
          for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
-            Compf* p = mcell->neighbor_block_data[0][b].getCompressedData();
-            p = NULL;
-            mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
+            mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET), false);
          }
          #endif
          
-         std::cerr << "push back" << std::endl;
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data[0]);
          std::cerr << "all done" << std::endl;
