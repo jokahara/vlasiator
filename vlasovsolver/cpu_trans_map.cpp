@@ -712,9 +712,9 @@ void update_remote_mapping_contribution(
             //mapped to if 1) it is a valid target,
             //2) is remote cell, 3) if the source cell in center was
             //translated
-            std::cerr << "send data" << std::endl;
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
+            std::cerr << "send data" << ccell->neighbor_number_of_blocks[0] << std::endl;
 
             send_cells.push_back(p_ngbr);
          }
@@ -724,7 +724,6 @@ void update_remote_mapping_contribution(
          //Receive data that mcell mapped to ccell to this local cell
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
-         std::cerr << "aligned_malloc" << std::endl;
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
@@ -766,6 +765,7 @@ void update_remote_mapping_contribution(
       //reduce data: sum received data in the data array to 
       // the target grid in the temporary block container
       for (size_t c=0; c < receive_cells.size(); ++c) {
+         std::cerr << "reduce data" << std::endl;
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
           
 #pragma omp for 
@@ -776,13 +776,15 @@ void update_remote_mapping_contribution(
 
             for (size_t i = 0; i < WID3; i++) temp[i] += buffer[i];
             spatial_cell->set_data(block, popID, temp);
-	    receiveBuffers[c][block].clear();
+	         receiveBuffers[c][block].clear();
          }
+         std::cerr << "reduced" << std::endl;
       }
        
       // send cell data is set to zero. This is to avoid double copy if
       // one cell is the neighbor on bot + and - side to the same
       // process
+      std::cerr << "clear send" << std::endl;
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
            
@@ -792,8 +794,10 @@ void update_remote_mapping_contribution(
             spatial_cell->clear_block(cell, popID);
          }
       }
+      std::cerr << "cleared" << std::endl;
    }
 
+   std::cerr << "free buffers" << std::endl;
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
