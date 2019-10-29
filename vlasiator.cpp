@@ -442,6 +442,7 @@ int main(int argn,char* args[]) {
    // FULL_NEIGHBORHOOD. Block lists up to date for
    // VLASOV_SOLVER_NEIGHBORHOOD (but dist function has not been communicated)
    phiprof::start("Init grids");
+   std::cerr << "initializeGrids" << std::endl;
    initializeGrids(
       argn,
       args,
@@ -458,6 +459,7 @@ int main(int argn,char* args[]) {
       *project
    );
    isSysBoundaryCondDynamic = sysBoundaries.isDynamic();
+   std::cerr << "done" << std::endl;
    
    const std::vector<CellID>& cells = getLocalCells();
    
