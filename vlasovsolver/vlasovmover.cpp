@@ -83,12 +83,10 @@ void calculateSpatialTranslation(
     // ------------- SLICE - map dist function in Z --------------- //
    if(P::zcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
-      std::cerr << "VEL_BLOCK_DATA?" << std::endl;
       phiprof::start(trans_timer);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
-      std::cerr << "done?" << std::endl;
 
       phiprof::start("compute-mapping-z");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -99,10 +97,11 @@ void calculateSpatialTranslation(
       phiprof::stop("compute-mapping-z");
 
       trans_timer=phiprof::initializeTimer("update_remote-z","MPI");
-      std::cerr << "update remote z" << std::endl;
       phiprof::start("update_remote-z");
       if(P::amrMaxSpatialRefLevel == 0) {
+         std::cerr << "update remote z +1" << std::endl;
          update_remote_mapping_contribution(mpiGrid, 2,+1,popID);
+         std::cerr << "update remote z -1" << std::endl;
          update_remote_mapping_contribution(mpiGrid, 2,-1,popID);
       } else {
          update_remote_mapping_contribution_amr(mpiGrid, 2,+1,popID);

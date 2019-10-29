@@ -714,7 +714,7 @@ void update_remote_mapping_contribution(
             //translated
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
-            std::cerr << "send data" << ccell->neighbor_number_of_blocks[0] << std::endl;
+            std::cerr << "send: " << ccell->neighbor_number_of_blocks[0] << std::endl;
 
             send_cells.push_back(p_ngbr);
          }
