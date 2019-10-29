@@ -822,7 +822,6 @@ void update_remote_mapping_contribution(
       #endif
       aligned_free(receiveBuffers[c]);
    }
-   #ifdef COMP_SIZE
 
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
