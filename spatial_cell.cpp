@@ -716,8 +716,11 @@ namespace spatial_cell {
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
                      displacements.push_back((uint8_t*) this->neighbor_block_data[i][b].getCompressedData() - (uint8_t*) this);
-                     if (receiving) block_lengths.push_back(sizeof(Compf) * (WID3 + OFFSET));
-                     else block_lengths.push_back(this->neighbor_block_data[i][b].compressedSize());
+                     if (receiving) {
+                        block_lengths.push_back(sizeof(Compf) * (WID3 + OFFSET));
+                     } else {
+                        block_lengths.push_back(this->neighbor_block_data[i][b].compressedSize());
+                     }
                   }
                   
                   #else
