@@ -688,6 +688,7 @@ namespace spatial_cell {
             #endif
          }
 
+         /*
          #ifdef COMP_SIZE
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_SIZES) != 0) {
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
@@ -698,7 +699,7 @@ namespace spatial_cell {
                }
             }
          }
-         #endif
+         #endif*/
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
             /*We are actually transferring the data of a
@@ -714,8 +715,9 @@ namespace spatial_cell {
                   #ifdef COMP_SIZE
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
-                     displacements.push_back((uint8_t*) this->neighbor_block_data[i]->getCompressedData() - (uint8_t*) this);
-                     block_lengths.push_back(this->neighbor_block_sizes[i][b]);
+                     displacements.push_back((uint8_t*) this->neighbor_block_data[i][b].getCompressedData() - (uint8_t*) this);
+                     if (receiving) block_lengths.push_back(sizeof(Compf) * (WID3 + OFFSET));
+                     else block_lengths.push_back(this->neighbor_block_data[i][b].compressedSize());
                   }
                   
                   #else

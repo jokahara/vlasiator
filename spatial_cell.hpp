@@ -111,7 +111,7 @@ namespace spatial_cell {
       const uint64_t CELL_DIMENSIONS          = (1ull<<20);
       const uint64_t CELL_IOLOCALCELLID       = (1ull<<21);
       const uint64_t NEIGHBOR_VEL_BLOCK_DATA  = (1ull<<22);
-      const uint64_t NEIGHBOR_VEL_BLOCK_SIZES = (1ull<<29);
+      //const uint64_t NEIGHBOR_VEL_BLOCK_SIZES = (1ull<<29);
       const uint64_t CELL_HALL_TERM           = (1ull<<23);
       const uint64_t CELL_P                   = (1ull<<24);
       const uint64_t CELL_PDT2                = (1ull<<25);
