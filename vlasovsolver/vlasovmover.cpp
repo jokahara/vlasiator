@@ -111,11 +111,13 @@ void calculateSpatialTranslation(
 
    }
    
+   std::cerr << "map in X: " << P::xcells_ini << std::endl;
    // ------------- SLICE - map dist function in X --------------- //
    if(P::xcells_ini > 1){
       
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
       phiprof::start(trans_timer);
+      std::cerr << "VEL_BLOCK_DATA" << std::endl;
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
 
       mpiGrid.set_send_single_cells(false);
@@ -124,6 +126,7 @@ void calculateSpatialTranslation(
       
       phiprof::start("compute-mapping-x");
       if(P::amrMaxSpatialRefLevel == 0) {
+      std::cerr << "trans_map" << std::endl;
          trans_map_1d(mpiGrid,local_propagated_cells, remoteTargetCellsx, 0,dt,popID); // map along x//
       } else {
          trans_map_1d_amr(mpiGrid,local_propagated_cells, remoteTargetCellsx, 0,dt,popID); // map along x//
@@ -144,6 +147,7 @@ void calculateSpatialTranslation(
 
    }
 
+   std::cerr << "map in Y: " << P::ycells_ini << std::endl;
    // ------------- SLICE - map dist function in Y --------------- //
    if(P::ycells_ini > 1) {
       
