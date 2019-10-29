@@ -792,6 +792,7 @@ void update_remote_mapping_contribution(
 
             for (size_t i = 0; i < WID3; i++) temp[i] += buffer[i];
             spatial_cell->set_data(block, popID, temp);
+	    receiveBuffers[c][block].clear();
          }
       }
        
@@ -811,18 +812,8 @@ void update_remote_mapping_contribution(
 
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
-      #ifdef COMP_SIZE
-      receiveBuffers[c]->clear();
-      #endif
       aligned_free(receiveBuffers[c]);
    }
-   #ifdef COMP_SIZE
-   for (size_t c=0; c < sendBuffers.size(); ++c) {
-      sendBuffers[c]->clear();
-      aligned_free(receiveBuffers[c]);
-   }
-   #endif
-
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
    // MPI_Barrier(MPI_COMM_WORLD);
