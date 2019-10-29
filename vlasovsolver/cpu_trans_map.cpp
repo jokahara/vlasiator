@@ -765,7 +765,6 @@ void update_remote_mapping_contribution(
       //reduce data: sum received data in the data array to 
       // the target grid in the temporary block container
       for (size_t c=0; c < receive_cells.size(); ++c) {
-         std::cerr << "reduce data" << std::endl;
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
           
 #pragma omp for 
@@ -778,13 +777,11 @@ void update_remote_mapping_contribution(
             spatial_cell->set_data(block, popID, temp);
 	         receiveBuffers[c][block].clear();
          }
-         std::cerr << "reduced" << std::endl;
       }
        
       // send cell data is set to zero. This is to avoid double copy if
       // one cell is the neighbor on bot + and - side to the same
       // process
-      std::cerr << "clear send" << std::endl;
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
            
@@ -794,12 +791,12 @@ void update_remote_mapping_contribution(
             spatial_cell->clear_block(cell, popID);
          }
       }
-      std::cerr << "cleared" << std::endl;
    }
 
-   std::cerr << "free buffers" << std::endl;
+   std::cerr << "free buffers: " << receiveBuffers.size() << std::endl;
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
+      std::cerr << "free: " << receiveBuffers[c] << std::endl;
       aligned_free(receiveBuffers[c]);
    }
    // MPI_Barrier(MPI_COMM_WORLD);
