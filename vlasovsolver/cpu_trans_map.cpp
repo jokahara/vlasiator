@@ -731,6 +731,8 @@ void update_remote_mapping_contribution(
          // allocate largest possible size for the buffer
          std::cerr << "prepare to receive data: " << mcell->neighbor_number_of_blocks[0] << std::endl;
          for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
+            Compf* p = mcell->neighbor_block_data[0][b].getCompressedData();
+            p = NULL;
             mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
          }
          #endif
