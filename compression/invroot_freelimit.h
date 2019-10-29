@@ -29,7 +29,7 @@ class CompressedBlock {
         size_t compressedSize() const;
 
         Compf* getCompressedData() { return data; };
-        void prepareToReceiveData(size_t size) { 
+        inline void prepareToReceiveData(size_t size) { 
             clear(); 
             if (size == 0) return;
             data = (Compf*) malloc(size);

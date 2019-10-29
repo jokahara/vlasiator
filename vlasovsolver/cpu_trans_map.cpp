@@ -645,9 +645,6 @@ void update_remote_mapping_contribution(
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
    vector<cBlock*> receiveBuffers;
-   #ifdef COMP_SIZE
-   //vector<cBlock*> sendBuffers;
-   #endif
 
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
@@ -657,6 +654,7 @@ void update_remote_mapping_contribution(
    // MPI_Barrier(MPI_COMM_WORLD);
    
    //normalize
+   std::cerr << "normalize" << std::endl;
    if(direction > 0) direction = 1;
    if(direction < 0) direction = -1;
    for (size_t c=0; c<remote_cells.size(); ++c) {
@@ -672,6 +670,7 @@ void update_remote_mapping_contribution(
       }
    }
 
+   std::cerr << "prepare arrays" << std::endl;
    //TODO: prepare arrays, make parallel by avoidin push_back and by checking also for other stuff
    for (size_t c = 0; c < local_cells.size(); ++c) {
 
@@ -715,24 +714,6 @@ void update_remote_mapping_contribution(
             //2) is remote cell, 3) if the source cell in center was
             //translated
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
-            /*
-            #ifdef COMP_SIZE
-            cBlock* blocks = pcell->get_blocks(popID);
-            ccell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
-            // copy data to temporary buffer
-            for (int b = 0; b < ccell->neighbor_number_of_blocks[0]; b++)
-            {
-               ccell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
-               Compf* buffer = ccell->neighbor_block_data[0][b].getCompressedData();
-               for (int i = 0; i < blocks[b].compressedSize() / sizeof(Compf); i++)
-               {
-                  buffer[i] = blocks[b].getCompressedData()[i];
-               }
-               //blocks[b].clear();
-            }
-            sendBuffers.push_back(mcell->neighbor_block_data[0]);
-            #else
-            #endif*/
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
 
             send_cells.push_back(p_ngbr);
@@ -747,8 +728,8 @@ void update_remote_mapping_contribution(
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
          // allocate largest possible size for the buffer
-         for (int i = 0; i < mcell->neighbor_number_of_blocks[0]; i++) {
-            mcell->neighbor_block_data[0][i].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
+         for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
+            mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
          }
          #endif
          
@@ -758,8 +739,8 @@ void update_remote_mapping_contribution(
    }
 
    // Do communication
-   SpatialCell::setCommunicatedSpecies(popID);
    std::cerr << "NEIGHBOR_VEL_BLOCK_DATA" << std::endl;
+   SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
    case 0:
