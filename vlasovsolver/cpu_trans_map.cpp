@@ -654,7 +654,6 @@ void update_remote_mapping_contribution(
    // MPI_Barrier(MPI_COMM_WORLD);
    
    //normalize
-   std::cerr << "normalize" << std::endl;
    if(direction > 0) direction = 1;
    if(direction < 0) direction = -1;
    for (size_t c=0; c<remote_cells.size(); ++c) {
@@ -676,6 +675,7 @@ void update_remote_mapping_contribution(
 
       SpatialCell *ccell = mpiGrid[local_cells[c]];
       //default values, to avoid any extra sends and receives
+      std::cerr << "default values" << std::endl;
       for (uint i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
          if(i == 0) {
             ccell->neighbor_block_data.at(i) = ccell->get_blocks(popID);
@@ -713,6 +713,7 @@ void update_remote_mapping_contribution(
             //mapped to if 1) it is a valid target,
             //2) is remote cell, 3) if the source cell in center was
             //translated
+            std::cerr << "send data" << std::endl;
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
 
@@ -724,17 +725,21 @@ void update_remote_mapping_contribution(
          //Receive data that mcell mapped to ccell to this local cell
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
+         std::cerr << "aligned_malloc" << std::endl;
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
          // allocate largest possible size for the buffer
+         std::cerr << "prepare to receive data" << std::endl;
          for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
             mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET));
          }
          #endif
          
+         std::cerr << "push back" << std::endl;
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data[0]);
+         std::cerr << "all done" << std::endl;
       }
    }
 
