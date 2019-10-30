@@ -578,21 +578,6 @@ namespace spatial_cell {
       return populations[popID].max_dt[species::MAXVDT];
    }
 
-   #ifdef COMP_SIZE
-   // Store block sizes before sending MPI datatype
-   void SpatialCell::prepare_block_sizes(const uint popID) {
-      if (populations[popID].N_blocks != populations[popID].blockContainer.size()) {
-         std::cerr << "ERROR: N_blocks != blockContainer.size(): " 
-            << populations[popID].N_blocks << " != " << populations[popID].blockContainer.size() << std::endl;
-      }
-      
-      populations[popID].blockSizes.resize(populations[popID].N_blocks);
-      for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].N_blocks; blockLID++) {
-         populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
-      }
-   }
-   #endif
-
    /** Get MPI datatype for sending the cell data.
     * @param cellID Spatial cell (dccrg) ID.
     * @param sender_rank Rank of the MPI process sending data from this cell.
@@ -630,26 +615,14 @@ namespace spatial_cell {
             if (receiving) {
                //mpi_number_of_blocks transferred earlier
                populations[activePopID].vmesh.setNewSize(populations[activePopID].N_blocks);
-               #ifdef COMP_SIZE
-               populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
-               #endif
             } else {
                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
-               #ifdef COMP_SIZE
-               prepare_block_sizes(activePopID);
-               #endif
             }
 
             // send velocity block list
             displacements.push_back((uint8_t*) &(populations[activePopID].vmesh.getGrid()[0]) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::GlobalID) * populations[activePopID].vmesh.size());
-
-            #ifdef COMP_SIZE
-            // send block sizes
-            displacements.push_back((uint8_t*) &(populations[activePopID].blockSizes[0]) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
-            #endif
          }
 
 
@@ -692,10 +665,8 @@ namespace spatial_cell {
                }
             }
             for (vmesh::LocalID b = 0; b < populations[activePopID].blockContainer.size(); b++){
-               if (populations[activePopID].blockSizes[b] > 0) { // TODO: remove if
-                  displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
-                  block_lengths.push_back(populations[activePopID].blockSizes[b]);
-               }
+               displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
+               block_lengths.push_back(populations[activePopID].blockSizes[b]);
             }
             #else
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
@@ -723,9 +694,7 @@ namespace spatial_cell {
                      } else {
                         block_lengths.push_back(this->neighbor_block_data[i][b].compressedSize());
                      }
-                     
                   }
-                  
                   #else
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(cBlock) * this->neighbor_number_of_blocks[i]);
@@ -1053,8 +1022,16 @@ namespace spatial_cell {
       }
    }
 
-
    #ifdef COMP_SIZE
+   // Store block sizes before sending the data
+   void SpatialCell::prepare_block_sizes(const uint popID) {
+      populations[popID].blockSizes.resize(populations[popID].N_blocks);
+
+      for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].N_blocks; blockLID++) {
+         populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
+      }
+   }
+
    void SpatialCell::finalize_transfer(const uint popID) {
       populations[popID].blockSizes.clear();
    }

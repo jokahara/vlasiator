@@ -488,6 +488,13 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             phiprof::start("Preparing receives");
             phiprof::stop("Preparing receives", 0, "Spatial cells");
          }
+
+         #ifdef COMP_SIZE
+         phiprof::start("transfer_block_sizes");
+         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES);
+         mpiGrid.continue_balance_load();
+         phiprof::stop("transfer_block_sizes");
+         #endif
          
          //do the actual transfer of data for the set of cells to be transferred
          phiprof::start("transfer_all_data");

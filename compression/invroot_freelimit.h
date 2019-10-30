@@ -27,18 +27,17 @@ class CompressedBlock {
         
         #define COMP_SIZE
         size_t compressedSize() const;
+        inline bool hasData() const {
+            if (!data || data[0] == 0) return false;
 
-        Compf* getCompressedData() { return data; };
-        inline void prepareToReceiveData(size_t size) { 
-            clear(); 
-            if (size == 0) return;
-            data = (Compf*) malloc(size);
-            data[0] = 0;
+            return true;
         }
 
-        inline void prepareToReceiveData(size_t size, bool clearData) { 
+        inline Compf* getCompressedData() { return data; };
+        inline void prepareToReceiveData(size_t size, bool clearData=true) { 
             if (clearData) clear(); 
             else data = NULL;
+
             if (size == 0) return;
             data = (Compf*) malloc(size);
             data[0] = 0;
@@ -161,8 +160,7 @@ inline void CompressedBlock::set(float* array) {
 }
 
 inline void CompressedBlock::get(float *array) const {
-    if (!data ||!data[0])
-    {
+    if (!hasData()) {
         for (int i = 0; i < BLOCK_SIZE; i++) 
             array[i] = 0.f;
         return;
@@ -209,7 +207,7 @@ inline void CompressedBlock::clear() {
 }
 
 inline size_t CompressedBlock::compressedSize() const { 
-    if(!data ||!data[0]) return 0;
+    if(!hasData()) return 0;
 
     Compf n_values = *data & 0xFF;
     return (n_values >= BLOCK_SIZE - 4) 
