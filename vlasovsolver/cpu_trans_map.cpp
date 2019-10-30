@@ -753,30 +753,6 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-   
-   if (send_cells.size > 0)
-   {
-      Realf buff[WID3];
-      mpiGrid[send_cells[0]]->get_data(0, popID, buff);
-      std::cerr << "send: ";
-      for (int i = 0; i < 64; i++)
-      {
-         std::cerr << buff[i];
-      }
-      std::cerr << std::endl;
-   }
-
-   if (receiveBuffers.size > 0)
-   {
-      Realf buff[WID3];
-      receiveBuffers[0][0].get(buff);
-      std::cerr << "received: ";
-      for (int i = 0; i < 64; i++)
-      {
-         std::cerr << buff[i];
-      }
-      std::cerr << std::endl;
-   }
 
 #pragma omp parallel
    {
