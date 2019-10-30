@@ -692,7 +692,7 @@ namespace spatial_cell {
                }
             }
             for (vmesh::LocalID b = 0; b < populations[activePopID].blockContainer.size(); b++){
-               if (populations[activePopID].blockSizes[b] > 0) {
+               if (populations[activePopID].blockSizes[b] > 0) { // TODO: remove if
                   displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
                   block_lengths.push_back(populations[activePopID].blockSizes[b]);
                }

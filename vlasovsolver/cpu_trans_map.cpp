@@ -713,7 +713,6 @@ void update_remote_mapping_contribution(
             //translated
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
-            std::cerr << "send: " << ccell->neighbor_number_of_blocks[0] << std::endl;
 
             send_cells.push_back(p_ngbr);
          }
@@ -727,7 +726,6 @@ void update_remote_mapping_contribution(
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
          // allocate largest possible size for the buffer
-         std::cerr << "prepare to receive data: " << mcell->neighbor_number_of_blocks[0] << std::endl;
          for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
             mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET), false);
          }
@@ -739,7 +737,6 @@ void update_remote_mapping_contribution(
    }
 
    // Do communication
-   std::cerr << "NEIGHBOR_VEL_BLOCK_DATA" << std::endl;
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
@@ -756,7 +753,6 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-   std::cerr << "done" << std::endl;
    
 #pragma omp parallel
    {
@@ -795,7 +791,7 @@ void update_remote_mapping_contribution(
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
    }
-   std::cerr << "frees done" << std::endl;
+   
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
    // MPI_Barrier(MPI_COMM_WORLD);

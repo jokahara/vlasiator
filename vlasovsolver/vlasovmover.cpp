@@ -101,9 +101,7 @@ void calculateSpatialTranslation(
       trans_timer=phiprof::initializeTimer("update_remote-z","MPI");
       phiprof::start("update_remote-z");
       if(P::amrMaxSpatialRefLevel == 0) {
-         std::cerr << "update remote z +1" << std::endl;
          update_remote_mapping_contribution(mpiGrid, 2,+1,popID);
-         std::cerr << "update remote z -1" << std::endl;
          update_remote_mapping_contribution(mpiGrid, 2,-1,popID);
       } else {
          update_remote_mapping_contribution_amr(mpiGrid, 2,+1,popID);
@@ -113,7 +111,6 @@ void calculateSpatialTranslation(
 
    }
    
-   std::cerr << "map in X: " << P::xcells_ini << std::endl;
    // ------------- SLICE - map dist function in X --------------- //
    if(P::xcells_ini > 1){
       
@@ -123,14 +120,12 @@ void calculateSpatialTranslation(
       mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
-      std::cerr << "VEL_BLOCK_DATA" << std::endl;
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
       
       phiprof::start("compute-mapping-x");
       if(P::amrMaxSpatialRefLevel == 0) {
-      std::cerr << "trans_map" << std::endl;
          trans_map_1d(mpiGrid,local_propagated_cells, remoteTargetCellsx, 0,dt,popID); // map along x//
       } else {
          trans_map_1d_amr(mpiGrid,local_propagated_cells, remoteTargetCellsx, 0,dt,popID); // map along x//
@@ -138,7 +133,6 @@ void calculateSpatialTranslation(
       phiprof::stop("compute-mapping-x");
 
       trans_timer=phiprof::initializeTimer("update_remote-x","MPI");
-      std::cerr << "update remote x" << std::endl;
       phiprof::start("update_remote-x");
       if(P::amrMaxSpatialRefLevel == 0) {
          update_remote_mapping_contribution(mpiGrid, 0,+1,popID);
@@ -151,7 +145,6 @@ void calculateSpatialTranslation(
 
    }
 
-   std::cerr << "map in Y: " << P::ycells_ini << std::endl;
    // ------------- SLICE - map dist function in Y --------------- //
    if(P::ycells_ini > 1) {
       
@@ -174,7 +167,6 @@ void calculateSpatialTranslation(
       phiprof::stop("compute-mapping-y");
       
       trans_timer=phiprof::initializeTimer("update_remote-y","MPI");
-      std::cerr << "update remote y" << std::endl;
       phiprof::start("update_remote-y");
       if(P::amrMaxSpatialRefLevel == 0) {
          update_remote_mapping_contribution(mpiGrid, 1,+1,popID);
@@ -187,7 +179,6 @@ void calculateSpatialTranslation(
      
    }
 
-   std::cerr << "done!" << std::endl;
    // MPI_Barrier(MPI_COMM_WORLD);
    // bailout(true, "", __FILE__, __LINE__);
 }

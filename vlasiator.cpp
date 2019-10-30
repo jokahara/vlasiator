@@ -849,6 +849,7 @@ int main(int argn,char* args[]) {
          }
       }
       
+      std::cerr << "applySysBoundaryVlasovConditions" << std::endl;
       phiprof::start("Propagate");
       //Propagate the state of simulation forward in time by dt:
       if (P::propagateVlasovTranslation || P::propagateVlasovAcceleration ) {
@@ -857,6 +858,7 @@ int main(int argn,char* args[]) {
          phiprof::stop("Update system boundaries (Vlasov pre-translation)");
          addTimedBarrier("barrier-boundary-conditions");
       }
+      std::cerr << "Done!" << std::endl;
       
       phiprof::start("Spatial-space");
       std::cerr << "calculateSpatialTranslation" << std::endl;
@@ -883,6 +885,7 @@ int main(int argn,char* args[]) {
       );
       phiprof::stop("Compute interp moments");
       
+      std::cerr << "applySysBoundaryVlasovConditions" << std::endl;
       // Apply boundary conditions      
       if (P::propagateVlasovTranslation || P::propagateVlasovAcceleration ) {
          phiprof::start("Update system boundaries (Vlasov post-translation)");
@@ -890,6 +893,7 @@ int main(int argn,char* args[]) {
          phiprof::stop("Update system boundaries (Vlasov post-translation)");
          addTimedBarrier("barrier-boundary-conditions");
       }
+      std::cerr << "done" << std::endl;
       
       // Propagate fields forward in time by dt. This needs to be done before the
       // moments for t + dt are computed (field uses t and t+0.5dt)
