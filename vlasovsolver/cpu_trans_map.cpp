@@ -754,6 +754,30 @@ void update_remote_mapping_contribution(
       break;
    }
    
+   if (send_cells.size > 0)
+   {
+      Realf buff[WID3];
+      mpiGrid[send_cells[0]]->get_data(0, popID, buff);
+      std::cerr << "send: ";
+      for (int i = 0; i < 64; i++)
+      {
+         std::cerr << buff[i];
+      }
+      std::cerr << std::endl;
+   }
+
+   if (receiveBuffers.size > 0)
+   {
+      Realf buff[WID3];
+      receiveBuffers[0][0].get(buff);
+      std::cerr << "received: ";
+      for (int i = 0; i < 64; i++)
+      {
+         std::cerr << buff[i];
+      }
+      std::cerr << std::endl;
+   }
+
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
