@@ -669,7 +669,6 @@ void update_remote_mapping_contribution(
       }
    }
 
-   std::cerr << "prepare arrays: " << local_cells.size() << std::endl;
    //TODO: prepare arrays, make parallel by avoidin push_back and by checking also for other stuff
    for (size_t c = 0; c < local_cells.size(); ++c) {
 
@@ -736,7 +735,6 @@ void update_remote_mapping_contribution(
          
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data[0]);
-         std::cerr << "all done" << std::endl;
       }
    }
 
@@ -795,7 +793,6 @@ void update_remote_mapping_contribution(
 
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
-      std::cerr << "free: " << receiveBuffers[c] << std::endl;
       aligned_free(receiveBuffers[c]);
    }
    std::cerr << "frees done" << std::endl;

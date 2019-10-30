@@ -669,6 +669,20 @@ namespace spatial_cell {
             block_lengths.push_back(sizeof(vmesh::GlobalID)*this->velocity_block_with_content_list_size);
          }
 
+         #ifdef COMP_SIZE
+         if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_SIZES) != 0) {
+            populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
+            if (receiving) {
+               populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
+            } else {
+               prepare_block_sizes(activePopID);
+            }
+            // send block sizes
+            displacements.push_back((uint8_t*) &(populations[activePopID].blockSizes[0]) - (uint8_t*) this);
+            block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
+         }
+         #endif
+
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
             #ifdef COMP_SIZE
             cBlock* blocks = populations[activePopID].blockContainer.getBlocks();

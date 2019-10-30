@@ -460,7 +460,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          }
       }
 
-      std::cerr << "starting data transfer" << std::endl;
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
@@ -520,7 +519,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          }
          #endif
       } // for-loop over populations
-      std::cerr << "done" << std::endl;
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");
 
