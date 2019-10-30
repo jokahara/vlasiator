@@ -686,10 +686,13 @@ namespace spatial_cell {
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
             #ifdef COMP_SIZE
             cBlock* blocks = populations[activePopID].blockContainer.getBlocks();
-            for (vmesh::LocalID b = 0; b < populations[activePopID].blockContainer.size(); b++)
-            {
-               if (populations[activePopID].blockSizes[b] > 0)
-               {
+            if (receiving) {
+               for (vmesh::LocalID b = 0; b < populations[activePopID].blockContainer.size(); b++) {
+                  blocks[b].prepareToReceiveData(populations[activePopID].blockSizes[b]);
+               }
+            }
+            for (vmesh::LocalID b = 0; b < populations[activePopID].blockContainer.size(); b++){
+               if (populations[activePopID].blockSizes[b] > 0) {
                   displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
                   block_lengths.push_back(populations[activePopID].blockSizes[b]);
                }
@@ -1047,10 +1050,6 @@ namespace spatial_cell {
          parameters[BlockParams::VZCRD] = get_velocity_block_vz_min(popID,blockGID);
          populations[popID].vmesh.getCellSize(blockGID,&(parameters[BlockParams::DVX]));
          parameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
-
-         #ifdef COMP_SIZE
-         populations[popID].blockContainer.prepareBlock(blockLID, populations[popID].blockSizes[blockLID]);
-         #endif
       }
    }
 
