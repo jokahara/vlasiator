@@ -116,7 +116,6 @@ void calculateSpatialTranslation(
       
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
       phiprof::start(trans_timer);
-
       mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);

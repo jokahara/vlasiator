@@ -645,6 +645,7 @@ void update_remote_mapping_contribution(
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
    vector<cBlock*> receiveBuffers;
+   vector<vector<uint8_t> > sizeBuffers;
 
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
@@ -666,6 +667,7 @@ void update_remote_mapping_contribution(
             ccell->neighbor_block_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
+         ccell->neighbor_block_sizes[0] = NULL;
       }
    }
 
@@ -681,6 +683,7 @@ void update_remote_mapping_contribution(
             ccell->neighbor_block_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
+         ccell->neighbor_block_sizes[0] = NULL;
       }
       CellID p_ngbr = INVALID_CELLID;
       CellID m_ngbr = INVALID_CELLID;
@@ -714,6 +717,10 @@ void update_remote_mapping_contribution(
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
 
+            #ifdef COMP_SIZE
+            ccell->neighbor_block_sizes[0] = pcell->prepare_block_sizes(popID);
+            #endif
+
             send_cells.push_back(p_ngbr);
          }
       if (m_ngbr != INVALID_CELLID &&
@@ -725,10 +732,8 @@ void update_remote_mapping_contribution(
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
-         // allocate largest possible size for the buffer
-         for (int b = 0; b < mcell->neighbor_number_of_blocks[0]; b++) {
-            mcell->neighbor_block_data[0][b].prepareToReceiveData(sizeof(Compf) * (WID3 + OFFSET), false);
-         }
+         sizeBuffers.push_back(vector<uint8_t>(mcell->neighbor_number_of_blocks[0]));
+         mcell->neighbor_block_sizes[0] = &sizeBuffers[sizeBuffers.size()];
          #endif
          
          receive_cells.push_back(local_cells[c]);
@@ -737,6 +742,23 @@ void update_remote_mapping_contribution(
    }
 
    // Do communication
+   SpatialCell::setCommunicatedSpecies(popID);
+   SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_SIZES);
+   switch(dimension) {
+   case 0:
+      if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_X_NEIGHBORHOOD_ID);
+      if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_X_NEIGHBORHOOD_ID);
+      break;
+   case 1:
+      if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_Y_NEIGHBORHOOD_ID);
+      if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Y_NEIGHBORHOOD_ID);
+      break;
+   case 2:
+      if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_Z_NEIGHBORHOOD_ID);
+      if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
+      break;
+   }
+
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {

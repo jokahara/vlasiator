@@ -597,7 +597,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       phiprof::start(timer);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES,true);
       mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);

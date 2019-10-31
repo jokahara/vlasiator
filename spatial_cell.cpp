@@ -644,15 +644,14 @@ namespace spatial_cell {
 
          #ifdef COMP_SIZE
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_SIZES) != 0) {
-            populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
             if (receiving) {
-               populations[activePopID].blockSizes.resize(populations[activePopID].N_blocks);
+               populations[activePopID].blockSizes.resize(populations[activePopID].blockContainer.size());
             } else {
                prepare_block_sizes(activePopID);
             }
             // send block sizes
             displacements.push_back((uint8_t*) &(populations[activePopID].blockSizes[0]) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(uint16_t) * populations[activePopID].blockSizes.size());
+            block_lengths.push_back(sizeof(uint8_t) * populations[activePopID].blockSizes.size());
          }
          #endif
 
@@ -674,6 +673,19 @@ namespace spatial_cell {
             #endif
          }
 
+         #ifdef COMP_SIZE
+         if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_SIZES) != 0) {
+            const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
+            if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
+               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
+                  // block sizes are already prepared
+                  displacements.push_back((uint8_t*) neighbor_block_sizes[i]->data() - (uint8_t*) this);
+                  block_lengths.push_back(sizeof(uint8_t) * neighbor_number_of_blocks[i]);
+               }
+            }
+         }
+         #endif
+
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
             /*We are actually transferring the data of a
             * neighbor. The values of neighbor_block_data
@@ -686,14 +698,15 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   #ifdef COMP_SIZE
+                  if (receiving) {
+                     for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++) {
+                        this->neighbor_block_data[i][b].prepareToReceiveData(this->neighbor_block_sizes[i]->at(b));
+                     }
+                  }
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
                      displacements.push_back((uint8_t*) this->neighbor_block_data[i][b].getCompressedData() - (uint8_t*) this);
-                     if (receiving) {
-                        block_lengths.push_back(sizeof(Compf) * (WID3 + OFFSET));
-                     } else {
-                        block_lengths.push_back(this->neighbor_block_data[i][b].compressedSize());
-                     }
+                     block_lengths.push_back(this->neighbor_block_sizes[i]->at(b));
                   }
                   #else
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
@@ -1024,12 +1037,13 @@ namespace spatial_cell {
 
    #ifdef COMP_SIZE
    // Store block sizes before sending the data
-   void SpatialCell::prepare_block_sizes(const uint popID) {
-      populations[popID].blockSizes.resize(populations[popID].N_blocks);
+   std::vector<uint8_t>* SpatialCell::prepare_block_sizes(const uint popID) {
+      populations[popID].blockSizes.resize(populations[popID].blockContainer.size());
 
-      for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].N_blocks; blockLID++) {
+      for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].blockContainer.size(); blockLID++) {
          populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
       }
+      return &populations[popID].blockSizes;
    }
 
    void SpatialCell::finalize_transfer(const uint popID) {
