@@ -858,12 +858,14 @@ int main(int argn,char* args[]) {
          addTimedBarrier("barrier-boundary-conditions");
       }
       
+      cerr << "calculateSpatialTranslation" << endl;
       phiprof::start("Spatial-space");
       if( P::propagateVlasovTranslation) {
          calculateSpatialTranslation(mpiGrid,P::dt);
       } else {
          calculateSpatialTranslation(mpiGrid,0.0);
       }
+      cerr << "done" << endl;
       
       phiprof::stop("Spatial-space",computedCells,"Cells");
       
