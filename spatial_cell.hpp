@@ -168,7 +168,7 @@ namespace spatial_cell {
       vmesh::LocalID N_blocks;                                       /**< Number of velocity blocks, used when receiving velocity 
                                                                       * mesh from remote neighbors using MPI.*/
       #ifdef COMP_SIZE
-      std::vector<uint8_t> blockSizes;
+      std::vector<uint8_t, aligned_allocator<uint8_t,1> > blockSizes;
       #endif
       vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> vmesh;     /**< Velocity mesh. Contains all velocity blocks that exist 
                                                                       * in this spatial cell. Cells are identified by their unique 
@@ -286,7 +286,7 @@ namespace spatial_cell {
       uint64_t get_cell_memory_size();
       void merge_values(const uint popID);
       #ifdef COMP_SIZE
-      std::vector<uint8_t>* prepare_block_sizes(const uint popID);
+      std::vector<uint8_t, aligned_allocator<uint8_t,1> >* prepare_block_sizes(const uint popID);
       void finalize_transfer(const uint popID);
       #endif
       void prepare_to_receive_blocks(const uint popID);
@@ -341,7 +341,7 @@ namespace spatial_cell {
       std::array<cBlock*,MAX_NEIGHBORS_PER_DIM> neighbor_block_data;       /**< Pointers for translation operator. We can point to neighbor
                                                                                * cell block data. We do not allocate memory for the pointer.*/
       std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_number_of_blocks;
-      std::array<std::vector<uint8_t>*,MAX_NEIGHBORS_PER_DIM> neighbor_block_sizes;
+      std::array<std::vector<uint8_t, aligned_allocator<uint8_t,1> >*,MAX_NEIGHBORS_PER_DIM> neighbor_block_sizes;
 
       std::map<int,std::set<int>> face_neighbor_ranks;
       uint sysBoundaryFlag;                                                   /**< What type of system boundary does the cell belong to. 
