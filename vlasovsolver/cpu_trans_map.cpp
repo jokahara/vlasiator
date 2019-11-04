@@ -715,12 +715,12 @@ void update_remote_mapping_contribution(
             //2) is remote cell, 3) if the source cell in center was
             //translated
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
-            ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
 
             #ifdef COMP_SIZE
             ccell->neighbor_block_sizes[0] = pcell->prepare_block_sizes(popID);
             #endif
 
+            ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
             send_cells.push_back(p_ngbr);
          }
       if (m_ngbr != INVALID_CELLID &&
@@ -818,6 +818,7 @@ void update_remote_mapping_contribution(
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
+      aligned_free(sizeBuffers[c]);
    }
    
    // MPI_Barrier(MPI_COMM_WORLD);
