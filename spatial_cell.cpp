@@ -687,7 +687,6 @@ namespace spatial_cell {
          #endif
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
-            cerr << "more displacements" << endl;
             /*We are actually transferring the data of a
             * neighbor. The values of neighbor_block_data
             * and neighbor_number_of_blocks should be set in
@@ -696,21 +695,16 @@ namespace spatial_cell {
             // Send this data only to ranks that contain face neighbors
             // this->neighbor_number_of_blocks has been initialized to 0, on other ranks it can stay that way.
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
-            cerr << "if" << endl;
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
-               cerr << "for" << endl;
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   #ifdef COMP_SIZE
                   cerr << "if the second" << endl;
                   if (receiving) {
-                     cerr << "receiving: " << this->neighbor_block_sizes[i] << endl;
                      for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++) {
                         this->neighbor_block_data[i][b].prepareToReceiveData(this->neighbor_block_sizes[i][b], false);
                      }
                   }
-                  else {
-                     cerr << "sending: " << this->neighbor_block_sizes[i] << endl;
-                  }
+                  cerr << "fore" << endl;
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
                      displacements.push_back((uint8_t*) this->neighbor_block_data[i][b].getCompressedData() - (uint8_t*) this);
