@@ -675,6 +675,7 @@ namespace spatial_cell {
 
          #ifdef COMP_SIZE
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_SIZES) != 0) {
+            cerr << "displacements" << endl;
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
@@ -685,9 +686,9 @@ namespace spatial_cell {
             }
          }
          #endif
-
-         //cerr << "displacements" << endl;
+         
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
+            cerr << "more displacements" << endl;
             /*We are actually transferring the data of a
             * neighbor. The values of neighbor_block_data
             * and neighbor_number_of_blocks should be set in
