@@ -679,7 +679,7 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
-                  displacements.push_back((uint8_t*) &(neighbor_block_sizes[i][0]) - (uint8_t*) this);
+                  displacements.push_back((uint8_t*) &(neighbor_block_sizes[i]->data()[0]) - (uint8_t*) this);
                   block_lengths.push_back(sizeof(uint8_t) * neighbor_number_of_blocks[i]);
                }
             }
