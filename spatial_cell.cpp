@@ -679,6 +679,11 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
+                  if (neighbor_block_sizes[i]->size() != neighbor_number_of_blocks[i])
+                  {
+                     cerr << "ERROR: " << neighbor_block_sizes[i] << " != " << neighbor_block_sizes[i]->size() << endl;
+                  }
+                  
                   displacements.push_back((uint8_t*) &(neighbor_block_sizes[i]->data()[0]) - (uint8_t*) this);
                   block_lengths.push_back(sizeof(uint8_t) * neighbor_number_of_blocks[i]);
                }
@@ -699,9 +704,13 @@ namespace spatial_cell {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   #ifdef COMP_SIZE
                   if (receiving) {
+                     cerr << "receiving: " << neighbor_block_sizes[i] << endl;
                      for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++) {
                         this->neighbor_block_data[i][b].prepareToReceiveData(this->neighbor_block_sizes[i]->at(b));
                      }
+                  }
+                  else {
+                     cerr << "sending: " << neighbor_block_sizes[i] << endl;
                   }
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
