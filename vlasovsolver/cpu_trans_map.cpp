@@ -645,7 +645,7 @@ void update_remote_mapping_contribution(
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
    vector<cBlock*> receiveBuffers;
-   vector<vector<uint8_t, aligned_allocator<uint8_t,1> > > sizeBuffers;
+   vector<uint8_t*> sizeBuffers;
 
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
@@ -732,8 +732,8 @@ void update_remote_mapping_contribution(
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
          mcell->neighbor_block_data[0] = (cBlock*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(cBlock), 1);
          #ifdef COMP_SIZE
-         sizeBuffers.push_back(vector<uint8_t, aligned_allocator<uint8_t,1>>(mcell->neighbor_number_of_blocks[0]));
-         mcell->neighbor_block_sizes[0] = &sizeBuffers[sizeBuffers.size()];
+         mcell->neighbor_block_sizes[0] = (uint8_t*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * sizeof(uint8_t), 1);
+         sizeBuffers.push_back(mcell->neighbor_block_sizes[0]);
          #endif
          
          receive_cells.push_back(local_cells[c]);
@@ -741,10 +741,10 @@ void update_remote_mapping_contribution(
       }
    }
 
-   cerr << "NEIGHBOR_VEL_BLOCK_SIZES" << endl;
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_SIZES);
+   cerr << "NEIGHBOR_VEL_BLOCK_SIZES" << endl;
    switch(dimension) {
    case 0:
       if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_X_NEIGHBORHOOD_ID);

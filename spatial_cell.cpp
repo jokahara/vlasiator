@@ -674,18 +674,14 @@ namespace spatial_cell {
          }
 
          #ifdef COMP_SIZE
+         cerr << "displacements" << endl;
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_SIZES) != 0) {
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
-                  if (neighbor_block_sizes[i]->size() != neighbor_number_of_blocks[i])
-                  {
-                     cerr << "ERROR: " << neighbor_block_sizes[i] << " != " << neighbor_block_sizes[i]->size() << endl;
-                  }
-                  
-                  displacements.push_back((uint8_t*) &(neighbor_block_sizes[i]->data()[0]) - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(uint8_t) * neighbor_number_of_blocks[i]);
+                  displacements.push_back((uint8_t*) this->neighbor_block_sizes[i] - (uint8_t*) this);
+                  block_lengths.push_back(sizeof(uint8_t) * this->neighbor_number_of_blocks[i]);
                }
             }
          }
@@ -704,18 +700,18 @@ namespace spatial_cell {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   #ifdef COMP_SIZE
                   if (receiving) {
-                     cerr << "receiving: " << neighbor_block_sizes[i] << endl;
+                     cerr << "receiving: " << this->neighbor_block_sizes[i] << endl;
                      for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++) {
-                        this->neighbor_block_data[i][b].prepareToReceiveData(this->neighbor_block_sizes[i]->at(b));
+                        this->neighbor_block_data[i][b].prepareToReceiveData(this->neighbor_block_sizes[i][b], false);
                      }
                   }
                   else {
-                     cerr << "sending: " << neighbor_block_sizes[i] << endl;
+                     cerr << "sending: " << this->neighbor_block_sizes[i] << endl;
                   }
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
                      displacements.push_back((uint8_t*) this->neighbor_block_data[i][b].getCompressedData() - (uint8_t*) this);
-                     block_lengths.push_back(this->neighbor_block_sizes[i]->at(b));
+                     block_lengths.push_back(this->neighbor_block_sizes[i][b]);
                   }
                   #else
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
@@ -1046,13 +1042,13 @@ namespace spatial_cell {
 
    #ifdef COMP_SIZE
    // Store block sizes before sending the data
-   std::vector<uint8_t, aligned_allocator<uint8_t,1> >* SpatialCell::prepare_block_sizes(const uint popID) {
+   uint8_t* SpatialCell::prepare_block_sizes(const uint popID) {
       populations[popID].blockSizes.resize(populations[popID].blockContainer.size());
 
       for (vmesh::LocalID blockLID = 0; blockLID < populations[popID].blockContainer.size(); blockLID++) {
          populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
       }
-      return &populations[popID].blockSizes;
+      return populations[popID].blockSizes.data();
    }
 
    void SpatialCell::finalize_transfer(const uint popID) {
