@@ -744,7 +744,6 @@ void update_remote_mapping_contribution(
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_SIZES);
-   cerr << "NEIGHBOR_VEL_BLOCK_SIZES" << endl;
    switch(dimension) {
    case 0:
       if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_X_NEIGHBORHOOD_ID);
@@ -760,7 +759,6 @@ void update_remote_mapping_contribution(
       break;
    }
 
-   cerr << "NEIGHBOR_VEL_BLOCK_DATA" << endl;
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
    case 0:

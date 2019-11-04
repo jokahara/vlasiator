@@ -698,13 +698,11 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   #ifdef COMP_SIZE
-                  cerr << "if the second" << endl;
                   if (receiving) {
                      for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++) {
                         this->neighbor_block_data[i][b].prepareToReceiveData(this->neighbor_block_sizes[i][b], false);
                      }
                   }
-                  cerr << "fore" << endl;
                   for (vmesh::LocalID b = 0; b < this->neighbor_number_of_blocks[i]; b++)
                   {
                      displacements.push_back((uint8_t*) this->neighbor_block_data[i][b].getCompressedData() - (uint8_t*) this);
