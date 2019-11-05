@@ -4,7 +4,7 @@
 typedef ushort Compf;
 
 #define BLOCK_SIZE 64
-#define MIN_VALUE 1e-16f
+#define MIN_VALUE 1e-20f
 #define OFFSET 2
 
 class CompressedBlock {
@@ -30,7 +30,7 @@ class CompressedBlock {
         bool hasData() const;
 
         inline Compf* getCompressedData() { return data; };
-        inline void prepareToReceiveData(size_t size, bool clearData=true);
+        inline void prepareToReceiveData(size_t size, bool clearData);
 
         inline CompressedBlock& operator=(const CompressedBlock& block) {
             clear();
