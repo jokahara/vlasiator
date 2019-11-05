@@ -667,6 +667,7 @@ namespace spatial_cell {
                displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
                block_lengths.push_back(populations[activePopID].blockSizes[b]);
             }
+            clear_block_sizes(activePopID);
             #else
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
             block_lengths.push_back(sizeof(cBlock) * populations[activePopID].blockContainer.size());
@@ -1044,10 +1045,6 @@ namespace spatial_cell {
          populations[popID].blockSizes[blockLID] = populations[popID].blockContainer.getBlocks()[blockLID].compressedSize();
       }
       return populations[popID].blockSizes.data();
-   }
-
-   void SpatialCell::finalize_transfer(const uint popID) {
-      populations[popID].blockSizes.clear();
    }
    #endif
 

@@ -774,7 +774,6 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-   cerr << "done" << endl;
 
 #pragma omp parallel
    {
@@ -810,6 +809,7 @@ void update_remote_mapping_contribution(
             // copy received target data to temporary array where target data is stored.
             spatial_cell->clear_block(cell, popID);
          }
+         spatial_cell->clear_block_sizes(popID);
       }
    }
 

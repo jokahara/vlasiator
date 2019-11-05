@@ -287,7 +287,7 @@ namespace spatial_cell {
       void merge_values(const uint popID);
       #ifdef COMP_SIZE
       uint8_t* prepare_block_sizes(const uint popID);
-      void finalize_transfer(const uint popID);
+      void clear_block_sizes(const uint popID);
       #endif
       void prepare_to_receive_blocks(const uint popID);
       bool shrink_to_fit();
@@ -1607,6 +1607,12 @@ namespace spatial_cell {
        
       populations[popID].blockContainer.clearBlock(blockLID);
     }
+
+   #ifdef COMP_SIZE
+   inline void SpatialCell::clear_block_sizes(const uint popID) {
+      populations[popID].blockSizes.clear();
+   }
+   #endif
 
    /*!
     Return the memory consumption in bytes as reported using the size()
