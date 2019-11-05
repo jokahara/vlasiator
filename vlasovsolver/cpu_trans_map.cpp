@@ -784,16 +784,7 @@ void update_remote_mapping_contribution(
           
 #pragma omp for 
          for(unsigned int block = 0; block<spatial_cell->get_number_of_velocity_blocks(popID); ++block) {
-            if (receiveBuffers[c][block].hasData()) {
-               Realf temp[WID3], buffer[WID3];
-               spatial_cell->get_data(block, popID, temp);
-               receiveBuffers[c][block].get(buffer);
-
-               for (size_t i = 0; i < WID3; i++) 
-                  temp[i] += buffer[i];
-
-               spatial_cell->set_data(block, popID, temp);
-            }
+            spatial_cell->get_block(block, popID) += receiveBuffers[c][block];
             receiveBuffers[c][block].clear();
          }
       }
@@ -809,7 +800,7 @@ void update_remote_mapping_contribution(
             // copy received target data to temporary array where target data is stored.
             spatial_cell->clear_block(cell, popID);
          }
-         //spatial_cell->clear_block_sizes(popID);
+         spatial_cell->clear_block_sizes(popID);
       }
    }
 

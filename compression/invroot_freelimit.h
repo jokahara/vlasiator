@@ -27,21 +27,10 @@ class CompressedBlock {
         
         #define COMP_SIZE
         size_t compressedSize() const;
-        inline bool hasData() const {
-            if (!data || data[0] == 0) return false;
-
-            return true;
-        }
+        bool hasData() const;
 
         inline Compf* getCompressedData() { return data; };
-        inline void prepareToReceiveData(size_t size, bool clearData=true) { 
-            if (clearData) clear(); 
-            else data = NULL;
-
-            if (size == 0) return;
-            data = (Compf*) malloc(size);
-            data[0] = 0;
-        }
+        inline void prepareToReceiveData(size_t size, bool clearData=true);
 
         inline CompressedBlock& operator=(const CompressedBlock& block) {
             clear();
@@ -55,6 +44,25 @@ class CompressedBlock {
                 data[i] = block.data[i];
             }
 
+            return *this;
+        }
+
+        // add data of block to another one
+        inline CompressedBlock& operator+=(const CompressedBlock& block) {
+            if (block.hasData()) {
+                if (this->hasData()) {
+                    float targetData[BLOCK_SIZE], incomingData[BLOCK_SIZE];
+                    block.get(incomingData);
+                    this->get(targetData);
+
+                    for (int i = 0; i < BLOCK_SIZE; i++) {
+                        targetData[i] += incomingData[i];
+                    }
+                    this->set(targetData);
+                } else {
+                    *this = block;
+                }
+            }
             return *this;
         }
 };
@@ -204,6 +212,20 @@ inline void CompressedBlock::get(float *array) const {
 inline void CompressedBlock::clear() {
     if (data) free(data);
     data = NULL;
+}
+
+inline bool CompressedBlock::hasData() const {
+    return data;
+}
+
+// pre-allocate memory before MPI transfer
+inline void CompressedBlock::prepareToReceiveData(size_t size, bool clearData=true) { 
+    if (clearData) clear(); 
+    else data = NULL;
+
+    if (size == 0) return;
+    data = (Compf*) malloc(size);
+    //data[0] = 0;
 }
 
 inline size_t CompressedBlock::compressedSize() const { 
