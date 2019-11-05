@@ -512,19 +512,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             // to the active population.
             if (cell_id % num_part_transfers == transfer_part) cell->clear(p);
          }
-         /*
-         #ifdef COMP_SIZE
-         if (receives > 0) {
-            for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
-               CellID cell_id=incoming_cells_list[i];
-               SpatialCell* cell = mpiGrid[cell_id];
-               if (cell_id % num_part_transfers == transfer_part) {
-                  cell->clear_block_sizes(p);
-               }
-            }
-         }
-         #endif
-         */
       } // for-loop over populations
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");

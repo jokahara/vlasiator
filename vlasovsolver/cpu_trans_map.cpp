@@ -809,7 +809,7 @@ void update_remote_mapping_contribution(
             // copy received target data to temporary array where target data is stored.
             spatial_cell->clear_block(cell, popID);
          }
-         spatial_cell->clear_block_sizes(popID);
+         //spatial_cell->clear_block_sizes(popID);
       }
    }
 

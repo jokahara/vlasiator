@@ -667,7 +667,7 @@ namespace spatial_cell {
                displacements.push_back((uint8_t*) blocks[b].getCompressedData() - (uint8_t*) this);   
                block_lengths.push_back(populations[activePopID].blockSizes[b]);
             }
-            clear_block_sizes(activePopID);
+            //clear_block_sizes(activePopID);
             #else
             displacements.push_back((uint8_t*) get_blocks(activePopID) - (uint8_t*) this);   
             block_lengths.push_back(sizeof(cBlock) * populations[activePopID].blockContainer.size());
