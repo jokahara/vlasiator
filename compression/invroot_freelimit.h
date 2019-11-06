@@ -157,7 +157,7 @@ inline void CompressedBlock::set(float* array) {
             if (nonzero[i]) {
                 mask |= (1UL << i);
 
-                // compression oarray[i] > MIN_VALUEf value with the fast inverse root method
+                // compression of value with the fast inverse root method
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
                 *temp++ = value.i >> 9;

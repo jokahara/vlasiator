@@ -467,7 +467,15 @@ namespace SBC {
                   toBlockLID = to->get_velocity_block_local_id(incBlockGID,popID);
                }
                
-               to->get_block(toBlockLID, popID) += incomingCell->get_block(incBlockLID, popID);
+               incomingCell->get_data(incBlockLID, popID, fromData);
+               to->get_data(toBlockLID, popID, toData);
+
+               // Add values from source cells
+               for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
+                  toData[cellIndex(ic,jc,kc)] += factor*fromData[cellIndex(ic,jc,kc)];
+               }
+               to->set_data(toBlockLID, popID, toData);
+               
 
                blockParameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
             } // for-loop over velocity blocks
