@@ -133,12 +133,12 @@ inline void CompressedBlock::set(float* array) {
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
-            if (nonzero[i]) temp[i] = 0;
-            else {
+            if (nonzero[i]) {
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
                 temp[i] = value.i >> 9;        
             }   
+            else temp[i] = 0;
         }
     }
     else
