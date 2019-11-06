@@ -223,7 +223,7 @@ bool map_1d(SpatialCell* spatial_cell,
       uint8_t refLevel = 0;
       //init 
       for (uint blockK = 0; blockK < MAX_BLOCKS_PER_DIM; blockK++){
-         //for (int i = 0; i < WID3; i++) blockIndexToBlockData[blockK*WID3 + i] = 0.0;
+         for (int i = 0; i < WID3; i++) blockIndexToBlockData[blockK*WID3 + i] = 0.0;
          
          isTargetBlock[blockK] = false;
          isSourceBlock[blockK] = false;
