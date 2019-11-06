@@ -88,10 +88,12 @@ inline CompressedBlock::CompressedBlock(const CompressedBlock& block) {
 inline void CompressedBlock::set(float* array) {
     clear();
 
-    Compf n_values = 0;
+    ushort n_values = 0;
+    ushort nonzero[BLOCK_SIZE];
     for (int i = 0; i < BLOCK_SIZE; i++)
     {
-        if (array[i] > MIN_VALUE) n_values++;
+        nonzero[i] = (array[i] > MIN_VALUE);
+        n_values += nonzero[i];
     }
 
     // if block contains only zeroes, data pointer is NULL.
@@ -131,7 +133,7 @@ inline void CompressedBlock::set(float* array) {
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
-            if (array[i] < MIN_VALUE) temp[i] = 0;
+            if (nonzero[i]) temp[i] = 0;
             else {
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
@@ -152,10 +154,10 @@ inline void CompressedBlock::set(float* array) {
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
-            if (array[i] > MIN_VALUE) {
+            if (nonzero[i]) {
                 mask |= (1UL << i);
 
-                // compression of value with the fast inverse root method
+                // compression oarray[i] > MIN_VALUEf value with the fast inverse root method
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
                 *temp++ = value.i >> 9;
@@ -183,12 +185,12 @@ inline void CompressedBlock::get(float *array) const {
         Compf *temp = data + OFFSET;
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
-            if (temp[i] == 0) array[i] = 0.f;
-            else {
+            if (temp[i]) {
                 value.i = 0xFF |(temp[i] << 9);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
+            else array[i] = 0.f;
         }
     }
     else

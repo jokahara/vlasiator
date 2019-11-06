@@ -467,14 +467,8 @@ namespace SBC {
                   toBlockLID = to->get_velocity_block_local_id(incBlockGID,popID);
                }
                
-               incomingCell->get_data(incBlockLID, popID, fromData);
-               to->get_data(toBlockLID, popID, toData);
+               to->get_block(toBlockLID, popID) += incomingCell->get_block(incBlockLID, popID);
 
-               // Add values from source cells
-               for (uint kc=0; kc<WID; ++kc) for (uint jc=0; jc<WID; ++jc) for (uint ic=0; ic<WID; ++ic) {
-                  toData[cellIndex(ic,jc,kc)] += factor*fromData[cellIndex(ic,jc,kc)];
-               }
-               to->set_data(toBlockLID, popID, toData);
                blockParameters += BlockParams::N_VELOCITY_BLOCK_PARAMS;
             } // for-loop over velocity blocks
          }
@@ -812,8 +806,10 @@ namespace SBC {
       flowtoCellsBlock.fill(NULL);
       for (uint i=0; i<27; i++) {
          if(flowtoCells.at(i)) {
-            flowtoCellsBlock.at(i) = flowtoCells.at(i)
-                                    ->get_data(flowtoCells.at(i)->get_velocity_block_local_id(blockGID,popID), popID, container[i]);
+            flowtoCellsBlock.at(i) = flowtoCells.at(i)->get_data(
+                        flowtoCells.at(i)->get_velocity_block_local_id(blockGID,popID), 
+                        popID, 
+                        container[i]);
          }
       }
       phiprof::stop("getFlowtoCellsBlock");
