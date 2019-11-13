@@ -1,6 +1,5 @@
 #include <cstdlib>
 #include <iostream>
-#include <cmath>
 
 typedef ushort Compf;
 
@@ -11,9 +10,9 @@ typedef ushort Compf;
 class CompressedBlock {
     private:
         typedef union {     
-            float f;
-            uint32_t i;
-        } float_int;    // for converting float into integer format
+            double f;
+            uint64_t i;
+        } double_long;    // for converting double into integer format
 
         Compf *data;
 
@@ -22,8 +21,8 @@ class CompressedBlock {
         CompressedBlock(const CompressedBlock&);
         ~CompressedBlock() { if (data) free(data); };
 
-        void set(float* data);
-        void get(float* array) const;
+        void set(double* data);
+        void get(double* array) const;
         void clear();
         
         #define COMP_SIZE
@@ -52,7 +51,7 @@ class CompressedBlock {
         inline CompressedBlock& operator+=(const CompressedBlock& block) {
             if (block.hasData()) {
                 if (this->hasData()) {
-                    float targetData[BLOCK_SIZE], incomingData[BLOCK_SIZE];
+                    double targetData[BLOCK_SIZE], incomingData[BLOCK_SIZE];
                     block.get(incomingData);
                     this->get(targetData);
 
@@ -86,7 +85,8 @@ inline CompressedBlock::CompressedBlock(const CompressedBlock& block) {
 }
 
 // Compresses given data block of size 64
-inline void CompressedBlock::set(float* array) {
+inline void CompressedBlock::set(double* array) {
+    std::cerr << "!";
     clear();
 
     ushort n_values = 0;
@@ -101,7 +101,7 @@ inline void CompressedBlock::set(float* array) {
     if (!n_values) return;
     
     // find largest and smallest values to compress
-    float_int max, min;
+    double_long max, min;
     if (n_values == BLOCK_SIZE)
     {
         max.f = array[0];
@@ -119,10 +119,11 @@ inline void CompressedBlock::set(float* array) {
             if (array[i] > max.f) max.f = array[i]; 
         }
     }
-
-    //uint range = (max.i - min.i + 0x3000000) >> 25;
-    uint range = (max.i - min.i + 0x1FFFFFF + 0x1FFFF) >> 25;
-    uint magic = 0x3FFFC000 & ( min.i / range + 0x1FFFFFF);
+    //std::cerr << max.f << " - " << min.f << std::endl;
+    min.i &= (0x3FFUL << 52);
+    uint range = (max.i - min.i + (3UL << 53)) >> 54;
+    ulong magic = (0x3FFEUL << 48) & ( min.i / range + 0x3FFFFFFFFFFFFFUL);
+    //std::cerr << "R = " << range << ", M = " << (void*)magic << std::endl;
 
     // if block contains very few zeroes, the whole block is stored.
     // otherwise the locations of zeroes are marked into 64-bit int.
@@ -131,13 +132,13 @@ inline void CompressedBlock::set(float* array) {
         data = (Compf*) malloc((BLOCK_SIZE + 1) * sizeof(Compf));
 
         Compf* temp = data + OFFSET;
-        float_int value; 
+        double_long value; 
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
             if (nonzero[i]) {
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
-                temp[i] = value.i >> 9;        
+                temp[i] = value.i >> 38;     
             }   
             else temp[i] = 0;
         }
@@ -152,7 +153,7 @@ inline void CompressedBlock::set(float* array) {
         ulong &mask = *(ulong*) (data + OFFSET);
         mask = 0;
 
-        float_int value; 
+        double_long value; 
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             if (nonzero[i]) {
@@ -161,16 +162,16 @@ inline void CompressedBlock::set(float* array) {
                 // compression of value with the fast inverse root method
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
-                *temp++ = value.i >> 9;
+                *temp++ = value.i >> 38;
             }
         }
     }
     // saving number of values, range and magic number at start of the array
     *data = n_values + (range << 8);
-    *(data + 1) = (magic >> 14);
+    *(data + 1) = (magic >> 48);
 }
 
-inline void CompressedBlock::get(float *array) const {
+inline void CompressedBlock::get(double *array) const {
     if (!hasData()) {
         for (int i = 0; i < BLOCK_SIZE; i++) 
             array[i] = 0.f;
@@ -178,20 +179,20 @@ inline void CompressedBlock::get(float *array) const {
     }
 
     int range = *data >> 8;
-    int magic = *(data+1) << 14;
+    long magic = ( (long)*(data+1) | 0x700UL ) << 48;
 
     if ((*data & 0xFF) >= BLOCK_SIZE - 4)
     {
-        float_int value;
+        double_long value;
         Compf *temp = data + OFFSET;
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
             if (temp[i]) {
-                value.i = 0xFF |(temp[i] << 9);
+                value.i = (1UL << 38) |((ulong) temp[i] << 38);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
-            else array[i] = 0.f;
+            else array[i] = 0.0;
         }
     }
     else
@@ -199,15 +200,15 @@ inline void CompressedBlock::get(float *array) const {
         Compf *temp = data + OFFSET + sizeof(ulong) / sizeof(Compf);
         const ulong mask = *(ulong*) (data + OFFSET);
 
-        float_int value;
+        double_long value;
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             if ((mask >> i) & 1UL) {
-                value.i = 0xFF |(*temp++ << 9);
+                value.i = (1UL << 37) |((ulong)*temp++ << 38);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
-            else array[i] = 0.f;
+            else array[i] = 0.0;
         }
     }
 }
