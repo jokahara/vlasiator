@@ -2,6 +2,12 @@
 #include <iostream>
 #include <cmath>
 
+#ifdef USE_JEMALLOC
+#include "jemalloc/jemalloc.h"
+#define malloc je_malloc
+#define free je_free
+#endif
+
 typedef ushort Compf;
 
 #define BLOCK_SIZE 64
@@ -120,7 +126,6 @@ inline void CompressedBlock::set(float* array) {
         }
     }
 
-    //uint range = (max.i - min.i + 0x3000000) >> 25;
     uint range = (max.i - min.i + 0x1FFFFFF + 0x1FFFF) >> 25;
     uint magic = 0x3FFFC000 & ( min.i / range + 0x1FFFFFF);
 
@@ -239,3 +244,8 @@ inline size_t CompressedBlock::compressedSize() const {
             ? (BLOCK_SIZE + OFFSET) * sizeof(Compf)
             : (n_values + OFFSET) * sizeof(Compf) + sizeof(long); 
 }
+
+#ifdef USE_JEMALLOC
+#undef malloc
+#undef free
+#endif

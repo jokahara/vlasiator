@@ -86,7 +86,6 @@ inline CompressedBlock::CompressedBlock(const CompressedBlock& block) {
 
 // Compresses given data block of size 64
 inline void CompressedBlock::set(double* array) {
-    std::cerr << "!";
     clear();
 
     ushort n_values = 0;
@@ -119,10 +118,10 @@ inline void CompressedBlock::set(double* array) {
             if (array[i] > max.f) max.f = array[i]; 
         }
     }
-    //std::cerr << max.f << " - " << min.f << std::endl;
-    min.i &= (0x3FFUL << 52);
-    uint range = (max.i - min.i + (3UL << 53)) >> 54;
-    ulong magic = (0x3FFEUL << 48) & ( min.i / range + 0x3FFFFFFFFFFFFFUL);
+
+    uint range = (max.i - min.i + (1UL << 54) + (1UL << 48)) >> 54;
+    //std::cerr << (void*) (max.i - min.i) << std::endl;
+    ulong magic = (0xFFFFUL << 44) & ( min.i / range + 0x3FFFFFFFFFFFFFUL);
     //std::cerr << "R = " << range << ", M = " << (void*)magic << std::endl;
 
     // if block contains very few zeroes, the whole block is stored.
@@ -168,7 +167,7 @@ inline void CompressedBlock::set(double* array) {
     }
     // saving number of values, range and magic number at start of the array
     *data = n_values + (range << 8);
-    *(data + 1) = (magic >> 48);
+    *(data + 1) = (magic >> 44);
 }
 
 inline void CompressedBlock::get(double *array) const {
@@ -178,8 +177,8 @@ inline void CompressedBlock::get(double *array) const {
         return;
     }
 
-    int range = *data >> 8;
-    long magic = ( (long)*(data+1) | 0x700UL ) << 48;
+    uint range = *data >> 8;
+    ulong magic = (*(data+1) & 0xFFFFUL) << 44;
 
     if ((*data & 0xFF) >= BLOCK_SIZE - 4)
     {
@@ -188,7 +187,7 @@ inline void CompressedBlock::get(double *array) const {
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
             if (temp[i]) {
-                value.i = (1UL << 38) |((ulong) temp[i] << 38);
+                value.i = (1UL << 38) + ((ulong) temp[i] << 38);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
@@ -204,7 +203,7 @@ inline void CompressedBlock::get(double *array) const {
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             if ((mask >> i) & 1UL) {
-                value.i = (1UL << 37) |((ulong)*temp++ << 38);
+                value.i = (1UL << 38) + ((ulong)*temp++ << 38);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
