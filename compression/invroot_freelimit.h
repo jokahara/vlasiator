@@ -126,9 +126,9 @@ inline void CompressedBlock::set(float* array) {
         }
     }
 
-    uint range = (max.i - min.i + 0x1FFFFFF + 0x1FFFF) >> 25;
-    uint magic = 0x3FFFC000 & ( min.i / range + 0x1FFFFFF);
-
+    uint range = (max.i - min.i + 0x3FFFFF) >> 21;
+    uint magic = 0x3FFFC000 & ( min.i / range + 0x1FFFFF);
+    
     // if block contains very few zeroes, the whole block is stored.
     // otherwise the locations of zeroes are marked into 64-bit int.
     if (n_values >= BLOCK_SIZE - 4)
@@ -142,8 +142,8 @@ inline void CompressedBlock::set(float* array) {
             if (nonzero[i]) {
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
-                temp[i] = value.i >> 9;        
-            }   
+                temp[i] = value.i >> 5;        
+            }
             else temp[i] = 0;
         }
     }
@@ -166,7 +166,7 @@ inline void CompressedBlock::set(float* array) {
                 // compression of value with the fast inverse root method
                 value.f = array[i];
                 value.i  = magic - ( value.i / range );
-                *temp++ = value.i >> 9;
+                *temp++ = value.i >> 5;
             }
         }
     }
@@ -192,7 +192,7 @@ inline void CompressedBlock::get(float *array) const {
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
             if (temp[i]) {
-                value.i = 0xFF |(temp[i] << 9);
+                value.i = 0xF + (temp[i] << 5);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
@@ -208,7 +208,7 @@ inline void CompressedBlock::get(float *array) const {
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
             if ((mask >> i) & 1UL) {
-                value.i = 0xFF |(*temp++ << 9);
+                value.i = 0xF + (*temp++ << 5);
                 value.i = range * (magic - value.i);
                 array[i] = value.f;
             }
