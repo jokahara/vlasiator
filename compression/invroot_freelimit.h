@@ -1,17 +1,11 @@
 #include <cstdlib>
 #include <iostream>
-#include <cmath>
-
-#ifdef USE_JEMALLOC
-#include "jemalloc/jemalloc.h"
-#define malloc je_malloc
-#define free je_free
-#endif
+//#include <vectorclass.h>
 
 typedef ushort Compf;
 
 #define BLOCK_SIZE 64
-#define MIN_VALUE 1e-20f
+#define MIN_VALUE 1e-18f    // minimum between 1e-17f and 1e-18f recommended
 #define OFFSET 2
 
 class CompressedBlock {
@@ -93,8 +87,6 @@ inline CompressedBlock::CompressedBlock(const CompressedBlock& block) {
 
 // Compresses given data block of size 64
 inline void CompressedBlock::set(float* array) {
-    clear();
-
     ushort n_values = 0;
     ushort nonzero[BLOCK_SIZE];
     for (int i = 0; i < BLOCK_SIZE; i++)
@@ -104,7 +96,10 @@ inline void CompressedBlock::set(float* array) {
     }
 
     // if block contains only zeroes, data pointer is NULL.
-    if (!n_values) return;
+    if (!n_values) {
+        clear();
+        return;
+    }
     
     // find largest and smallest values to compress
     float_int max, min;
@@ -133,23 +128,34 @@ inline void CompressedBlock::set(float* array) {
     // otherwise the locations of zeroes are marked into 64-bit int.
     if (n_values >= BLOCK_SIZE - 4)
     {
-        data = (Compf*) malloc((BLOCK_SIZE + 1) * sizeof(Compf));
-
+        if (data) {
+            data = (Compf*) realloc(data, (BLOCK_SIZE + 1) * sizeof(Compf));
+        }
+        else {
+            data = (Compf*) malloc((BLOCK_SIZE + 1) * sizeof(Compf));
+        }
+        
         Compf* temp = data + OFFSET;
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
             if (nonzero[i]) {
                 value.f = array[i];
-                value.i  = magic - ( value.i / range );
+                value.i = magic - ( value.i / range );
                 temp[i] = value.i >> 5;        
-            }
+            } 
             else temp[i] = 0;
         }
     }
     else
     {
-        data = (Compf*) malloc((n_values + OFFSET) * sizeof(Compf) + sizeof(long));
+        if (data) {
+            data = (Compf*) realloc(data, (n_values + OFFSET) * sizeof(Compf) + sizeof(long));
+        }
+        else {
+            data = (Compf*) malloc((n_values + OFFSET) * sizeof(Compf) + sizeof(long));
+        }
+
         // pointer to start of compressed data
         Compf* temp = data + OFFSET + sizeof(ulong) / sizeof(Compf);
 
@@ -165,7 +171,7 @@ inline void CompressedBlock::set(float* array) {
 
                 // compression of value with the fast inverse root method
                 value.f = array[i];
-                value.i  = magic - ( value.i / range );
+                value.i = magic - ( value.i / range );
                 *temp++ = value.i >> 5;
             }
         }
@@ -244,8 +250,3 @@ inline size_t CompressedBlock::compressedSize() const {
             ? (BLOCK_SIZE + OFFSET) * sizeof(Compf)
             : (n_values + OFFSET) * sizeof(Compf) + sizeof(long); 
 }
-
-#ifdef USE_JEMALLOC
-#undef malloc
-#undef free
-#endif
