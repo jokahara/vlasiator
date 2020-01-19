@@ -2,6 +2,13 @@
 #include <iostream>
 //#include <vectorclass.h>
 
+#ifdef USE_JEMALLOC
+#include "jemalloc/jemalloc.h"
+#define malloc je_malloc
+#define free je_free
+#define realloc je_realloc
+#endif
+
 typedef ushort Compf;
 
 #define BLOCK_SIZE 64
@@ -250,3 +257,9 @@ inline size_t CompressedBlock::compressedSize() const {
             ? (BLOCK_SIZE + OFFSET) * sizeof(Compf)
             : (n_values + OFFSET) * sizeof(Compf) + sizeof(long); 
 }
+
+#ifdef USE_JEMALLOC
+#undef malloc je_malloc
+#undef free je_free
+#undef realloc je_realloc
+#endif
