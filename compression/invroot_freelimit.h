@@ -259,7 +259,7 @@ inline size_t CompressedBlock::compressedSize() const {
 }
 
 #ifdef USE_JEMALLOC
-#undef malloc je_malloc
-#undef free je_free
-#undef realloc je_realloc
+#undef malloc
+#undef free
+#undef realloc
 #endif
