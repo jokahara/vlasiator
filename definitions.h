@@ -29,7 +29,7 @@
 //set floating point precision for storing the distribution function here. Default is single precision, use -DDPF to set double precision
 #ifdef DPF
 typedef double Realf;
-#include "compression/invroot_freelimit_DP.h"
+#include "compression/invroot_DP.h"
 #else
 typedef float Realf;
 #include "compression/invroot_fixed.h"

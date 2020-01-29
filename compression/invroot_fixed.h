@@ -13,7 +13,8 @@ class CompressedBlock {
         } float_int;    // for converting float into integer format
 
         Compf data[BLOCK_SIZE];
-        ushort magic, range;
+        ushort magic; 
+        uchar range;
 
     public:
         CompressedBlock();
@@ -25,7 +26,6 @@ class CompressedBlock {
 
         inline CompressedBlock& operator=(const CompressedBlock& block) {
             clear();
-            
             magic = block.magic;
             range = block.range;
             if (!magic) return *this;
@@ -117,7 +117,7 @@ inline void CompressedBlock::set(float* array) {
             data[i] = value.i >> 5;        
         }   
     }
-    magic = m >> 16;
+    magic = m >> 14;
 }
 
 inline void CompressedBlock::get(float *array) const {
@@ -129,7 +129,7 @@ inline void CompressedBlock::get(float *array) const {
         return;
     }
 
-    int m = magic << 16;
+    int m = magic << 14;
     float_int value;
     for (int i = 0; i < BLOCK_SIZE; i++) 
     {
