@@ -343,7 +343,9 @@ namespace spatial_cell {
       std::array<cBlock*,MAX_NEIGHBORS_PER_DIM> neighbor_block_data;       /**< Pointers for translation operator. We can point to neighbor
                                                                                * cell block data. We do not allocate memory for the pointer.*/
       std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_number_of_blocks;
+      #ifdef COMP_SIZE
       std::array<uint8_t*,MAX_NEIGHBORS_PER_DIM> neighbor_block_sizes;
+      #endif
 
       std::map<int,std::set<int>> face_neighbor_ranks;
       uint sysBoundaryFlag;                                                   /**< What type of system boundary does the cell belong to. 

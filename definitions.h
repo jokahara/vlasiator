@@ -32,7 +32,7 @@ typedef double Realf;
 #include "compression/invroot_freelimit_DP.h"
 #else
 typedef float Realf;
-#include "compression/invroot_freelimit.h"
+#include "compression/invroot_fixed.h"
 #endif
 
 typedef CompressedBlock cBlock;

@@ -667,7 +667,10 @@ void update_remote_mapping_contribution(
             ccell->neighbor_block_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
+
+         #ifdef COMP_SIZE
          ccell->neighbor_block_sizes[0] = NULL;
+         #endif
       }
    }
 
@@ -683,7 +686,9 @@ void update_remote_mapping_contribution(
             ccell->neighbor_block_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
+         #ifdef COMP_SIZE
          ccell->neighbor_block_sizes[0] = NULL;
+         #endif
       }
       CellID p_ngbr = INVALID_CELLID;
       CellID m_ngbr = INVALID_CELLID;
@@ -743,6 +748,7 @@ void update_remote_mapping_contribution(
 
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
+   #ifdef COMP_SIZE
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_SIZES);
    switch(dimension) {
    case 0:
@@ -758,6 +764,7 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
+   #endif
 
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
@@ -785,7 +792,9 @@ void update_remote_mapping_contribution(
 #pragma omp for 
          for(unsigned int block = 0; block<spatial_cell->get_number_of_velocity_blocks(popID); ++block) {
             spatial_cell->get_block(block, popID) += receiveBuffers[c][block];
+            #ifdef COMP_SIZE
             receiveBuffers[c][block].clear();
+            #endif
          }
       }
        
@@ -800,7 +809,9 @@ void update_remote_mapping_contribution(
             // copy received target data to temporary array where target data is stored.
             spatial_cell->clear_block(cell, popID);
          }
+         #ifdef COMP_SIZE
          spatial_cell->clear_block_sizes(popID);
+         #endif
       }
    }
 
