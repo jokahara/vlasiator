@@ -14,7 +14,7 @@ class CompressedBlock {
 
         Compf data[BLOCK_SIZE];
         ushort magic; 
-        uchar range;
+        unsigned char range;
 
     public:
         CompressedBlock();
