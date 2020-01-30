@@ -153,7 +153,6 @@ void calculateSpatialTranslation(
       
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-y","MPI");
       phiprof::start(trans_timer);
-      
       mpiGrid.set_send_single_cells(false);
       #ifdef COMP_SIZE
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES);

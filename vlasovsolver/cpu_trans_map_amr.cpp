@@ -510,7 +510,8 @@ setOfPencils buildPencilsWithNeighbors( const dccrg::Dccrg<SpatialCell,dccrg::Ca
  */
 void propagatePencil(Vec* dz, Vec* values, const uint dimension,
                      const uint blockGID, const Realv dt,
-                     const vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> &vmesh, const uint lengthOfPencil) {
+                     const vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID> &vmesh,
+		     const uint lengthOfPencil, const Realv threshold) {
 
    // Get velocity data from vmesh that we need later to calculate the translation
    velocity_block_indices_t block_indices;
@@ -572,7 +573,7 @@ void propagatePencil(Vec* dz, Vec* values, const uint dimension,
             // i + VLASOV_STENCIL_WIDTH will point to the right cell. Complicated! Why! Sad! MVGA!
             compute_ppm_coeff_nonuniform(dz,
                                          values + i_trans_ps_blockv_pencil(planeVector, k, i-VLASOV_STENCIL_WIDTH, lengthOfPencil),
-                                         h4, VLASOV_STENCIL_WIDTH, a);
+                                         h4, VLASOV_STENCIL_WIDTH, a, threshold);
             
             // Compute integral
             const Vec ngbr_target_density =
@@ -1193,7 +1194,7 @@ bool trans_map_1d_amr(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>&
 
                // Dz and sourceVecData are both padded by VLASOV_STENCIL_WIDTH
                // Dz has 1 value/cell, sourceVecData has WID3 values/cell
-               propagatePencil(dz.data(), sourceVecData.data(), dimension, blockGID, dt, vmesh, L);
+               propagatePencil(dz.data(), sourceVecData.data(), dimension, blockGID, dt, vmesh, L, sourceCells[0]->getVelocityBlockMinValue(popID));
 
                // sourceVecData => targetBlockData[this pencil])
 
@@ -1338,9 +1339,6 @@ void update_remote_mapping_contribution_amr(
    const uint dimension,
    int direction,
    const uint popID) {
-   #ifdef COMP_SIZE
-   std::cerr << "WARNING: update_remote_mapping_contribution_amr does not work yet" << std::endl; 
-   #endif 
 
    vector<CellID> local_cells = mpiGrid.get_cells();
    const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_NEIGHBORHOOD_ID);

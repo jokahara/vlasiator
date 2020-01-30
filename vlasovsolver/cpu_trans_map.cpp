@@ -518,17 +518,17 @@ bool trans_map_1d(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
                   //compute reconstruction
 #ifdef TRANS_SEMILAG_PLM
                   Vec a[3];
-                  compute_plm_coeff(values + i_trans_ps_blockv(planeVector, k, -VLASOV_STENCIL_WIDTH), VLASOV_STENCIL_WIDTH, a);
+                  compute_plm_coeff(values + i_trans_ps_blockv(planeVector, k, -VLASOV_STENCIL_WIDTH), VLASOV_STENCIL_WIDTH, a, spatial_cell->getVelocityBlockMinValue(popID));
 #endif
 #ifdef TRANS_SEMILAG_PPM
                   Vec a[3];
                   //Check that stencil width VLASOV_STENCIL_WIDTH in grid.h corresponds to order of face estimates  (h4 & h5 =2, H6=3, h8=4)
-                  compute_ppm_coeff(values + i_trans_ps_blockv(planeVector, k, -VLASOV_STENCIL_WIDTH), h4, VLASOV_STENCIL_WIDTH, a);
+                  compute_ppm_coeff(values + i_trans_ps_blockv(planeVector, k, -VLASOV_STENCIL_WIDTH), h4, VLASOV_STENCIL_WIDTH, a, spatial_cell->getVelocityBlockMinValue(popID));
 #endif
 #ifdef TRANS_SEMILAG_PQM
                   Vec a[5];
                   //Check that stencil width VLASOV_STENCIL_WIDTH in grid.h corresponds to order of face estimates (h4 & h5 =2, H6=3, h8=4)
-                  compute_pqm_coeff(values + i_trans_ps_blockv(planeVector, k, -VLASOV_STENCIL_WIDTH), h6, VLASOV_STENCIL_WIDTH, a);
+                  compute_pqm_coeff(values + i_trans_ps_blockv(planeVector, k, -VLASOV_STENCIL_WIDTH), h6, VLASOV_STENCIL_WIDTH, a, spatial_cell->getVelocityBlockMinValue(popID));
 #endif
           
 #ifdef TRANS_SEMILAG_PLM
@@ -634,6 +634,7 @@ bool trans_map_1d(const dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpi
   \par dimension: 0,1,2 for x,y,z
   \par direction: 1 for + dir, -1 for - dir
 */
+
 void update_remote_mapping_contribution(
    dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid,
    const uint dimension,
@@ -645,7 +646,9 @@ void update_remote_mapping_contribution(
    vector<CellID> receive_cells;
    vector<CellID> send_cells;
    vector<cBlock*> receiveBuffers;
+   #ifdef COMP_SIZE
    vector<uint8_t*> sizeBuffers;
+   #endif
 
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
@@ -667,7 +670,6 @@ void update_remote_mapping_contribution(
             ccell->neighbor_block_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
-
          #ifdef COMP_SIZE
          ccell->neighbor_block_sizes[0] = NULL;
          #endif
@@ -719,13 +721,13 @@ void update_remote_mapping_contribution(
             //mapped to if 1) it is a valid target,
             //2) is remote cell, 3) if the source cell in center was
             //translated
+            ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
 
             #ifdef COMP_SIZE
             ccell->neighbor_block_sizes[0] = pcell->prepare_block_sizes(popID);
             #endif
 
-            ccell->neighbor_block_data[0] = pcell->get_blocks(popID);
             send_cells.push_back(p_ngbr);
          }
       if (m_ngbr != INVALID_CELLID &&
@@ -781,7 +783,7 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-
+   
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
@@ -818,9 +820,11 @@ void update_remote_mapping_contribution(
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
+      #ifdef COMP_SIZE
       aligned_free(sizeBuffers[c]);
+      #endif
    }
-   
+
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
    // MPI_Barrier(MPI_COMM_WORLD);

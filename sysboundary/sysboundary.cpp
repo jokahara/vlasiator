@@ -595,8 +595,10 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       // Then the block data in the reduced neighbourhood:
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
+      #ifdef COMP_SIZE
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES,true);
       mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      #endif
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
