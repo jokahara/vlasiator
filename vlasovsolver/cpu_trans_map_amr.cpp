@@ -1478,7 +1478,7 @@ void update_remote_mapping_contribution_amr(
                   if(send_cells.find(nbr) == send_cells.end()) {
                      // 5 We have not already sent data from this rank to this cell.
                      
-                     ccell->neighbor_block_data.at(sendIndex) = pcell->compress(popID);
+                     ccell->neighbor_block_data.at(sendIndex) = pcell->compress_data(popID);
                      ccell->neighbor_compressed_size.at(sendIndex) = pcell->get_compressed_size(popID);
                      send_cells.insert(nbr);
                                                                
@@ -1613,14 +1613,14 @@ void update_remote_mapping_contribution_amr(
          }
 
          Realf *blockData = receive_cell->get_data(popID);
-         Realf *neighborData = origin_cell->neighbor_block_data[receive_origin_index[c]];
+         Compf *neighborData = origin_cell->neighbor_block_data[receive_origin_index[c]];
 
          Realf temp[VELOCITY_BLOCK_LENGTH * receive_cell->get_number_of_velocity_blocks(popID)];
          
          Compf* p = receiveBuffers[c];
          for (size_t b = 0; b < receive_cell->get_number_of_velocity_blocks(popID); b++)
          {
-            p += cBlock::get(neighborData + VELOCITY_BLOCK_LENGTH * b, p);
+            p += cBlock::get(blockData + VELOCITY_BLOCK_LENGTH * b, p);
          }
 
          //#pragma omp for 
