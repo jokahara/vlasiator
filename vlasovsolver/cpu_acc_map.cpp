@@ -126,7 +126,8 @@ bool map_1d(SpatialCell* spatial_cell,
    uint cell_indices_to_id[3] = {0, 0, 0}; /*< used when computing id of target cell in block, 0 for compiler */
 
    vmesh::VelocityMesh<vmesh::GlobalID,vmesh::LocalID>& vmesh    = spatial_cell->get_velocity_mesh(popID);
-   vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = spatial_cell->get_block_container(popID);
+   vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = spatial_cell->get_velocity_blocks(popID);
+
    //nothing to do if no blocks
    if(vmesh.size() == 0 )
       return true;
@@ -215,7 +216,7 @@ bool map_1d(SpatialCell* spatial_cell,
 */
    Vec values[(3 * ( MAX_BLOCKS_PER_DIM / 2 + 1)) * WID3 / VECL];
    /*pointers to target block datas*/
-   vector<Realf, aligned_allocator<Realf,WID3> > blockIndexToBlockData(MAX_BLOCKS_PER_DIM*WID3);
+   Realf *blockIndexToBlockData[MAX_BLOCKS_PER_DIM];
    bool isTargetBlock[MAX_BLOCKS_PER_DIM];
    bool isSourceBlock[MAX_BLOCKS_PER_DIM];
 
@@ -223,8 +224,7 @@ bool map_1d(SpatialCell* spatial_cell,
       uint8_t refLevel = 0;
       //init 
       for (uint blockK = 0; blockK < MAX_BLOCKS_PER_DIM; blockK++){
-         for (int i = 0; i < WID3; i++) blockIndexToBlockData[blockK*WID3 + i] = 0.0;
-         
+         blockIndexToBlockData[blockK] =  NULL;
          isTargetBlock[blockK] = false;
          isSourceBlock[blockK] = false;
       }
@@ -366,11 +366,13 @@ bool map_1d(SpatialCell* spatial_cell,
                setFirstBlockIndices[1] * block_indices_to_id[1] +
                blockK                  * block_indices_to_id[2];
             const vmesh::LocalID tblockLID = vmesh.getLocalID(targetBlock);
-            // Get block data.
-            blockContainer.getData(tblockLID, blockIndexToBlockData.data() + WID3*blockK);
+            // Get pointer to target block data.
+            blockIndexToBlockData[blockK] = blockContainer.getData(tblockLID);
          }
       }
-
+      
+      
+      
       // loop over columns in set and do the mapping
       valuesColumnOffset = 0; //offset to values array for data in a column in this set
       for(uint columnIndex = setColumnOffsets[setIndex]; columnIndex < setColumnOffsets[setIndex] + setNumColumns[setIndex] ; columnIndex ++){
@@ -543,43 +545,33 @@ bool map_1d(SpatialCell* spatial_cell,
                   //have been created by now.
                   //TODO replace by vector version & scatter & gather operation
                   
+                  
                   if(dimension == 2) {
-                     Realf* targetDataPointer = blockIndexToBlockData.data() + WID3*blockK + j * cell_indices_to_id[1] + gk_mod_WID * cell_indices_to_id[2];
-                     
+                     Realf* targetDataPointer = blockIndexToBlockData[blockK] + j * cell_indices_to_id[1] + gk_mod_WID * cell_indices_to_id[2];
                      Vec targetData;
                      targetData.load_a(targetDataPointer);
-                     targetData += target_density_r - target_density_l;    
+                     targetData += target_density_r - target_density_l;                  
                      targetData.store_a(targetDataPointer);
                   }
                   else{
                      // total value of integrand
-                     const Vec target_density = target_density_r - target_density_l;  
-         #pragma ivdep
-         #pragma GCC ivdep                     
+                     const Vec target_density = target_density_r - target_density_l;                  
+#pragma ivdep
+#pragma GCC ivdep                     
                      for (int target_i=0; target_i < VECL; ++target_i) {
                         // do the conversion from Realv to Realf here, faster than doing it in accumulation
                         const Realf tval = target_density[target_i];
                         const uint tcell = target_cell[target_i];
-                        blockIndexToBlockData[blockK*WID3+tcell] += tval;
+                        blockIndexToBlockData[blockK][tcell] += tval;
                      }  // for-loop over vector elements
                   }
+                  
                } // for loop over target k-indices of current source block
             } // for-loop over source blocks
          } //for loop over j index
          valuesColumnOffset += (n_cblocks + 2) * (WID3/VECL) ;// there are WID3/VECL elements of type Vec per block    
       } //for loop over columns
-
-      for (int blockK = 0; blockK < MAX_BLOCKS_PER_DIM; blockK++){
-         if(isTargetBlock[blockK])  {
-            const int targetBlock =
-               setFirstBlockIndices[0] * block_indices_to_id[0] +
-               setFirstBlockIndices[1] * block_indices_to_id[1] +
-               blockK                  * block_indices_to_id[2];
-            const vmesh::LocalID tblockLID = vmesh.getLocalID(targetBlock);
-            // Set block data.
-            blockContainer.setData(tblockLID, blockIndexToBlockData.data() + WID3*blockK);
-         }
-      }
+      
    }
    delete [] blocks;
    return true;

@@ -33,29 +33,32 @@
 #endif
 
 namespace vmesh {
-    
+
    static const double BLOCK_ALLOCATION_FACTOR = 1.1;
-   
+
    template<typename LID>
    class VelocityBlockContainer {
-   public:
+    public:
+
       VelocityBlockContainer();
       LID capacity() const;
       size_t capacityInBytes() const;
       void clear();
       void copy(const LID& source,const LID& target);
       static double getBlockAllocationFactor();
+      Realf* getData();
+      const Realf* getData() const;
+      Realf* getData(const LID& blockLID);
+      const Realf* getData(const LID& blockLID) const;
 
-      cBlock* getBlocks();
-      const cBlock* getBlocks() const;
-      Realf* getData(const LID& blockLID, Realf* array);
-      const Realf* getData(const LID& blockLID, Realf* array) const;
-      Realf* setData(const LID& blockLID, Realf* array);
-      void clearBlock(const LID& blockLID);
-      #ifdef COMP_SIZE
-      void prepareBlock(const LID& blockLID, const uint16_t size);
-      #endif
+      LID compress();
+      void decompress();
+      Compf* getCompressedData();
+      LID getCompressedSize();
+      void setCompressedSize(LID size);
+      void clearCompressedData();
 
+      Realf* getNullData();
       Real* getParameters();
       const Real* getParameters() const;
       Real* getParameters(const LID& blockLID);      
@@ -78,12 +81,15 @@ namespace vmesh {
     private:
       void exitInvalidLocalID(const LID& localID,const std::string& funcName) const;
       void resize();
-   
-      std::vector<cBlock,aligned_allocator<cBlock,1> > block_data;
       
+      std::vector<Realf,aligned_allocator<Realf,WID3> > block_data;
+      Realf null_block_data[WID3];
       LID currentCapacity;
       LID numberOfBlocks;
       std::vector<Real,aligned_allocator<Real,BlockParams::N_VELOCITY_BLOCK_PARAMS> > parameters;
+
+      std::vector<Compf,aligned_allocator<Compf,1>> compressed_data;
+      bool isCompressed;
    };
    
    template<typename LID> inline
@@ -91,7 +97,7 @@ namespace vmesh {
       currentCapacity = 0;
       numberOfBlocks = 0;
    }
-
+   
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::capacity() const {
       return currentCapacity;
@@ -99,23 +105,14 @@ namespace vmesh {
    
    template<typename LID> inline
    size_t VelocityBlockContainer<LID>::capacityInBytes() const {
-   #ifdef COMP_SIZE  
-      size_t compressed_size = 0;
-      for (uint i = 0; i < block_data.size(); i++)
-      {
-         compressed_size += block_data[i].compressedSize();
-      }
-      return compressed_size + block_data.capacity()*sizeof(cBlock) + parameters.size()*sizeof(Real);
-   #else
-      return block_data.capacity()*sizeof(cBlock) + parameters.size()*sizeof(Real);
-   #endif
+      return (block_data.capacity())*sizeof(Realf) + parameters.capacity()*sizeof(Real);
    }
 
    /** Clears VelocityBlockContainer data and deallocates all memory 
     * reserved for velocity blocks.*/
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clear() {
-      std::vector<cBlock,aligned_allocator<cBlock,1> > dummy_data;
+      std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_data;
       std::vector<Real,aligned_allocator<Real,BlockParams::N_VELOCITY_BLOCK_PARAMS> > dummy_parameters;
       
       block_data.swap(dummy_data);
@@ -135,10 +132,10 @@ namespace vmesh {
          if (target >= currentCapacity) ok = false;
          if (numberOfBlocks >= currentCapacity) ok = false;
          if (source != numberOfBlocks-1) ok = false;
-         if (source >= block_data.size()) ok = false;
+         if (source*WID3+WID3-1 >= block_data.size()) ok = false;
          if (source*BlockParams::N_VELOCITY_BLOCK_PARAMS+BlockParams::N_VELOCITY_BLOCK_PARAMS-1 >= parameters.size()) ok = false;
          if (target*BlockParams::N_VELOCITY_BLOCK_PARAMS+BlockParams::N_VELOCITY_BLOCK_PARAMS-1 >= parameters.size()) ok = false;
-         if (parameters.size()/BlockParams::N_VELOCITY_BLOCK_PARAMS != block_data.size()) ok = false;
+         if (parameters.size()/BlockParams::N_VELOCITY_BLOCK_PARAMS != block_data.size()/WID3) ok = false;
          if (ok == false) {
             std::stringstream ss;
             ss << "VBC ERROR: invalid source LID=" << source << " in copy, target=" << target << " #blocks=" << numberOfBlocks << " capacity=" << currentCapacity << std::endl;
@@ -149,7 +146,7 @@ namespace vmesh {
          }
       #endif
 
-      block_data[target] = block_data[source];
+      for (unsigned int i=0; i<WID3; ++i) block_data[target*WID3+i] = block_data[source*WID3+i];
       for (int i=0; i<BlockParams::N_VELOCITY_BLOCK_PARAMS; ++i) {
          parameters[target*BlockParams::N_VELOCITY_BLOCK_PARAMS+i] = parameters[source*BlockParams::N_VELOCITY_BLOCK_PARAMS+i];
       }
@@ -174,44 +171,102 @@ namespace vmesh {
    }
    
    template<typename LID> inline
-   cBlock* VelocityBlockContainer<LID>::getBlocks() {
+   Realf* VelocityBlockContainer<LID>::getData() {
       return block_data.data();
    }
    
    template<typename LID> inline
-   const cBlock* VelocityBlockContainer<LID>::getBlocks() const {
+   const Realf* VelocityBlockContainer<LID>::getData() const {
       return block_data.data();
    }
 
    template<typename LID> inline
-   Realf* VelocityBlockContainer<LID>::getData(const LID& blockLID, Realf* array) {
-      block_data[blockLID].get(array);
-      return array;
+   Realf* VelocityBlockContainer<LID>::getData(const LID& blockLID) {
+      #ifdef DEBUG_VBC
+         if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"getData");
+         if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
+      #endif
+      return block_data.data() + blockLID*WID3;
    }
    
    template<typename LID> inline
-   const Realf* VelocityBlockContainer<LID>::getData(const LID& blockLID, Realf* array) const {
-      block_data[blockLID].get(array);
-      return array;
+   const Realf* VelocityBlockContainer<LID>::getData(const LID& blockLID) const {
+      #ifdef DEBUG_VBC
+         if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"const getData const");
+         if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
+      #endif
+      return block_data.data() + blockLID*WID3;
+   }
+
+   // compress data for MPI transfer
+   template<typename LID> inline
+   LID VelocityBlockContainer<LID>::compress() {
+      if (isCompressed) {
+         std::cerr << "ERROR: block is already compressed!" << std::endl;         
+      }
+      isCompressed = true;
+
+      compressed_data.resize(66 * numberOfBlocks); // max_size
+      Compf* p = compressed_data.data();
+      Realf* data = block_data.data();
+      
+      for (size_t b = 0; b < numberOfBlocks; b++)
+      {
+         p += cBlock::set(data, p);
+         data += WID3 * b;
+      }
+
+      compressed_data.resize(p - compressed_data.data());
+      return compressed_data.size();
    }
 
    template<typename LID> inline
-   Realf* VelocityBlockContainer<LID>::setData(const LID& blockLID, Realf* array) {
-      block_data[blockLID].set(array);
-      return array;
+   void VelocityBlockContainer<LID>::decompress() {
+      if (!isCompressed) {
+         std::cerr << "ERROR: block has not been compressed!" << std::endl;         
+      }
+
+      Compf* p = compressed_data.data();
+      Realf* data = block_data.data();
+      
+      for (size_t b = 0; b < numberOfBlocks; b++)
+      {
+         p += cBlock::get(data, p);
+         data += WID3;
+      }
+
+      clearCompressedData();
    }
 
    template<typename LID> inline
-   void VelocityBlockContainer<LID>::clearBlock(const LID& blockLID) {
-      block_data[blockLID].clear();
+   Compf* VelocityBlockContainer<LID>::getCompressedData() {
+      return compressed_data.data();
    }
-   
-   #ifdef COMP_SIZE
+
    template<typename LID> inline
-   void VelocityBlockContainer<LID>::prepareBlock(const LID& blockLID, const uint16_t size) {
-         block_data[blockLID].prepareToReceiveData(size);
+   LID VelocityBlockContainer<LID>::getCompressedSize() {
+      return compressed_data.size();
    }
-   #endif
+
+   template<typename LID> inline
+   LID VelocityBlockContainer<LID>::setCompressedSize(LID size) {
+      return compressed_data.resize(size);
+   }
+
+   template<typename LID> inline
+   void VelocityBlockContainer<LID>::clearCompressedData() {
+      compressed_data.clear();
+
+      std::vector<Compf,aligned_allocator<Compf,WID3> > dummy_data;
+      compressed_data.swap(dummy_data);
+
+      isCompressed = false;
+   }
+
+   template<typename LID> inline
+   Realf* VelocityBlockContainer<LID>::getNullData() {
+       return null_block_data;
+   }
 
    template<typename LID> inline
    Real* VelocityBlockContainer<LID>::getParameters() {
@@ -253,7 +308,7 @@ namespace vmesh {
       if (newIndex >= currentCapacity) resize();
 
       #ifdef DEBUG_VBC
-      if (newIndex >= block_data.size() || newIndex >= parameters.size()/BlockParams::N_VELOCITY_BLOCK_PARAMS) {
+      if (newIndex >= block_data.size()/WID3 || newIndex >= parameters.size()/BlockParams::N_VELOCITY_BLOCK_PARAMS) {
          std::stringstream ss;
          ss << "VBC ERROR in push_back, LID=" << newIndex << " for new block is out of bounds" << std::endl;
          ss << "\t data.size()=" << block_data.size()  << " parameters.size()=" << parameters.size() << std::endl;
@@ -264,7 +319,7 @@ namespace vmesh {
       #endif
 
       // Clear velocity block data to zero values
-      block_data[newIndex].clear();
+      for (size_t i=0; i<WID3; ++i) block_data[newIndex*WID3+i] = 0.0;
       for (size_t i=0; i<BlockParams::N_VELOCITY_BLOCK_PARAMS; ++i) 
          parameters[newIndex*BlockParams::N_VELOCITY_BLOCK_PARAMS+i] = 0.0;
 
@@ -279,9 +334,9 @@ namespace vmesh {
       resize();
       
       // Clear velocity block data to zero values
-      for (size_t i=0; i<N_blocks; ++i) block_data[newIndex+i].clear();
+      for (size_t i=0; i<WID3*N_blocks; ++i) block_data[newIndex*WID3+i] = 0.0;
       for (size_t i=0; i<BlockParams::N_VELOCITY_BLOCK_PARAMS*N_blocks; ++i)
-	      parameters[newIndex*BlockParams::N_VELOCITY_BLOCK_PARAMS+i] = 0.0;
+	parameters[newIndex*BlockParams::N_VELOCITY_BLOCK_PARAMS+i] = 0.0;
 
       return newIndex;
    }
@@ -290,8 +345,8 @@ namespace vmesh {
    bool VelocityBlockContainer<LID>::recapacitate(const LID& newCapacity) {
       if (newCapacity < numberOfBlocks) return false;
       {
-         std::vector<cBlock,aligned_allocator<cBlock,1> > dummy_data(newCapacity);
-         for (size_t i=0; i<numberOfBlocks; ++i) dummy_data[i] = block_data[i];
+         std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_data(newCapacity*WID3);
+         for (size_t i=0; i<numberOfBlocks*WID3; ++i) dummy_data[i] = block_data[i];
          dummy_data.swap(block_data);
       }
       {
@@ -310,7 +365,7 @@ namespace vmesh {
          // and at least two in case of having zero blocks.
          // The order of velocity blocks is unaltered.
          currentCapacity = 2 + numberOfBlocks * BLOCK_ALLOCATION_FACTOR;
-         block_data.resize(currentCapacity);
+         block_data.resize(currentCapacity*WID3);
          parameters.resize(currentCapacity*BlockParams::N_VELOCITY_BLOCK_PARAMS);
       }
    }
@@ -331,16 +386,7 @@ namespace vmesh {
 
    template<typename LID> inline
    size_t VelocityBlockContainer<LID>::sizeInBytes() const {
-   #ifdef COMP_SIZE
-      size_t compressed_size = 0;
-      for (uint i = 0; i < block_data.size(); i++)
-      {
-         compressed_size += block_data[i].compressedSize();
-      }
-      return compressed_size + block_data.size()*sizeof(cBlock) + parameters.size()*sizeof(Real);
-   #else
-      return block_data.size()*sizeof(cBlock) + parameters.size()*sizeof(Real);
-   #endif
+      return block_data.size()*sizeof(Realf) + parameters.size()*sizeof(Real);
    }
 
    template<typename LID> inline
@@ -364,7 +410,7 @@ namespace vmesh {
       bool ok = true;
       if (cell >= WID3) ok = false;
       if (blockLID >= numberOfBlocks) ok = false;
-      if (blockLID+cell >= block_data.size()) ok = false;
+      if (blockLID*WID3+cell >= block_data.size()) ok = false;
       if (ok == false) {
          std::stringstream ss;
          ss << "VBC ERROR: out of bounds in getData, LID=" << blockLID << " cell=" << cell << " #blocks=" << numberOfBlocks << " data.size()=" << block_data.size() << std::endl;
@@ -373,9 +419,7 @@ namespace vmesh {
          exit(1);
       }
 
-      Realf data[WID3];
-      block_data[blockLID+cell].get(data);
-      return data;
+      return block_data[blockLID*WID3+cell];
    }
 
    template<typename LID> inline
@@ -400,7 +444,7 @@ namespace vmesh {
       bool ok = true;
       if (cell >= WID3) ok = false;
       if (blockLID >= numberOfBlocks) ok = false;
-      if (blockLID+cell >= block_data.size()) ok = false;
+      if (blockLID*WID3+cell >= block_data.size()) ok = false;
       if (ok == false) {
          std::stringstream ss;
          ss << "VBC ERROR: out of bounds in setData, LID=" << blockLID << " cell=" << cell << " #blocks=" << numberOfBlocks << " data.size()=" << block_data.size() << std::endl;
@@ -409,9 +453,7 @@ namespace vmesh {
          exit(1);
       }
       
-      Realf data[WID3];
-      block_data[blockLID+cell].get(data);
-      return data;
+      block_data[blockLID*WID3+cell] = value;
    }
    
    #endif

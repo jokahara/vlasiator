@@ -263,7 +263,6 @@ bool writeVelocityDistributionData(const uint popID,Writer& vlsvWriter,
    // Start multi write
    vlsvWriter.startMultiwrite(datatype_avgs,arraySize_avgs,vectorSize_avgs,dataSize_avgs);
 
-   std::vector<std::vector<Realf> > realData(cells.size()); // Note: multiple vectors needed because total amount of data exceeds maximum size of vector
    // Loop over cells
    for (size_t cell = 0; cell<cells.size(); ++cell) {
       // Get the spatial cell
@@ -271,22 +270,10 @@ bool writeVelocityDistributionData(const uint popID,Writer& vlsvWriter,
       
       // Get the number of blocks in this cell
       const uint64_t arrayElements = SC->get_number_of_velocity_blocks(popID);
+      char* arrayToWrite = reinterpret_cast<char*>(SC->get_data(popID));
 
-      if (!arrayElements) 
-         vlsvWriter.addMultiwriteUnit(NULL, 0);
-      else {
-         const int currentIndex = realData.size();
-         realData[cell].resize(arrayElements*WID3);
-         Realf* data = realData[cell].data();
-         
-         // Uncompress data block
-         for (uint i = 0; i < arrayElements; i++) 
-            SC->get_data(i, popID, data + WID3*i);
-
-         // Add a subarray to write
-         char* arrayToWrite = reinterpret_cast<char*>(data);
-         vlsvWriter.addMultiwriteUnit(arrayToWrite, arrayElements); // Note: We told beforehands that the vectorsize = WID3 = 64
-      }
+      // Add a subarray to write
+      vlsvWriter.addMultiwriteUnit(arrayToWrite, arrayElements); // Note: We told beforehands that the vectorsize = WID3 = 64
    }
    if (cells.size() == 0) {
       vlsvWriter.addMultiwriteUnit(NULL, 0); //Dummy write to avoid hang in end multiwrite

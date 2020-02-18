@@ -282,7 +282,7 @@ void initializeGrids(
    
    if (P::isRestart == false) {
       // Apply boundary conditions so that we get correct initial moments
-      sysBoundaries.applySysBoundaryVlasovConditions(mpiGrid,Parameters::t);
+      sysBoundaries.applySysBoundaryVlasovConditions(mpiGrid,Parameters::t, true); // It doesn't matter here whether we put _R or _V moments
       
       //compute moments, and set them  in RHO* and RHO_*_DT2. If restart, they are already read in
       phiprof::start("Init moments");
@@ -457,6 +457,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             cell->set_mpi_transfer_enabled(false);
          } else {
             cell->set_mpi_transfer_enabled(true);
+            cell->compress_data(p);          // compress data for transfer
          }
       }
 
@@ -489,18 +490,28 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             phiprof::stop("Preparing receives", 0, "Spatial cells");
          }
 
-         #ifdef COMP_SIZE
-         phiprof::start("transfer_block_sizes");
-         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_SIZES);
-         mpiGrid.continue_balance_load();
-         phiprof::stop("transfer_block_sizes");
-         #endif
-         
          //do the actual transfer of data for the set of cells to be transferred
          phiprof::start("transfer_all_data");
          SpatialCell::set_mpi_transfer_type(Transfer::ALL_DATA);
          mpiGrid.continue_balance_load();
          phiprof::stop("transfer_all_data");
+
+         // decompress reseived_data
+         if(receives == 0) {
+               phiprof::start("Decompressing data");
+               phiprof::stop("Decompressing data", 0, "Spatial cells");
+         }
+         else {
+            for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
+               CellID cell_id=incoming_cells_list[i];
+               SpatialCell* cell = mpiGrid[cell_id];
+               if (cell_id % num_part_transfers == transfer_part) {
+                  phiprof::start("Decompressing data");
+                  cell->decompress_data(p);
+                  phiprof::stop("Decompressing data", 1, "Spatial cells");
+               }
+            }
+         }
 
          // Free memory for cells that have been sent (the block data)
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
@@ -510,7 +521,10 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             // Free memory of this cell as it has already been transferred, 
             // it will not be used anymore. NOTE: Only clears memory allocated 
             // to the active population.
-            if (cell_id % num_part_transfers == transfer_part) cell->clear(p);
+            if (cell_id % num_part_transfers == transfer_part) {
+               cell->clear(p);
+               cell->clear_compressed_data(p);
+            }
          }
       } // for-loop over populations
    } // for-loop over transfer parts
@@ -616,28 +630,20 @@ bool adjustVelocityBlocks(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& m
          }
          neighbor_ptrs.push_back(mpiGrid[neighbor_id]);
       }
-      Realf temp[WID3];
       if (getObjectWrapper().particleSpecies[popID].sparse_conserve_mass) {
-         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID); ++i) {
-            cell->get_data(i, popID, temp);
-            for (int j = 0; j < WID3; j++) 
-               density_pre_adjust += temp[j];
+         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
+            density_pre_adjust += cell->get_data(popID)[i];
          }
       }
       cell->adjust_velocity_blocks(neighbor_ptrs,popID);
 
       if (getObjectWrapper().particleSpecies[popID].sparse_conserve_mass) {
-         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID); ++i) {
-            cell->get_data(i, popID, temp);
-            for (int j = 0; j < WID3; j++) 
-               density_post_adjust += temp[j];
+         for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
+            density_post_adjust += cell->get_data(popID)[i];
          }
          if (density_post_adjust != 0.0) {
-            for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID); ++i) {
-               cell->get_data(i, popID, temp);
-               for (int j = 0; j < WID3; j++) 
-                  temp[j] *= density_pre_adjust/density_post_adjust;
-               cell->set_data(i, popID, temp);
+            for (size_t i=0; i<cell->get_number_of_velocity_blocks(popID)*WID3; ++i) {
+               cell->get_data(popID)[i] *= density_pre_adjust/density_post_adjust;
             }
          }
       }

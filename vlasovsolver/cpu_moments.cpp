@@ -33,20 +33,15 @@ using namespace std;
  * all existing particle populations. This function is AMR safe.
  * @param cell Spatial cell.
  * @param computeSecond If true, second velocity moments are calculated.
- * @param doNotSkip If false, DO_NOT_COMPUTE cells, or boundary cells of layer larger than 1, are skipped.*/
+ * @param doNotSkip If false, DO_NOT_COMPUTE cells are skipped.*/
 void calculateCellMoments(spatial_cell::SpatialCell* cell,
                           const bool& computeSecond,
                           const bool& doNotSkip) {
 
     // if doNotSkip == true then the first clause is false and we will never return,
     // i.e. always compute, otherwise we skip DO_NOT_COMPUTE cells
-    // or boundary cells of layer larger than 1.
     bool skipMoments = false;
-    if (!doNotSkip &&
-        (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE ||
-        (cell->sysBoundaryLayer != 1  &&
-         cell->sysBoundaryFlag != sysboundarytype::NOT_SYSBOUNDARY))
-        ) {
+    if (!doNotSkip && cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
         skipMoments = true;
     }
 
@@ -65,10 +60,10 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
     // Loop over all particle species
     if (skipMoments == false) {
        for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
-          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
+          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
           if (blockContainer.size() == 0) continue;
           
-          Realf data[WID3];
+          const Realf* data       = blockContainer.getData();
           const Real* blockParams = blockContainer.getParameters();
           const Real mass = getObjectWrapper().particleSpecies[popID].mass;
           const Real charge = getObjectWrapper().particleSpecies[popID].charge;
@@ -79,7 +74,7 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
 
           // Calculate species' contribution to first velocity moments
           for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
-             blockVelocityFirstMoments(blockContainer.getData(blockLID, data),
+             blockVelocityFirstMoments(data+blockLID*WID3,
                                        blockParams+blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS,
                                        array);
           }
@@ -108,10 +103,10 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
             
     // Loop over all particle species
     for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
-       vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
+       vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
        if (blockContainer.size() == 0) continue;
        
-       Realf data[WID3];
+       const Realf* data       = blockContainer.getData();
        const Real* blockParams = blockContainer.getParameters();
        const Real mass = getObjectWrapper().particleSpecies[popID].mass;
        
@@ -122,7 +117,7 @@ void calculateCellMoments(spatial_cell::SpatialCell* cell,
        // Calculate species' contribution to second velocity moments
        Population & pop = cell->get_population(popID);
        for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
-          blockVelocitySecondMoments(blockContainer.getData(blockLID, data),
+          blockVelocitySecondMoments(data+blockLID*WID3,
                                      blockParams+blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS,
                                      cell->parameters[CellParams::VX],
                                      cell->parameters[CellParams::VY],
@@ -161,6 +156,10 @@ void calculateMoments_R(
        for (size_t c=0; c<cells.size(); ++c) {
           SpatialCell* cell = mpiGrid[cells[c]];
           
+          if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
+             continue;
+          }
+          
           // Clear old moments to zero value
           if (popID == 0) {
              cell->parameters[CellParams::RHOM_R  ] = 0.0;
@@ -177,10 +176,9 @@ void calculateMoments_R(
           const Real dy = cell->parameters[CellParams::DY];
           const Real dz = cell->parameters[CellParams::DZ];
 
-          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
+          vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
           if (blockContainer.size() == 0) continue;
-          
-          Realf data[WID3];
+          const Realf* data       = blockContainer.getData();
           const Real* blockParams = blockContainer.getParameters();
           const Real mass = getObjectWrapper().particleSpecies[popID].mass;
           const Real charge = getObjectWrapper().particleSpecies[popID].charge;
@@ -205,7 +203,7 @@ void calculateMoments_R(
 
           // Calculate species' contribution to first velocity moments
           for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
-            blockVelocityFirstMoments(blockContainer.getData(blockLID, data),
+            blockVelocityFirstMoments(data+blockLID*WID3,
                                       blockParams+blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS,
                                       array);
           } // for-loop over velocity blocks
@@ -228,6 +226,9 @@ void calculateMoments_R(
     #pragma omp parallel for
     for (size_t c=0; c<cells.size(); ++c) {
        SpatialCell* cell = mpiGrid[cells[c]];
+       if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
+          continue;
+       }
        cell->parameters[CellParams::VX_R] = divideIfNonZero(cell->parameters[CellParams::VX_R], cell->parameters[CellParams::RHOM_R]);
        cell->parameters[CellParams::VY_R] = divideIfNonZero(cell->parameters[CellParams::VY_R], cell->parameters[CellParams::RHOM_R]);
        cell->parameters[CellParams::VZ_R] = divideIfNonZero(cell->parameters[CellParams::VZ_R], cell->parameters[CellParams::RHOM_R]);
@@ -243,11 +244,14 @@ void calculateMoments_R(
       #pragma omp parallel for
       for (size_t c=0; c<cells.size(); ++c) {
          SpatialCell* cell = mpiGrid[cells[c]];
-       
-         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
-         if (blockContainer.size() == 0) continue;
          
-         Realf data[WID3];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
+            continue;
+         }
+         
+         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
+         if (blockContainer.size() == 0) continue;
+         const Realf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
          const Real mass = getObjectWrapper().particleSpecies[popID].mass;
 
@@ -258,7 +262,7 @@ void calculateMoments_R(
          // Calculate species' contribution to second velocity moments
          Population & pop = cell->get_population(popID);
          for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
-            blockVelocitySecondMoments(blockContainer.getData(blockLID, data),
+            blockVelocitySecondMoments(data+blockLID*WID3,
                                        blockParams+blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS,
                                        cell->parameters[CellParams::VX_R],
                                        cell->parameters[CellParams::VY_R],
@@ -301,6 +305,10 @@ void calculateMoments_V(
       for (size_t c=0; c<cells.size(); ++c) {
          SpatialCell* cell = mpiGrid[cells[c]];
          
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
+            continue;
+         }
+         
          // Clear old moments to zero value
          if (popID == 0) {
              cell->parameters[CellParams::RHOM_V  ] = 0.0;
@@ -313,10 +321,9 @@ void calculateMoments_V(
              cell->parameters[CellParams::P_33_V] = 0.0;
          }
 
-         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
+         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
          if (blockContainer.size() == 0) continue;
-         
-         Realf data[WID3];
+         const Realf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
          const Real mass = getObjectWrapper().particleSpecies[popID].mass;
          const Real charge = getObjectWrapper().particleSpecies[popID].charge;
@@ -327,7 +334,7 @@ void calculateMoments_V(
 
          // Calculate species' contribution to first velocity moments
          for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
-            blockVelocityFirstMoments(blockContainer.getData(blockLID, data),
+            blockVelocityFirstMoments(data+blockLID*WID3,
                                       blockParams+blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS,
                                       array);
          }
@@ -350,6 +357,9 @@ void calculateMoments_V(
    #pragma omp parallel for
    for (size_t c=0; c<cells.size(); ++c) {
       SpatialCell* cell = mpiGrid[cells[c]];
+      if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
+         continue;
+      }
       cell->parameters[CellParams::VX_V] = divideIfNonZero(cell->parameters[CellParams::VX_V], cell->parameters[CellParams::RHOM_V]);
       cell->parameters[CellParams::VY_V] = divideIfNonZero(cell->parameters[CellParams::VY_V], cell->parameters[CellParams::RHOM_V]);
       cell->parameters[CellParams::VZ_V] = divideIfNonZero(cell->parameters[CellParams::VZ_V], cell->parameters[CellParams::RHOM_V]);
@@ -365,11 +375,14 @@ void calculateMoments_V(
       #pragma omp parallel for
       for (size_t c=0; c<cells.size(); ++c) {
          SpatialCell* cell = mpiGrid[cells[c]];
-
-         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_block_container(popID);
-         if (blockContainer.size() == 0) continue;
          
-         Realf data[WID3];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) {
+            continue;
+         }
+
+         vmesh::VelocityBlockContainer<vmesh::LocalID>& blockContainer = cell->get_velocity_blocks(popID);
+         if (blockContainer.size() == 0) continue;
+         const Realf* data       = blockContainer.getData();
          const Real* blockParams = blockContainer.getParameters();
          const Real mass = getObjectWrapper().particleSpecies[popID].mass;
 
@@ -380,7 +393,8 @@ void calculateMoments_V(
          // Calculate species' contribution to second velocity moments
          Population & pop = cell->get_population(popID);
          for (vmesh::LocalID blockLID=0; blockLID<blockContainer.size(); ++blockLID) {
-            blockVelocitySecondMoments(blockContainer.getData(blockLID, data),
+            blockVelocitySecondMoments(
+                                       data+blockLID*WID3,
                                        blockParams+blockLID*BlockParams::N_VELOCITY_BLOCK_PARAMS,
                                        cell->parameters[CellParams::VX_V],
                                        cell->parameters[CellParams::VY_V],
