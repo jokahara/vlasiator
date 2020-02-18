@@ -260,9 +260,6 @@ namespace vmesh {
 
    template<typename LID> inline
    Compf* VelocityBlockContainer<LID>::getCompressedData() {
-      if (!mustBeDecompressed) {
-         std::cerr << "ERROR: no compressed data!" << std::endl;         
-      }
       return compressed_data.data();
    }
 

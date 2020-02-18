@@ -634,8 +634,6 @@ namespace spatial_cell {
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_SIZE) != 0) {
-            if (!receiving) compress_data(activePopID);
-
             // send compressed data size
             displacements.push_back((uint8_t*) &(populations[activePopID].Compressed_Size) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
