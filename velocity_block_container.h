@@ -55,7 +55,7 @@ namespace vmesh {
       void decompress();
       Compf* getCompressedData();
       LID getCompressedSize();
-      void setCompressedSize(LID size);
+      void setToBeDecompressed(LID size);
       void clearCompressedData();
 
       Realf* getNullData();
@@ -89,13 +89,14 @@ namespace vmesh {
       std::vector<Real,aligned_allocator<Real,BlockParams::N_VELOCITY_BLOCK_PARAMS> > parameters;
 
       std::vector<Compf,aligned_allocator<Compf,1>> compressed_data;
-      bool isCompressed;
+      bool mustBeDecompressed;
    };
    
    template<typename LID> inline
    VelocityBlockContainer<LID>::VelocityBlockContainer() {
       currentCapacity = 0;
       numberOfBlocks = 0;
+      mustBeDecompressed = false;
    }
    
    template<typename LID> inline
@@ -172,11 +173,19 @@ namespace vmesh {
    
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::getData() {
+      if (mustBeDecompressed) {
+         decompress();
+      }
+      
       return block_data.data();
    }
    
    template<typename LID> inline
    const Realf* VelocityBlockContainer<LID>::getData() const {
+      if (mustBeDecompressed) {
+         std::cerr << "ERROR: data has not been decompressed!";
+      }
+
       return block_data.data();
    }
 
@@ -186,6 +195,10 @@ namespace vmesh {
          if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"getData");
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
+      if (mustBeDecompressed) {
+         decompress();
+      }
+      
       return block_data.data() + blockLID*WID3;
    }
    
@@ -195,21 +208,22 @@ namespace vmesh {
          if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"const getData const");
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
+      if (mustBeDecompressed) {
+         std::cerr << "ERROR: data has not been decompressed!";
+      }
+      
       return block_data.data() + blockLID*WID3;
    }
 
    // compress data for MPI transfer
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::compress() {
-      if (isCompressed) {
-         std::cerr << "ERROR: block is already compressed!" << std::endl;         
-      }
-      isCompressed = true;
+      if(numberOfBlocks == 0) return 0;
 
       compressed_data.resize(66 * numberOfBlocks); // max_size
       Compf* p = compressed_data.data();
       Realf* data = block_data.data();
-      
+      // TODO: omp parallel for
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
          p += cBlock::set(data, p);
@@ -222,8 +236,8 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
-      if (!isCompressed) {
-         std::cerr << "ERROR: block has not been compressed!" << std::endl;         
+      if (!mustBeDecompressed) {
+         return;
       }
 
       Compf* p = compressed_data.data();
@@ -234,13 +248,19 @@ namespace vmesh {
          p += cBlock::get(data, p);
          data += WID3;
       }
-
+      
       clearCompressedData();
    }
 
    template<typename LID> inline
+   void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
+      compressed_data.resize(size);
+      mustBeDecompressed = true;
+   }
+
+   template<typename LID> inline
    Compf* VelocityBlockContainer<LID>::getCompressedData() {
-      if (!isCompressed) {
+      if (!mustBeDecompressed) {
          std::cerr << "ERROR: no compressed data!" << std::endl;         
       }
       return compressed_data.data();
@@ -252,17 +272,12 @@ namespace vmesh {
    }
 
    template<typename LID> inline
-   void VelocityBlockContainer<LID>::setCompressedSize(LID size) {
-      return compressed_data.resize(size);
-   }
-
-   template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
 
       std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
       compressed_data.swap(dummy_data);
 
-      isCompressed = false;
+      mustBeDecompressed = false;
    }
 
    template<typename LID> inline

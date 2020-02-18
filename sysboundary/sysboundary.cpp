@@ -650,13 +650,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
    for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
       SpatialCell::setCommunicatedSpecies(popID);
 
-      const vector<CellID> boundary_cells = mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-      for (size_t c = 0; c < boundary_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[boundary_cells[c]];
-         cell->compress_data(popID);
-      }
-
       // Then the block data in the reduced neighbourhood:
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
@@ -689,13 +682,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       mpiGrid.wait_remote_neighbor_copy_update_receives(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
 
-      const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-      for (size_t c = 0; c < remote_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[boundary_cells[c]];
-         cell->decompress_data(popID);
-      }
-
       // Compute vlasov boundary on system boundary/process boundary cells
       timer=phiprof::initializeTimer("Compute process boundary cells");
       phiprof::start(timer);
@@ -712,13 +698,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
          calculateMoments_R(mpiGrid, boundaryCells, true);
       }
       phiprof::stop(timer);
-
-      #pragma omp parallel for
-      for (size_t c = 0; c < boundary_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[boundary_cells[c]];
-         cell->clear_compressed_data(popID);
-      }
       
       timer=phiprof::initializeTimer("Wait for sends","MPI","Wait");
       phiprof::start(timer);

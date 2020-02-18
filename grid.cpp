@@ -464,19 +464,8 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
 
-         // compressing data
-         phiprof::start("Compressing data");
-         for (unsigned int i=0; i<outgoing_cells_list.size(); i++) {
-            CellID cell_id=outgoing_cells_list[i];
-            SpatialCell* cell = mpiGrid[cell_id];
-            if (cell_id%num_part_transfers!=transfer_part) {
-               cell->compress_data(p);
-            }
-         }
-         phiprof::stop("Compressing data");
-
          //Transfer velocity block list
-         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);
+         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1 & Transfer::COMPRESSED_SIZE);
          mpiGrid.continue_balance_load();
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE2);
          mpiGrid.continue_balance_load();

@@ -600,10 +600,6 @@ namespace spatial_cell {
             // send velocity block list size
             displacements.push_back((uint8_t*) &(populations[activePopID].N_blocks) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
-
-            // send compressed data size
-            displacements.push_back((uint8_t*) &(populations[activePopID].Compressed_Size) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(vmesh::LocalID));
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_LIST_STAGE2) != 0) {
@@ -638,6 +634,8 @@ namespace spatial_cell {
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_SIZE) != 0) {
+            if (!receiving) compress_data(activePopID);
+
             // send compressed data size
             displacements.push_back((uint8_t*) &(populations[activePopID].Compressed_Size) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
@@ -645,7 +643,7 @@ namespace spatial_cell {
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
             if (receiving) {
-               populations[activePopID].blockContainer.getCompressedSize(populations[activePopID].Compressed_Size);
+               populations[activePopID].blockContainer.setToBeDecompressed(populations[activePopID].Compressed_Size);
             }
 
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);

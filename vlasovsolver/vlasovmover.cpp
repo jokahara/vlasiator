@@ -82,15 +82,6 @@ void calculateSpatialTranslation(
     
     // ------------- SLICE - map dist function in Z --------------- //
    if(P::zcells_ini > 1){
-
-      const vector<CellID> local_cells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
-      for (size_t c = 0; c < local_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[local_cells[c]];
-         cell->compress_data(popID);
-      }
-
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
       phiprof::start(trans_timer);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
@@ -98,21 +89,6 @@ void calculateSpatialTranslation(
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
-
-      const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
-      for (size_t c = 0; c < remote_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[remote_cells[c]];
-         cell->decompress_data(popID);
-      }
-      
-      #pragma omp parallel for
-      for (size_t c = 0; c < local_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[local_cells[c]];
-         cell->clear_compressed_data(popID);
-      }
 
       phiprof::start("compute-mapping-z");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -137,15 +113,6 @@ void calculateSpatialTranslation(
    
    // ------------- SLICE - map dist function in X --------------- //
    if(P::xcells_ini > 1){
-      
-      const vector<CellID> local_cells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
-      for (size_t c = 0; c < local_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[local_cells[c]];
-         cell->compress_data(popID);
-      }
-
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
       phiprof::start(trans_timer);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
@@ -154,21 +121,6 @@ void calculateSpatialTranslation(
       mpiGrid.set_send_single_cells(false);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
-      
-      const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
-      for (size_t c = 0; c < remote_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[remote_cells[c]];
-         cell->decompress_data(popID);
-      }
-      
-      #pragma omp parallel for
-      for (size_t c = 0; c < local_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[local_cells[c]];
-         cell->clear_compressed_data(popID);
-      }
 
       phiprof::start("compute-mapping-x");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -193,15 +145,6 @@ void calculateSpatialTranslation(
 
    // ------------- SLICE - map dist function in Y --------------- //
    if(P::ycells_ini > 1) {
-      
-      const vector<CellID> local_cells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
-      for (size_t c = 0; c < local_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[local_cells[c]];
-         cell->compress_data(popID);
-      }
-
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-y","MPI");
       phiprof::start(trans_timer);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
@@ -211,21 +154,6 @@ void calculateSpatialTranslation(
       mpiGrid.set_send_single_cells(false);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
-      
-      const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
-      for (size_t c = 0; c < remote_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[remote_cells[c]];
-         cell->decompress_data(popID);
-      }
-      
-      #pragma omp parallel for
-      for (size_t c = 0; c < local_cells.size(); c++)
-      {
-         SpatialCell* cell = mpiGrid[local_cells[c]];
-         cell->clear_compressed_data(popID);
-      }
 
       phiprof::start("compute-mapping-y");
       if(P::amrMaxSpatialRefLevel == 0) {
