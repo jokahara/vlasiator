@@ -645,11 +645,11 @@ namespace spatial_cell {
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
             if (receiving) {
-               populations[activePopID].blockContainer.blockContainer.getCompressedSize(populations[activePopID].Compressed_Size);
+               populations[activePopID].blockContainer.getCompressedSize(populations[activePopID].Compressed_Size);
             }
 
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(Compf)*populations[activePopID].blockContainer.blockContainer.getCompressedSize());
+            block_lengths.push_back(sizeof(Compf)*populations[activePopID].blockContainer.getCompressedSize());
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMPRESSED_SIZE) != 0) {
@@ -1287,7 +1287,6 @@ namespace spatial_cell {
    void SpatialCell::prepare_to_receive_blocks(const uint popID) {
       populations[popID].vmesh.setGrid();
       populations[popID].blockContainer.setSize(populations[popID].vmesh.size());
-      populations[popID].blockContainer.setCompressedSize();
 
       Real* parameters = get_block_parameters(popID);
       

@@ -457,13 +457,23 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             cell->set_mpi_transfer_enabled(false);
          } else {
             cell->set_mpi_transfer_enabled(true);
-            cell->compress_data(p);          // compress data for transfer
          }
       }
 
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
+
+         // compressing data
+         phiprof::start("Compressing data");
+         #pragma omp for
+         for (unsigned int i=0; i<outgoing_cells_list.size(); i++) {
+            CellID cell_id=outgoing_cells_list[i];
+            SpatialCell* cell = mpiGrid[cell_id];
+            if (cell_id%num_part_transfers!=transfer_part) {
+               cell->compress_data(p);
+         }
+         phiprof::stop("Compressing data");
 
          //Transfer velocity block list
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);
@@ -497,21 +507,20 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          phiprof::stop("transfer_all_data");
 
          // decompress reseived_data
+         phiprof::start("Decompressing data");
          if(receives == 0) {
-               phiprof::start("Decompressing data");
-               phiprof::stop("Decompressing data", 0, "Spatial cells");
          }
          else {
+            #pragma omp for
             for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
                CellID cell_id=incoming_cells_list[i];
                SpatialCell* cell = mpiGrid[cell_id];
                if (cell_id % num_part_transfers == transfer_part) {
-                  phiprof::start("Decompressing data");
                   cell->decompress_data(p);
-                  phiprof::stop("Decompressing data", 1, "Spatial cells");
                }
             }
          }
+         phiprof::stop("Decompressing data");
 
          // Free memory for cells that have been sent (the block data)
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
