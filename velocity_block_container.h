@@ -249,15 +249,14 @@ namespace vmesh {
    }
 
    template<typename LID> inline
-   LID VelocityBlockContainer<LID>::setCompressedSize(LID size) {
+   void VelocityBlockContainer<LID>::setCompressedSize(LID size) {
       return compressed_data.resize(size);
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
-      compressed_data.clear();
 
-      std::vector<Compf,aligned_allocator<Compf,WID3> > dummy_data;
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
       compressed_data.swap(dummy_data);
 
       isCompressed = false;

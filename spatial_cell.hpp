@@ -200,7 +200,7 @@ namespace spatial_cell {
       void decompress_data(const uint popID);
       vmesh::LocalID get_compressed_size(const uint popID);
       Compf* get_compressed_data(const uint popID);
-      Compf* clear_compressed_data(const uint popID);
+      void clear_compressed_data(const uint popID);
 
       Real* get_cell_parameters();
       const Real* get_cell_parameters() const;
@@ -840,14 +840,14 @@ namespace spatial_cell {
    }
 
    inline void SpatialCell::decompress_data(const uint popID) {
-      return populations[popID].blockContainer.decompress()
+      return populations[popID].blockContainer.decompress();
    }
 
    inline vmesh::LocalID SpatialCell::get_compressed_size(const uint popID) {
-      return populations[popID].blockContainer.compressedSize();
+      return populations[popID].blockContainer.getCompressedSize();
    }
 
-   inline void clear_compressed_data(const uint popID) {
+   inline void SpatialCell::clear_compressed_data(const uint popID) {
       populations[popID].blockContainer.clearCompressedData();
       populations[popID].Compressed_Size = 0;
    }
