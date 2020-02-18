@@ -183,7 +183,7 @@ namespace vmesh {
    template<typename LID> inline
    const Realf* VelocityBlockContainer<LID>::getData() const {
       if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!";
+         std::cerr << "ERROR: data has not been decompressed!\n";
       }
 
       return block_data.data();

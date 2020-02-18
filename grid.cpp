@@ -399,6 +399,8 @@ void setFaceNeighborRanks( dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& 
 }
 
 void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, SysBoundary& sysBoundaries){
+   std::cerr << "balanceLoad" << std::endl;
+
    // Invalidate cached cell lists
    Parameters::meshRepartitioned = true;
 
@@ -459,7 +461,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             cell->set_mpi_transfer_enabled(true);
          }
       }
-      std:cerr << "ALL_DATA" << std::endl;
+      std::cerr << "ALL_DATA" << std::endl;
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
@@ -535,7 +537,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          }
       } // for-loop over populations
 
-      std:cerr << "done" << std::endl;
+      std::cerr << "done" << std::endl;
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");
 
@@ -585,6 +587,8 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
    
    
    phiprof::stop("Balancing load");
+
+   std::cerr << "balanceLoad done!" << std::endl;
 }
 
 /*
