@@ -1393,8 +1393,9 @@ void update_remote_mapping_contribution_amr(
       // We need the default for 1 to 1 communications
       if(ccell) {
          for (uint i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-            ccell->neighbor_block_data.at(i) = ccell->get_data(popID);
+            ccell->neighbor_block_data.at(i) = ccell->get_compressed_data(popID);
             ccell->neighbor_number_of_blocks[i] = 0;
+            ccell->neighbor_compressed_size[i] = 0;
          }
       }
    }
@@ -1405,14 +1406,15 @@ void update_remote_mapping_contribution_amr(
       if(ccell) {
          // Initialize number of blocks to 0 and neighbor block data pointer to the local block data pointer
          for (uint i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-            ccell->neighbor_block_data.at(i) = ccell->get_data(popID);
+            ccell->neighbor_block_data.at(i) = ccell->get_compressed_data(popID);
             ccell->neighbor_number_of_blocks[i] = 0;
+            ccell->neighbor_compressed_size[i] = 0;
          }
       }
    }
    
-   vector<Realf*> receiveBuffers;
-   vector<Realf*> sendBuffers;
+   vector<Compf*> receiveBuffers;
+   vector<Compf*> sendBuffers;
    
    for (auto c : local_cells) {
       
@@ -1476,7 +1478,8 @@ void update_remote_mapping_contribution_amr(
                   if(send_cells.find(nbr) == send_cells.end()) {
                      // 5 We have not already sent data from this rank to this cell.
                      
-                     ccell->neighbor_block_data.at(sendIndex) = pcell->get_data(popID);
+                     ccell->neighbor_block_data.at(sendIndex) = pcell->compress(popID);
+                     ccell->neighbor_compressed_size.at(sendIndex) = pcell->get_compressed_size(popID);
                      send_cells.insert(nbr);
                                                                
                   } else {
@@ -1486,9 +1489,12 @@ void update_remote_mapping_contribution_amr(
                      // from one rank are sending to the same remote cell so that all sent cells can be
                      // summed for the correct result.
                      
+                     ccell->neighbor_compressed_size.at(sendIndex) = pcell->get_number_of_velocity_blocks(popID)* 66;
+                     
                      ccell->neighbor_block_data.at(sendIndex) =
-                        (Realf*) aligned_malloc(ccell->neighbor_number_of_blocks.at(sendIndex) * WID3 * sizeof(Realf), 64);
+                        (Compf*) aligned_malloc(ccell->neighbor_compressed_size.at(sendIndex) * sizeof(Compf), 1);
                      sendBuffers.push_back(ccell->neighbor_block_data.at(sendIndex));
+
                      for (uint j = 0; j < ccell->neighbor_number_of_blocks.at(sendIndex) * WID3; ++j) {
                         ccell->neighbor_block_data.at(sendIndex)[j] = 0.0;
                         
@@ -1537,8 +1543,9 @@ void update_remote_mapping_contribution_amr(
                   recvIndex = get_sibling_index(mpiGrid,nbr);
 
                   ncell->neighbor_number_of_blocks.at(recvIndex) = ccell->get_number_of_velocity_blocks(popID);
+                  ncell->neighbor_compressed_size.at(recvIndex) = ccell->get_number_of_velocity_blocks(popID) * 66;
                   ncell->neighbor_block_data.at(recvIndex) =
-                     (Realf*) aligned_malloc(ncell->neighbor_number_of_blocks.at(recvIndex) * WID3 * sizeof(Realf), 64);
+                     (Compf*) aligned_malloc(ncell->neighbor_compressed_size.at(recvIndex) * sizeof(Compf), 1);
                   receiveBuffers.push_back(ncell->neighbor_block_data.at(recvIndex));
                   
                } else {
@@ -1562,8 +1569,9 @@ void update_remote_mapping_contribution_amr(
                         auto* scell = mpiGrid[sibling];
                         
                         ncell->neighbor_number_of_blocks.at(i_sib) = scell->get_number_of_velocity_blocks(popID);
+                        ncell->neighbor_compressed_size.at(i_sib) = scell->get_number_of_velocity_blocks(popID) * 66;
                         ncell->neighbor_block_data.at(i_sib) =
-                           (Realf*) aligned_malloc(ncell->neighbor_number_of_blocks.at(i_sib) * WID3 * sizeof(Realf), 64);
+                           (Compf*) aligned_malloc(ncell->neighbor_compressed_size.at(i_sib) * sizeof(Compf), 1);
                         receiveBuffers.push_back(ncell->neighbor_block_data.at(i_sib));
                      }
                   }
@@ -1585,6 +1593,8 @@ void update_remote_mapping_contribution_amr(
    
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
+   SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMPRESSED_SIZE);
+   mpiGrid.update_copies_of_remote_neighbors(neighborhood);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    mpiGrid.update_copies_of_remote_neighbors(neighborhood);
 
@@ -1601,13 +1611,21 @@ void update_remote_mapping_contribution_amr(
          if(!receive_cell || !origin_cell) {
             continue;
          }
-         
+
          Realf *blockData = receive_cell->get_data(popID);
          Realf *neighborData = origin_cell->neighbor_block_data[receive_origin_index[c]];
 
+         Realf temp[VELOCITY_BLOCK_LENGTH * receive_cell->get_number_of_velocity_blocks(popID)];
+         
+         Compf* p = receiveBuffers[c];
+         for (size_t b = 0; b < receive_cell->get_number_of_velocity_blocks(popID); b++)
+         {
+            p += cBlock::get(neighborData + VELOCITY_BLOCK_LENGTH * b, p);
+         }
+
          //#pragma omp for 
          for(uint vCell = 0; vCell < VELOCITY_BLOCK_LENGTH * receive_cell->get_number_of_velocity_blocks(popID); ++vCell) {
-            blockData[vCell] += neighborData[vCell];
+            blockData[vCell] += temp[vCell];
          }
       }
       
@@ -1616,6 +1634,7 @@ void update_remote_mapping_contribution_amr(
       for (auto c : send_cells) {
          SpatialCell* spatial_cell = mpiGrid[c];
          Realf * blockData = spatial_cell->get_data(popID);
+         spatial_cell->clear_compressed_data(popID);
          //#pragma omp for nowait
          for(unsigned int vCell = 0; vCell < VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++vCell) {
             // copy received target data to temporary array where target data is stored.

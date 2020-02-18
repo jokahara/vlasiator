@@ -466,7 +466,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
 
          // compressing data
          phiprof::start("Compressing data");
-         #pragma omp for
          for (unsigned int i=0; i<outgoing_cells_list.size(); i++) {
             CellID cell_id=outgoing_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
@@ -511,7 +510,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          if(receives == 0) {
          }
          else {
-            #pragma omp for
             for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
                CellID cell_id=incoming_cells_list[i];
                SpatialCell* cell = mpiGrid[cell_id];

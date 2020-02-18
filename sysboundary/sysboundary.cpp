@@ -651,7 +651,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       SpatialCell::setCommunicatedSpecies(popID);
 
       const vector<CellID> boundary_cells = mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
       for (size_t c = 0; c < boundary_cells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[boundary_cells[c]];
@@ -674,7 +673,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       vector<CellID> localCells;
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_not_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),localCells);
    
-      #pragma omp parallel for
       for (uint i=0; i<localCells.size(); i++) {
          cuint sysBoundaryType = mpiGrid[localCells[i]]->sysBoundaryFlag;
          this->getSysBoundary(sysBoundaryType)->vlasovBoundaryCondition(mpiGrid,localCells[i],popID,calculate_V_moments);
@@ -692,7 +690,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       phiprof::stop(timer);
 
       const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-      #pragma omp parallel for
       for (size_t c = 0; c < remote_cells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[boundary_cells[c]];
