@@ -115,5 +115,4 @@ bool getBoundaryCellList(const dccrg::Dccrg<spatial_cell::SpatialCell,dccrg::Car
 
 
 
-
 #endif
