@@ -634,6 +634,13 @@ namespace spatial_cell {
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_SIZE) != 0) {
+            if (receiving) {
+               populations[activePopID].Compressed_Size = 0;
+            }
+            else {
+               populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.compress();
+            }
+
             // send compressed data size
             displacements.push_back((uint8_t*) &(populations[activePopID].Compressed_Size) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
@@ -645,7 +652,7 @@ namespace spatial_cell {
             }
 
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(Compf)*populations[activePopID].blockContainer.getCompressedSize());
+            block_lengths.push_back(sizeof(Compf)*populations[activePopID].Compressed_Size);
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMPRESSED_SIZE) != 0) {
@@ -654,7 +661,7 @@ namespace spatial_cell {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
                   displacements.push_back((uint8_t*) this->neighbor_compressed_size[i] - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(vmesh::LocalID) * this->neighbor_number_of_blocks[i]);
+                  block_lengths.push_back(sizeof(vmesh::LocalID));
                }
             }
          }

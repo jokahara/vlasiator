@@ -236,17 +236,15 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
-      if (!mustBeDecompressed) {
-         return;
-      }
-
-      Compf* p = compressed_data.data();
-      Realf* data = block_data.data();
-      
-      for (size_t b = 0; b < numberOfBlocks; b++)
-      {
-         p += cBlock::get(data, p);
-         data += WID3;
+      if (mustBeDecompressed) {
+         Compf* p = compressed_data.data();
+         Realf* data = block_data.data();
+         
+         for (size_t b = 0; b < numberOfBlocks; b++)
+         {
+            p += cBlock::get(data, p);
+            data += WID3;
+         }
       }
       
       clearCompressedData();
@@ -270,6 +268,7 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
+      if (compressed_data.size() == 0) return;
 
       std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
       compressed_data.swap(dummy_data);
