@@ -298,8 +298,6 @@ namespace SBC {
          bool applyUponRestart;
    };
    
-
-
 } // namespace SBC
 
 #endif
