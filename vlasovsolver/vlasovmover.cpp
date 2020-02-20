@@ -80,6 +80,8 @@ void calculateSpatialTranslation(
     int myRank;
     MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
     
+
+    std::cerr << "SpatialTranslation" << std::endl;
     // ------------- SLICE - map dist function in Z --------------- //
    if(P::zcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
@@ -89,6 +91,18 @@ void calculateSpatialTranslation(
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
+
+      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
+      for (int c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->decompress_data(popID);
+      }
+      
+      vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
+      for (int c = 0; c < remoteCells.size(); c++)
+      {
+         mpiGrid[remoteCells[c]]->decompress_data(popID);
+      }
 
       phiprof::start("compute-mapping-z");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -110,7 +124,7 @@ void calculateSpatialTranslation(
       phiprof::stop("update_remote-z");
 
    }
-   
+
    // ------------- SLICE - map dist function in X --------------- //
    if(P::xcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
@@ -121,6 +135,18 @@ void calculateSpatialTranslation(
       mpiGrid.set_send_single_cells(false);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
+
+      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
+      for (int c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->decompress_data(popID);
+      }
+      
+      vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
+      for (int c = 0; c < remoteCells.size(); c++)
+      {
+         mpiGrid[remoteCells[c]]->decompress_data(popID);
+      }
 
       phiprof::start("compute-mapping-x");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -151,6 +177,18 @@ void calculateSpatialTranslation(
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
       
+      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
+      for (int c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->decompress_data(popID);
+      }
+      
+      vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
+      for (int c = 0; c < remoteCells.size(); c++)
+      {
+         mpiGrid[remoteCells[c]]->decompress_data(popID);
+      }
+
       mpiGrid.set_send_single_cells(false);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
@@ -176,6 +214,7 @@ void calculateSpatialTranslation(
      
    }
 
+    std::cerr << "SpatialTranslation done" << std::endl;
    // MPI_Barrier(MPI_COMM_WORLD);
    // bailout(true, "", __FILE__, __LINE__);
 }

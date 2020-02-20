@@ -651,6 +651,7 @@ void update_remote_mapping_contribution(
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
 
+   std::cerr << "update remotes\n";
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "begin update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
    // MPI_Barrier(MPI_COMM_WORLD);
@@ -738,7 +739,7 @@ void update_remote_mapping_contribution(
 
    // Do communication
 
-
+   std::cerr << "NEIGHBOR_COMPRESSED_SIZE\n";
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMPRESSED_SIZE);
    switch(dimension) {
@@ -756,6 +757,7 @@ void update_remote_mapping_contribution(
       break;
    }
 
+   std::cerr << "NEIGHBOR_VEL_BLOCK_DATA\n";
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
    case 0:
@@ -772,6 +774,8 @@ void update_remote_mapping_contribution(
       break;
    }
    
+   std::cerr << "NEIGHBOR_VEL_BLOCK_DATA done\n";
+
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
@@ -813,7 +817,8 @@ void update_remote_mapping_contribution(
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
    }
-
+   
+   std::cerr << "remotes done\n";
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;
    // MPI_Barrier(MPI_COMM_WORLD);

@@ -646,6 +646,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       Transfer::CELL_SYSBOUNDARYFLAG,true);
    mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_EXTENDED_NEIGHBORHOOD_ID);
    
+   std::cerr << "SYSBOUNDARIES" << std::endl;
    // Loop over existing particle species
    for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
       SpatialCell::setCommunicatedSpecies(popID);
@@ -682,6 +683,18 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       mpiGrid.wait_remote_neighbor_copy_update_receives(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
 
+      localCells = mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      for (int c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->decompress_data(popID);
+      }
+      
+      vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      for (int c = 0; c < remoteCells.size(); c++)
+      {
+         mpiGrid[remoteCells[c]]->decompress_data(popID);
+      }
+
       // Compute vlasov boundary on system boundary/process boundary cells
       timer=phiprof::initializeTimer("Compute process boundary cells");
       phiprof::start(timer);
@@ -708,6 +721,8 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       updateRemoteVelocityBlockLists(mpiGrid, popID);
 
    } // for-loop over populations
+
+   std::cerr << "SYSBOUNDARIES done" << std::endl;
 }
 
 /*! Get a pointer to the SysBoundaryCondition of given index.
