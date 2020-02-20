@@ -243,18 +243,17 @@ namespace vmesh {
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
             if(p - compressed_data.data() >= compressed_data.size()) {
-               std::cerr << "ERROR too much data" << numberOfBlocks << " -> " << compressed_data.size() << std::endl
+               std::cerr << "ERROR too much data" << numberOfBlocks << " -> " << compressed_data.size() << std::endl;
                break;
             }
             p += cBlock::get(data, p);
             data += WID3;
          }
+         if(p - compressed_data.data() < compressed_data.size()) {
+            std::cerr << "ERROR wrong amount of data " << numberOfBlocks << " -> " << compressed_data.size() << std::endl;
+         }
       }
       
-      if(p - compressed_data.data() < compressed_data.size()) {
-         std::cerr << "ERROR wrong amount of data " << numberOfBlocks << " -> " << compressed_data.size() << std::endl;
-      }
-
       clearCompressedData();
    }
 
