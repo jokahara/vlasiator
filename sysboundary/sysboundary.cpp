@@ -663,11 +663,13 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       timer=phiprof::initializeTimer("Compute process inner cells");
       phiprof::start(timer);
 
+      std::cerr << "not on boundary" << std::endl;
       // Compute Vlasov boundary condition on system boundary/process inner cells
       vector<CellID> localCells;
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_not_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),localCells);
    
       for (uint i=0; i<localCells.size(); i++) {
+         mpiGrid[localCells[i]]->decompress_data(popID);
          cuint sysBoundaryType = mpiGrid[localCells[i]]->sysBoundaryFlag;
          this->getSysBoundary(sysBoundaryType)->vlasovBoundaryCondition(mpiGrid,localCells[i],popID,calculate_V_moments);
       }
@@ -683,12 +685,14 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       mpiGrid.wait_remote_neighbor_copy_update_receives(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
 
+      std::cerr << "local cells" << std::endl;
       localCells = mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       for (int c = 0; c < localCells.size(); c++)
       {
          mpiGrid[localCells[c]]->decompress_data(popID);
       }
       
+      std::cerr << "remote cells" << std::endl;
       vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       for (int c = 0; c < remoteCells.size(); c++)
       {

@@ -174,7 +174,7 @@ namespace vmesh {
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::getData() {
       if (mustBeDecompressed) {
-         decompress();
+         std::cerr << "ERROR: data has not been decompressed!\n";
       }
       
       return block_data.data();
@@ -196,7 +196,7 @@ namespace vmesh {
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
       if (mustBeDecompressed) {
-         decompress();
+         std::cerr << "ERROR: data has not been decompressed!\n";
       }
       
       return block_data.data() + blockLID*WID3;
@@ -242,11 +242,19 @@ namespace vmesh {
          
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
+            if(p - compressed_data.data() >= compressed_data.size()) {
+               std::cerr << "ERROR too much data" << numberOfBlocks << " -> " << compressed_data.size() << std::endl
+               break;
+            }
             p += cBlock::get(data, p);
             data += WID3;
          }
       }
       
+      if(p - compressed_data.data() < compressed_data.size()) {
+         std::cerr << "ERROR wrong amount of data " << numberOfBlocks << " -> " << compressed_data.size() << std::endl;
+      }
+
       clearCompressedData();
    }
 
@@ -268,12 +276,12 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
-      if (compressed_data.size() == 0) return;
+      mustBeDecompressed = false;
 
+      if (compressed_data.size() == 0) return; 
+      
       std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
       compressed_data.swap(dummy_data);
-
-      mustBeDecompressed = false;
    }
 
    template<typename LID> inline
