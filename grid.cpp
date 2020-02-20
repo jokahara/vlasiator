@@ -461,7 +461,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             cell->set_mpi_transfer_enabled(true);
          }
       }
-      
+
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
@@ -479,7 +479,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          */
          //Transfer velocity block list
          std::cerr << "compressing data" << std::endl;
-         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1 & Transfer::COMPRESSED_SIZE);
+         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1 | Transfer::COMPRESSED_SIZE);
          mpiGrid.continue_balance_load();
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE2);
          mpiGrid.continue_balance_load();
@@ -538,7 +538,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          }
       } // for-loop over populations
 
-      std::cerr << "done" << std::endl;
+      std::cerr << transfer_part << " done" << std::endl;
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");
 
