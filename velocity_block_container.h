@@ -269,12 +269,7 @@ namespace vmesh {
          std::cerr << "compressed size was not received";
          return;
       }
-
-      if (size == 0)
-      {
-         std::cerr << "receiving 0 data";
-         return;
-      }
+      if (size == 0) return;
       
       std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(size);
       compressed_data.swap(dummy_data);

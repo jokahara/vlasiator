@@ -673,6 +673,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_not_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),localCells);
    
       for (uint i=0; i<localCells.size(); i++) {
+         mpiGrid[localCells[i]]->decompress_data(popID);
          cuint sysBoundaryType = mpiGrid[localCells[i]]->sysBoundaryFlag;
          this->getSysBoundary(sysBoundaryType)->vlasovBoundaryCondition(mpiGrid,localCells[i],popID,calculate_V_moments);
       }
@@ -703,7 +704,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),boundaryCells);
       #pragma omp parallel for
       for (uint i=0; i<boundaryCells.size(); i++) {
-         mpiGrid[boundaryCells[i]]->decompress_data(popID);
+         mpiGrid[boundaryCells[i]]->clear_compressed_data(popID);
          cuint sysBoundaryType = mpiGrid[boundaryCells[i]]->sysBoundaryFlag;
          this->getSysBoundary(sysBoundaryType)->vlasovBoundaryCondition(mpiGrid, boundaryCells[i],popID,calculate_V_moments);
       }
