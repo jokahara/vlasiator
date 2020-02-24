@@ -220,7 +220,7 @@ namespace vmesh {
    LID VelocityBlockContainer<LID>::compress() {
       if(numberOfBlocks == 0) return 0;
 
-      compressed_data.resize(66 * numberOfBlocks); // max_size
+      compressed_data.resize(WID3+2) * numberOfBlocks); // max_size
       Compf* p = compressed_data.data();
       Realf* data = block_data.data();
       // TODO: omp parallel for
@@ -229,9 +229,13 @@ namespace vmesh {
          p += cBlock::set(data, p);
          data += WID3;
       }
+      
+      size_t compressedSize = p - compressed_data.data();
+      std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_data(compressedSize);
+      for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = block_data[i];
+      dummy_data.swap(block_data);
 
-      compressed_data.resize(p - compressed_data.data());
-      std::cerr << "compressed to size: " << compressed_data.size() << std::endl;
+      std::cerr << block_data.size()*sizeof(Realf) << " compressed to size: " << compressed_data.size()*sizeof(Compf) << "/" << compressed_data.capacity()*sizeof(Compf) << std::endl;
       return compressed_data.size();
    }
 
