@@ -247,8 +247,8 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
-      std::cerr << "decompressing from size: " << compressed_data.size() << std::endl;
       if (mustBeDecompressed) {
+      std::cerr << "decompressing from size: " << compressed_data.size()*sizeof(Compf) << std::endl;
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
          

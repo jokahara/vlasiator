@@ -659,6 +659,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       std::cerr << "compressing data" << std::endl;
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       std::cerr << "sending data" << std::endl;
+      report_process_memory_consumption();
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
