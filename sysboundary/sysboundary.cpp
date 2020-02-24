@@ -656,13 +656,8 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE,true);
+      std::cerr << "compressing data" << std::endl;
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-      
-      vector<CellID> cells = mpiGrid.get_cells();
-      size_t mem2 = 0;
-      for (uint i=0; i<cells.size(); ++i) mem2 += mpiGrid[cells[i]]->get_cell_memory_capacity();
-      std::cerr << "total capacity: " << mem2 << std::endl;
-
       std::cerr << "sending data" << std::endl;
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
@@ -671,7 +666,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       timer=phiprof::initializeTimer("Compute process inner cells");
       phiprof::start(timer);
 
-      std::cerr << "not on boundary" << std::endl;
+      std::cerr << "waiting updates" << std::endl;
       // Compute Vlasov boundary condition on system boundary/process inner cells
       vector<CellID> localCells;
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_not_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),localCells);
@@ -703,9 +698,11 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       timer=phiprof::initializeTimer("Compute process boundary cells");
       phiprof::start(timer);
       vector<CellID> boundaryCells;
+      std::cerr << "boundary cells" << std::endl;
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),boundaryCells);
       #pragma omp parallel for
       for (uint i=0; i<boundaryCells.size(); i++) {
+         mpiGrid[boundaryCells[i]]->decompress_data(popID);
          cuint sysBoundaryType = mpiGrid[boundaryCells[i]]->sysBoundaryFlag;
          this->getSysBoundary(sysBoundaryType)->vlasovBoundaryCondition(mpiGrid, boundaryCells[i],popID,calculate_V_moments);
       }

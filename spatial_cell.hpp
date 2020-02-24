@@ -1646,7 +1646,7 @@ namespace spatial_cell {
           size += populations[p].vmesh.sizeInBytes();
           size += populations[p].blockContainer.sizeInBytes();
       }
-
+      
       return size;
    }
 

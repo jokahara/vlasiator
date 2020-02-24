@@ -174,7 +174,7 @@ namespace vmesh {
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::getData() {
       if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!\n";
+         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" numberOfBlocks "\n";
       }
       
       return block_data.data();
@@ -183,7 +183,7 @@ namespace vmesh {
    template<typename LID> inline
    const Realf* VelocityBlockContainer<LID>::getData() const {
       if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!\n";
+         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" numberOfBlocks "\n";
       }
 
       return block_data.data();
@@ -196,7 +196,7 @@ namespace vmesh {
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
       if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!\n";
+         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" numberOfBlocks "\n";
       }
       
       return block_data.data() + blockLID*WID3;
@@ -209,7 +209,7 @@ namespace vmesh {
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
       if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!";
+         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" numberOfBlocks "\n";
       }
       
       return block_data.data() + blockLID*WID3;
@@ -218,6 +218,12 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::compress() {
+      if (compressed_data.size() > 0)
+      {
+         std::cerr << "already has compressed data: " << compressed_data.size() << std::endl;
+         return compressed_data.size();
+      }
+      
       if(numberOfBlocks == 0) return 0;
 
       compressed_data.resize((WID3+2) * numberOfBlocks); // max_size

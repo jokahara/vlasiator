@@ -650,7 +650,7 @@ namespace spatial_cell {
             if (receiving) {
                populations[activePopID].blockContainer.setToBeDecompressed(populations[activePopID].Compressed_Size);
             }
-
+            
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);
             block_lengths.push_back(sizeof(Compf)*populations[activePopID].Compressed_Size);
          }
