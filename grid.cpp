@@ -401,6 +401,10 @@ void setFaceNeighborRanks( dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& 
 void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, SysBoundary& sysBoundaries){
    std::cerr << "balanceLoad" << std::endl;
 
+   size_t mem = 0;
+   for (uint i=0; i<mpiGrid.get_cells().size(); ++i) mem += mpiGrid[cells[i]]->get_cell_memory_capacity();
+   std::cerr << "total capacity: " << mem << std::endl;
+
    // Invalidate cached cell lists
    Parameters::meshRepartitioned = true;
 
@@ -540,7 +544,9 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
    getObjectWrapper().meshData.reallocate();
    cells = mpiGrid.get_cells();
    for (uint i=0; i<cells.size(); ++i) mpiGrid[cells[i]]->set_mpi_transfer_enabled(true);
-
+   size_t mem2 = 0;
+   for (uint i=0; i<cells.size(); ++i) mem2 += mpiGrid[cells[i]]->get_cell_memory_capacity();
+   std::cerr << "total capacity: " << mem2 << std::endl;
    // Communicate all spatial data for FULL neighborhood, which
    // includes all data with the exception of dist function data
    SpatialCell::set_mpi_transfer_type(Transfer::ALL_SPATIAL_DATA);
