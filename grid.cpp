@@ -500,6 +500,18 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
          mpiGrid.continue_balance_load();
          phiprof::stop("transfer_all_data");
 
+         // decompressing received data
+         for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
+            CellID cell_id=incoming_cells_list[i];
+            SpatialCell* cell = mpiGrid[cell_id];
+            if (cell_id % num_part_transfers == transfer_part) {
+               CellID cell_id=incoming_cells_list[i];
+               phiprof::start("Decompressing data");
+               mpiGrid[cell_id]->decompress_data(p);
+               phiprof::stop("Decompressing data");
+            }
+         }
+
          // Free memory for cells that have been sent (the block data)
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
             CellID cell_id=outgoing_cells_list[i];
@@ -522,19 +534,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
    phiprof::start("dccrg.finish_balance_load");
    mpiGrid.finish_balance_load();
    phiprof::stop("dccrg.finish_balance_load");
-
-   // decompress reseived_data
-   std::cerr << "decompressing " << incoming_cells_list.size() << " cells" << std::endl;
-   phiprof::start("Decompressing data");
-   for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
-      for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
-         CellID cell_id=incoming_cells_list[i];
-         SpatialCell* cell = mpiGrid[cell_id];
-         cell->decompress_data(p);
-      }
-   }
-   phiprof::stop("Decompressing data");
-   std::cerr << "done" << std::endl;
 
    //Make sure transfers are enabled for all cells
    recalculateLocalCellsCache();

@@ -231,11 +231,13 @@ namespace vmesh {
       }
 
       compressed_data.resize(p - compressed_data.data());
+      std::cerr << "compressed to size: " << compressed_data.size() << std::endl;
       return compressed_data.size();
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
+      std::cerr << "decompressing from size: " << compressed_data.size() << std::endl;
       if (mustBeDecompressed) {
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
@@ -252,6 +254,18 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
+      if (size < 0)
+      {
+         std::cerr << "compressed size was not received";
+         return;
+      }
+
+      if (size == 0)
+      {
+         std::cerr << "receiving 0 data";
+         return;
+      }
+      
       compressed_data.resize(size);
       mustBeDecompressed = true;
    }

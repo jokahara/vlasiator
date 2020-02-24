@@ -635,7 +635,7 @@ namespace spatial_cell {
 
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_SIZE) != 0) {
             if (receiving) {
-               populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.getCompressedSize();
+               populations[activePopID].Compressed_Size = -1;
             }
             else {
                populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.compress();
