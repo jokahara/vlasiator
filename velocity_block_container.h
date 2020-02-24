@@ -232,9 +232,9 @@ namespace vmesh {
       }
 
       size_t compressedSize = p - compressed_data.data();
-      std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_data(compressedSize);
-      for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = block_data[i];
-      dummy_data.swap(block_data);
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(compressedSize);
+      for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = compressed_data[i];
+      dummy_data.swap(compressed_data);
 
       std::cerr << numberOfBlocks*WID3*sizeof(Realf) << " compressed to size: " << compressed_data.size()*sizeof(Compf) << "/" << zeroes << std::endl;
       return compressed_data.size();
