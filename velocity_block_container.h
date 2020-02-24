@@ -106,7 +106,7 @@ namespace vmesh {
    
    template<typename LID> inline
    size_t VelocityBlockContainer<LID>::capacityInBytes() const {
-      return (block_data.capacity())*sizeof(Realf) + parameters.capacity()*sizeof(Real);
+      return (block_data.capacity())*sizeof(Realf) + parameters.capacity()*sizeof(Real) + compressed_data.capacity())*sizeof(Compf);
    }
 
    /** Clears VelocityBlockContainer data and deallocates all memory 
@@ -220,22 +220,23 @@ namespace vmesh {
    LID VelocityBlockContainer<LID>::compress() {
       if(numberOfBlocks == 0) return 0;
 
-      compressed_data.resize(WID3+2) * numberOfBlocks); // max_size
+      compressed_data.resize((WID3+2) * numberOfBlocks); // max_size
       Compf* p = compressed_data.data();
       Realf* data = block_data.data();
       // TODO: omp parallel for
+      int zeroes = 0;
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
          p += cBlock::set(data, p);
          data += WID3;
       }
-      
+
       size_t compressedSize = p - compressed_data.data();
       std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_data(compressedSize);
       for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = block_data[i];
       dummy_data.swap(block_data);
 
-      std::cerr << block_data.size()*sizeof(Realf) << " compressed to size: " << compressed_data.size()*sizeof(Compf) << "/" << compressed_data.capacity()*sizeof(Compf) << std::endl;
+      std::cerr << numberOfBlocks*WID3*sizeof(Realf) << " compressed to size: " << compressed_data.size()*sizeof(Compf) << "/" << zeroes << std::endl;
       return compressed_data.size();
    }
 
@@ -417,7 +418,7 @@ namespace vmesh {
 
    template<typename LID> inline
    size_t VelocityBlockContainer<LID>::sizeInBytes() const {
-      return block_data.size()*sizeof(Realf) + parameters.size()*sizeof(Real);
+      return block_data.size()*sizeof(Realf) + parameters.size()*sizeof(Real) + block_data.size())*sizeof(Compf);
    }
 
    template<typename LID> inline
