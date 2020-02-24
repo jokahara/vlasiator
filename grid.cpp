@@ -401,10 +401,6 @@ void setFaceNeighborRanks( dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& 
 void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, SysBoundary& sysBoundaries){
    std::cerr << "balanceLoad" << std::endl;
 
-   size_t mem = 0;
-   for (uint i=0; i<mpiGrid.get_cells().size(); ++i) mem += mpiGrid[cells[i]]->get_cell_memory_capacity();
-   std::cerr << "total capacity: " << mem << std::endl;
-
    // Invalidate cached cell lists
    Parameters::meshRepartitioned = true;
 

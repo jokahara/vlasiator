@@ -657,6 +657,12 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       phiprof::start(timer);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      
+      vector<CellID> cells = mpiGrid.get_cells();
+      size_t mem2 = 0;
+      for (uint i=0; i<cells.size(); ++i) mem2 += mpiGrid[cells[i]]->get_cell_memory_capacity();
+      std::cerr << "total capacity: " << mem2 << std::endl;
+
       std::cerr << "sending data" << std::endl;
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
