@@ -218,10 +218,9 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::compress() {
-      if (compressed_data.size() > 0)
+      if (compressed_data.size() > 2)
       {
          std::cerr << "already has compressed data: " << compressed_data.size() << std::endl;
-         return compressed_data.size();
       }
       
       if(numberOfBlocks == 0) return 0;
@@ -241,14 +240,12 @@ namespace vmesh {
       for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = compressed_data[i];
       dummy_data.swap(compressed_data);
 
-      std::cerr << numberOfBlocks*WID3*sizeof(Realf) << " compressed to size: " << compressedSize*sizeof(Compf) << std::endl;
       return compressedSize;
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
       if (mustBeDecompressed) {
-      std::cerr << "decompressing from size: " << compressed_data.size()*sizeof(Compf) << std::endl;
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
          
@@ -369,7 +366,7 @@ namespace vmesh {
       // Clear velocity block data to zero values
       for (size_t i=0; i<WID3*N_blocks; ++i) block_data[newIndex*WID3+i] = 0.0;
       for (size_t i=0; i<BlockParams::N_VELOCITY_BLOCK_PARAMS*N_blocks; ++i)
-	parameters[newIndex*BlockParams::N_VELOCITY_BLOCK_PARAMS+i] = 0.0;
+	      parameters[newIndex*BlockParams::N_VELOCITY_BLOCK_PARAMS+i] = 0.0;
 
       return newIndex;
    }
