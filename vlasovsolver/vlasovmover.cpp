@@ -129,17 +129,17 @@ void calculateSpatialTranslation(
    if(P::xcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
       phiprof::start(trans_timer);
+      mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
-      mpiGrid.set_send_single_cells(false);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
 
       vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       for (int c = 0; c < localCells.size(); c++)
       {
-         mpiGrid[localCells[c]]->decompress_data(popID);
+         mpiGrid[localCells[c]]->clear_compressed_data(popID);
       }
       
       vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
@@ -173,17 +173,17 @@ void calculateSpatialTranslation(
    if(P::ycells_ini > 1) {
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-y","MPI");
       phiprof::start(trans_timer);
+      mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
-      mpiGrid.set_send_single_cells(false);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
       
       vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       for (int c = 0; c < localCells.size(); c++)
       {
-         mpiGrid[localCells[c]]->decompress_data(popID);
+         mpiGrid[localCells[c]]->clear_compressed_data(popID);
       }
       
       vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);

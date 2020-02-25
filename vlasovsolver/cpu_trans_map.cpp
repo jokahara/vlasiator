@@ -668,7 +668,6 @@ void update_remote_mapping_contribution(
          } else {
             ccell->neighbor_block_data.at(i) = NULL;
          }
-         ccell->neighbor_number_of_blocks.at(i) = 0;
          ccell->neighbor_compressed_size.at(i) = 0;
       }
    }
@@ -684,7 +683,6 @@ void update_remote_mapping_contribution(
          } else {
             ccell->neighbor_block_data.at(i) = NULL;
          }
-         ccell->neighbor_number_of_blocks.at(i) = 0;
          ccell->neighbor_compressed_size.at(i) = 0;
       }
       CellID p_ngbr = INVALID_CELLID;
@@ -717,7 +715,6 @@ void update_remote_mapping_contribution(
             //2) is remote cell, 3) if the source cell in center was
             //translated
             ccell->neighbor_block_data[0] = pcell->compress_data(popID);
-            ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
             send_cells.push_back(p_ngbr);
          }
@@ -727,10 +724,8 @@ void update_remote_mapping_contribution(
          //Receive data that mcell mapped to ccell to this local cell
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
-         //mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
-         mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
          mcell->neighbor_compressed_size[0] = 0;
-         mcell->neighbor_block_data[0] = (Compf*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * (WID3+2) * sizeof(Compf), 1);
+         mcell->neighbor_block_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
          
          receive_cells.push_back(local_cells[c]);
          receiveBuffers.push_back(mcell->neighbor_block_data[0]);
@@ -739,7 +734,6 @@ void update_remote_mapping_contribution(
 
    // Do communication
 
-   std::cerr << "NEIGHBOR_COMPRESSED_SIZE\n";
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMPRESSED_SIZE);
    switch(dimension) {
@@ -774,8 +768,6 @@ void update_remote_mapping_contribution(
       break;
    }
    
-   std::cerr << "NEIGHBOR_VEL_BLOCK_DATA done\n";
-
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 

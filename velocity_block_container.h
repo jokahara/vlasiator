@@ -173,18 +173,12 @@ namespace vmesh {
    
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::getData() {
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" << numberOfBlocks << "\n";
-      }
       
       return block_data.data();
    }
    
    template<typename LID> inline
    const Realf* VelocityBlockContainer<LID>::getData() const {
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" << numberOfBlocks << "\n";
-      }
 
       return block_data.data();
    }
@@ -195,9 +189,6 @@ namespace vmesh {
          if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"getData");
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" << numberOfBlocks << "\n";
-      }
       
       return block_data.data() + blockLID*WID3;
    }
@@ -208,9 +199,6 @@ namespace vmesh {
          if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"const getData const");
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data has not been decompressed!" << compressed_data.size() << "->" << numberOfBlocks << "\n";
-      }
       
       return block_data.data() + blockLID*WID3;
    }
