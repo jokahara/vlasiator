@@ -646,7 +646,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       Transfer::CELL_SYSBOUNDARYFLAG,true);
    mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_EXTENDED_NEIGHBORHOOD_ID);
    
-   std::cerr << "SYSBOUNDARIES: " << std::endl;
    // Loop over existing particle species
    for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
       SpatialCell::setCommunicatedSpecies(popID);
@@ -719,8 +718,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       updateRemoteVelocityBlockLists(mpiGrid, popID);
 
    } // for-loop over populations
-
-   std::cerr << "SYSBOUNDARIES done" << std::endl;
 }
 
 /*! Get a pointer to the SysBoundaryCondition of given index.

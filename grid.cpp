@@ -399,8 +399,7 @@ void setFaceNeighborRanks( dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& 
 }
 
 void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, SysBoundary& sysBoundaries){
-   std::cerr << "balanceLoad" << std::endl;
-
+   
    // Invalidate cached cell lists
    Parameters::meshRepartitioned = true;
 
@@ -435,9 +434,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
 
    const std::unordered_set<CellID>& outgoing_cells = mpiGrid.get_cells_removed_by_balance_load();
    std::vector<CellID> outgoing_cells_list (outgoing_cells.begin(),outgoing_cells.end()); 
-   
-   std::cerr << "incoming: " << incoming_cells_list.size() << std::endl;
-   std::cerr << "outgoing: " << outgoing_cells_list.size() << std::endl;
 
    /*transfer cells in parts to preserve memory*/
    phiprof::start("Data transfers");
@@ -575,8 +571,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
    
    
    phiprof::stop("Balancing load");
-
-   std::cerr << "balanceLoad done!" << std::endl;
 }
 
 /*

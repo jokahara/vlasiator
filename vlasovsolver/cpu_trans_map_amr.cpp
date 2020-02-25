@@ -1341,7 +1341,7 @@ void update_remote_mapping_contribution_amr(
    const uint dimension,
    int direction,
    const uint popID) {
-   std::cerr << "trans_map_amr\n";
+      
    vector<CellID> local_cells = mpiGrid.get_cells();
    const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_NEIGHBORHOOD_ID);
    vector<CellID> receive_cells;
@@ -1649,7 +1649,6 @@ void update_remote_mapping_contribution_amr(
    for (auto p : sendBuffers) {
       aligned_free(p);
    }
-   std::cerr << "trans_map_amr done\n";
 
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution_amr, dimension = " << dimension << ", direction = " << direction << endl;

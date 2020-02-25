@@ -441,7 +441,6 @@ int main(int argn,char* args[]) {
    // created. All spatial date computed this far is up to date for
    // FULL_NEIGHBORHOOD. Block lists up to date for
    // VLASOV_SOLVER_NEIGHBORHOOD (but dist function has not been communicated)
-   std::cerr << "initializeGrids\n";
    phiprof::start("Init grids");
    initializeGrids(
       argn,

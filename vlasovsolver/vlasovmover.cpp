@@ -80,8 +80,6 @@ void calculateSpatialTranslation(
     int myRank;
     MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
     
-
-    std::cerr << "SpatialTranslation" << std::endl;
     // ------------- SLICE - map dist function in Z --------------- //
    if(P::zcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
@@ -213,7 +211,6 @@ void calculateSpatialTranslation(
      
    }
 
-    std::cerr << "SpatialTranslation done" << std::endl;
    // MPI_Barrier(MPI_COMM_WORLD);
    // bailout(true, "", __FILE__, __LINE__);
 }

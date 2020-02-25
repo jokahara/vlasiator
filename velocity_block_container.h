@@ -206,12 +206,8 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::compress() {
-      if (compressed_data.size() > 2)
-      {
-         std::cerr << "already has compressed data: " << compressed_data.size() << std::endl;
-      }
-      
-      if(numberOfBlocks == 0) return 0;
+      if(compressed_data.size() > 0) return compressed_data.size();  // data has been already compressed
+      if(numberOfBlocks == 0) return 0;                              // nothing to compress
 
       compressed_data.resize((WID3+2) * numberOfBlocks); // max_size
       Compf* p = compressed_data.data();
@@ -224,7 +220,8 @@ namespace vmesh {
       }
 
       size_t compressedSize = p - compressed_data.data();
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(compressedSize + 2);
+      // reallocating to reduce memory use
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(compressedSize);
       for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = compressed_data[i];
       dummy_data.swap(compressed_data);
 
@@ -249,14 +246,9 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
-      if (size < 0)
-      {
-         std::cerr << "compressed size was not received";
-         return;
-      }
       if (size == 0) return;
       
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(size + 2);
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(size);
       compressed_data.swap(dummy_data);
       mustBeDecompressed = true;
    }
@@ -274,10 +266,9 @@ namespace vmesh {
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
       mustBeDecompressed = false;
-
-      if (compressed_data.size() <= 2) return; 
+      if (compressed_data.size() == 0) return; 
       
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(2);
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
       compressed_data.swap(dummy_data);
    }
 
