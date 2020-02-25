@@ -658,15 +658,9 @@ namespace spatial_cell {
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMPRESSED_SIZE) != 0) {
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
-               if (receiving) {
-                  std::cerr << "receiving: " << this->neighbor_compressed_size[0] << std::endl;
-               }
-               else {
-                  std::cerr << "send size: " << this->neighbor_compressed_size[0] << std::endl;
-               }
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
-                  displacements.push_back((uint8_t*) this->neighbor_compressed_size[i] - (uint8_t*) this);
+                  displacements.push_back((uint8_t*) &(this->neighbor_compressed_size[i]) - (uint8_t*) this);
                   block_lengths.push_back(sizeof(vmesh::LocalID));
                }
             }
