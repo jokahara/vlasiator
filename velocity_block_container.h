@@ -280,7 +280,7 @@ namespace vmesh {
 
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::getCompressedSize() {
-      return compressed_data.size() - 2;
+      return compressed_data.size();
    }
 
    template<typename LID> inline
