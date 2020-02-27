@@ -399,7 +399,7 @@ void setFaceNeighborRanks( dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& 
 }
 
 void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, SysBoundary& sysBoundaries){
-   
+
    // Invalidate cached cell lists
    Parameters::meshRepartitioned = true;
 
@@ -502,9 +502,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             SpatialCell* cell = mpiGrid[cell_id];
             if (cell_id % num_part_transfers == transfer_part) {
                CellID cell_id=incoming_cells_list[i];
-               phiprof::start("Decompressing data");
                mpiGrid[cell_id]->decompress_data(p);
-               phiprof::stop("Decompressing data");
             }
          }
 

@@ -18,6 +18,7 @@ class CompressedBlock {
     public:
         static int set(float* data, Compf* p);
         static int get(float* data, Compf* p);
+        static void getSizes(size_t* sizes, Compf* p, size_t n_blocks);
 };
 
 // Compresses given data block to p.
@@ -151,5 +152,13 @@ inline int CompressedBlock::get(float *data, Compf *p) {
             else data[i] = 0.f;
         }
         return n_values + OFFSET + sizeof(ulong) / sizeof(Compf);
+    }
+}
+
+inline void CompressedBlock::getSizes(size_t* sizes, Compf* p, size_t n_blocks) {
+    for (size_t i = 0; i < n_blocks; i++)
+    {
+        sizes[i] = (*p & 0xFF);
+        p += sizes[i];
     }
 }

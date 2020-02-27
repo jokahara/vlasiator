@@ -749,7 +749,7 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-
+   
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
    case 0:
@@ -792,8 +792,8 @@ void update_remote_mapping_contribution(
       // process
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
-         Realf * blockData = spatial_cell->get_data(popID);
          spatial_cell->clear_compressed_data(popID);
+         Realf * blockData = spatial_cell->get_data(popID);
            
 #pragma omp for nowait
          for(unsigned int cell = 0; cell< VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {

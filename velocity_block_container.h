@@ -209,6 +209,7 @@ namespace vmesh {
       if(compressed_data.size() > 0) return compressed_data.size();  // data has been already compressed
       if(numberOfBlocks == 0) return 0;                              // nothing to compress
 
+      phiprof::start("Compressing data");
       compressed_data.resize((WID3+2) * numberOfBlocks); // max_size
       Compf* p = compressed_data.data();
       Realf* data = block_data.data();
@@ -225,22 +226,55 @@ namespace vmesh {
       for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = compressed_data[i];
       dummy_data.swap(compressed_data);
 
+      phiprof::stop("Compressing data");
       return compressedSize;
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
+      phiprof::start("Decompressing data");
       if (mustBeDecompressed) {
+
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
-         
+         size_t sizes[numberOfBlocks];
+         for (size_t i = 0; i < numberOfBlocks; i++)
+         {
+            sizes[i] = (*p & 0xFF);
+            p += sizes[i];
+            if ((p - compressed_data.data()) > compressed_data.size())
+            {
+               std::cerr << (p - compressed_data.data()) << " < " << compressed_data.size() << std::endl;
+            }
+         }
+
+         Realf temp[WID3];
+
+         Realf sum1 = 0, sum2 = 0;
+         int z1 = 0, z2 = 0;
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
-            p += cBlock::get(data, p);
+            p += cBlock::get(temp, p);
+            for (int i = 0; i < WID3; i++)
+            {
+               if (temp[i] > MIN_VALUE) sum1 += temp[i]; 
+               else z1++; 
+
+               if (data[i] > MIN_VALUE) sum2 += data[i];
+               else z2++;               
+            }
+            
             data += WID3;
          }
+
+         if (z1 != z2)
+         {
+            std::cerr << "sum: " << sum2 << " -> " << sum1 << std::endl;
+            std::cerr << "zeroes: " << z2 << " -> " << z1 << std::endl;
+         }
       }
-      
+      phiprof::stop("Decompressing data");
+
       clearCompressedData();
    }
 

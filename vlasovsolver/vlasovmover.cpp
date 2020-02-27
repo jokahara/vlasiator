@@ -91,6 +91,7 @@ void calculateSpatialTranslation(
       phiprof::stop(trans_timer);
 
       vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
+      //local_target_cells
       for (int c = 0; c < localCells.size(); c++)
       {
          mpiGrid[localCells[c]]->clear_compressed_data(popID);
