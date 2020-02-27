@@ -238,23 +238,44 @@ namespace vmesh {
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
          size_t sizes[numberOfBlocks];
-         for (size_t i = 0; i < numberOfBlocks; i++)
+         int i;
+         for (i = 1; (p - compressed_data.data()) < compressed_data.size(); i++)
          {
-            sizes[i] = (*p & 0xFF);
-            p += sizes[i];
-            if ((p - compressed_data.data()) > compressed_data.size())
+            if (i > numberOfBlocks)
             {
-               std::cerr << (p - compressed_data.data()) << " < " << compressed_data.size() << std::endl;
+               std::cerr << "size exceeded" << std::endl;
+            }
+            
+            sizes[i] = (*p & 0xFF);
+            if (sizes[i] == 0)
+            {
+               p++;
+               continue;
+            }
+            
+            if (n_values >= BLOCK_SIZE - 4)
+            {
+               p += sizes[i] + OFFSET;
+            }
+            else {
+
+               p += sizes[i] + OFFSET + sizeof(ulong) / sizeof(Compf);
             }
          }
+         if (i < numberOfBlocks)
+         {
+            std::cerr << "size too small" << std::endl;
+         }
 
+         Compf* p = compressed_data.data();
          Realf temp[WID3];
 
-         Realf sum1 = 0, sum2 = 0;
+         //Realf sum1 = 0, sum2 = 0;
          int z1 = 0, z2 = 0;
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
             p += cBlock::get(temp, p);
+            /*
             for (int i = 0; i < WID3; i++)
             {
                if (temp[i] > MIN_VALUE) sum1 += temp[i]; 
@@ -263,13 +284,20 @@ namespace vmesh {
                if (data[i] > MIN_VALUE) sum2 += data[i];
                else z2++;               
             }
-            
+            */
+
+            for (int i = 0; i < WID3; i++)
+            {
+               if (temp[i] < MIN_VALUE) z1++; 
+
+               if (data[i] < MIN_VALUE) z2++;               
+            }
             data += WID3;
          }
 
          if (z1 != z2)
          {
-            std::cerr << "sum: " << sum2 << " -> " << sum1 << std::endl;
+            //std::cerr << "sum: " << sum2 << " -> " << sum1 << std::endl;
             std::cerr << "zeroes: " << z2 << " -> " << z1 << std::endl;
          }
       }
