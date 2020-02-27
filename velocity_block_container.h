@@ -245,15 +245,21 @@ namespace vmesh {
             {
                std::cerr << "size exceeded" << std::endl;
             }
+            if
             
             sizes[i] = (*p & 0xFF);
+            if (sizes[i])
+            {
+               std::cerr << "too big: " << sizes[i] << std::endl;
+            }
+            
             if (sizes[i] == 0)
             {
                p++;
                continue;
             }
             
-            if (n_values >= BLOCK_SIZE - 4)
+            if (sizes[i] >= BLOCK_SIZE - 4)
             {
                p += sizes[i] + OFFSET;
             }
@@ -267,7 +273,7 @@ namespace vmesh {
             std::cerr << "size too small" << std::endl;
          }
 
-         Compf* p = compressed_data.data();
+         p = compressed_data.data();
          Realf temp[WID3];
 
          //Realf sum1 = 0, sum2 = 0;
