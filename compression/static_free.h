@@ -18,7 +18,6 @@ class CompressedBlock {
     public:
         static int set(float* data, Compf* p);
         static int get(float* data, Compf* p);
-        static void getSizes(size_t* sizes, Compf* p, size_t n_blocks);
 };
 
 // Compresses given data block to p.
@@ -31,14 +30,12 @@ inline int CompressedBlock::set(float* data, Compf* p) {
         nonzero[i] = (data[i] > MIN_VALUE);
         n_values += nonzero[i];
     }
-
+    
     // if block contains only zeroes, data pointer is NULL.
     if (!n_values) {
         *p = 0;
         return 1;
     }
-    
-    int block_size = n_values + OFFSET;
 
     // find largest and smallest values to compress
     float_int max, min;
@@ -63,6 +60,8 @@ inline int CompressedBlock::set(float* data, Compf* p) {
     uint range = (max.i - min.i + 0x3FFFFF) >> 21;
     uint magic = 0x3FFFC000 & ( min.i / range + 0x1FFFFF);
     
+    int comp_size;
+
     // if block contains very few zeroes, the whole block is stored.
     // otherwise the locations of zeroes are marked into 64-bit int.
     if (n_values >= BLOCK_SIZE - 4)
@@ -78,6 +77,7 @@ inline int CompressedBlock::set(float* data, Compf* p) {
             } 
             else temp[i] = 0;
         }
+        comp_size = BLOCK_SIZE + OFFSET;
     }
     else
     {
@@ -101,13 +101,13 @@ inline int CompressedBlock::set(float* data, Compf* p) {
             }
         }
 
-        block_size += sizeof(ulong) / sizeof(Compf);
+        comp_size = n_values + OFFSET + sizeof(ulong) / sizeof(Compf);
     }
     // saving number of values, range and magic number at start of the array
     *p = n_values + (range << 8);
     *(p + 1) = (magic >> 14);
 
-    return block_size;
+    return comp_size;
 }
 
 inline int CompressedBlock::get(float *data, Compf *p) {
@@ -134,7 +134,7 @@ inline int CompressedBlock::get(float *data, Compf *p) {
             }
             else data[i] = 0.f;
         }
-        return n_values + OFFSET;
+        return BLOCK_SIZE + OFFSET;
     }
     else
     {
@@ -152,13 +152,5 @@ inline int CompressedBlock::get(float *data, Compf *p) {
             else data[i] = 0.f;
         }
         return n_values + OFFSET + sizeof(ulong) / sizeof(Compf);
-    }
-}
-
-inline void CompressedBlock::getSizes(size_t* sizes, Compf* p, size_t n_blocks) {
-    for (size_t i = 0; i < n_blocks; i++)
-    {
-        sizes[i] = (*p & 0xFF);
-        p += sizes[i];
     }
 }

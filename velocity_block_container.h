@@ -234,77 +234,34 @@ namespace vmesh {
    void VelocityBlockContainer<LID>::decompress() {
       phiprof::start("Decompressing data");
       if (mustBeDecompressed) {
-
-         Compf* p = compressed_data.data();
-         Realf* data = block_data.data();
+         p = compressed_data.data();
+         data = block_data.data();
          size_t sizes[numberOfBlocks];
+         
          int i;
-         for (i = 1; (p - compressed_data.data()) < compressed_data.size(); i++)
+         for (i = 0; (p - compressed_data.data()) < compressed_data.size(); i++)
          {
-            if (i > numberOfBlocks)
-            {
-               std::cerr << "size exceeded" << std::endl;
-            }
-            if
-            
+            if (i >= numberOfBlocks) std::cerr << "size exceeded" << std::endl;
             sizes[i] = (*p & 0xFF);
-            if (sizes[i])
-            {
-               std::cerr << "too big: " << sizes[i] << std::endl;
-            }
-            
+            if (sizes[i] > BLOCK_SIZE + 2) std::cerr << "too big: " << sizes[i] << std::endl;
+
             if (sizes[i] == 0)
             {
                p++;
                continue;
             }
             
-            if (sizes[i] >= BLOCK_SIZE - 4)
-            {
-               p += sizes[i] + OFFSET;
-            }
-            else {
-
-               p += sizes[i] + OFFSET + sizeof(ulong) / sizeof(Compf);
-            }
-         }
-         if (i < numberOfBlocks)
-         {
-            std::cerr << "size too small" << std::endl;
+            if (sizes[i] >= BLOCK_SIZE - 4) p += BLOCK_SIZE + OFFSET;
+            else  p += sizes[i] + OFFSET + sizeof(ulong) / sizeof(Compf);
          }
 
+         if (i < numberOfBlocks) std::cerr << "size too small" << std::endl;
          p = compressed_data.data();
-         Realf temp[WID3];
+         data = block_data.data();
 
-         //Realf sum1 = 0, sum2 = 0;
-         int z1 = 0, z2 = 0;
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
-            p += cBlock::get(temp, p);
-            /*
-            for (int i = 0; i < WID3; i++)
-            {
-               if (temp[i] > MIN_VALUE) sum1 += temp[i]; 
-               else z1++; 
-
-               if (data[i] > MIN_VALUE) sum2 += data[i];
-               else z2++;               
-            }
-            */
-
-            for (int i = 0; i < WID3; i++)
-            {
-               if (temp[i] < MIN_VALUE) z1++; 
-
-               if (data[i] < MIN_VALUE) z2++;               
-            }
-            data += WID3;
-         }
-
-         if (z1 != z2)
-         {
-            //std::cerr << "sum: " << sum2 << " -> " << sum1 << std::endl;
-            std::cerr << "zeroes: " << z2 << " -> " << z1 << std::endl;
+               p += cBlock::get(temp, p);
          }
       }
       phiprof::stop("Decompressing data");
