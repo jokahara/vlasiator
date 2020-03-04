@@ -206,7 +206,7 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::compress() {
-      if(compressed_data.size() > 0) return compressed_data.size();  // data has been already compressed
+      //if(compressed_data.size() > 0) return compressed_data.size();  // data has been already compressed
       if(numberOfBlocks == 0) return 0;                              // nothing to compress
 
       phiprof::start("Compressing data");
