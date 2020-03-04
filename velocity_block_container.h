@@ -210,14 +210,13 @@ namespace vmesh {
       if(numberOfBlocks == 0) return 0;                              // nothing to compress
 
       phiprof::start("Compressing data");
-      compressed_data.resize((WID3+2) * numberOfBlocks); // max_size
-      Compf* p = compressed_data.data();
-      Realf* data = block_data.data();
-
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
       compressed_data.resize(compressedSize);
+
+      Compf* p = compressed_data.data();
+      Realf* data = block_data.data();
 
       // TODO: omp parallel for
       for (size_t b = 0; b < numberOfBlocks; b++)

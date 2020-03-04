@@ -1618,9 +1618,13 @@ void update_remote_mapping_contribution_amr(
          Realf temp[VELOCITY_BLOCK_LENGTH * receive_cell->get_number_of_velocity_blocks(popID)];
          
          Compf* p = receiveBuffers[c];
+         uint32_t size[receive_cell->get_number_of_velocity_blocks(popID)];
+         uint32_t idx[receive_cell->get_number_of_velocity_blocks(popID)];
+         cBlock::countSizes(p, size, idx, receive_cell->get_number_of_velocity_blocks(popID));
+
          for (size_t b = 0; b < receive_cell->get_number_of_velocity_blocks(popID); b++)
          {
-            p += cBlock::get(blockData + VELOCITY_BLOCK_LENGTH * b, p);
+            cBlock::get(temp + VELOCITY_BLOCK_LENGTH * b, p + idx[b], size[b]);
          }
 
          //#pragma omp for 
