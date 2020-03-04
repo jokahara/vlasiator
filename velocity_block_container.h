@@ -213,18 +213,17 @@ namespace vmesh {
       compressed_data.resize((WID3+2) * numberOfBlocks); // max_size
       Compf* p = compressed_data.data();
       Realf* data = block_data.data();
+
+      uint32_t size[numberOfBlocks];
+      uint32_t idx[numberOfBlocks];
+      LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks)
+      compressed_data.resize(compressedSize);
+
       // TODO: omp parallel for
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
-         p += cBlock::set(data, p);
-         data += WID3;
+         cBlock::set(data + WID3*b, p + idx[b], size[b]);
       }
-
-      size_t compressedSize = p - compressed_data.data();
-      // reallocating to reduce memory use
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(compressedSize);
-      for (size_t i=0; i<compressedSize; ++i) dummy_data[i] = compressed_data[i];
-      dummy_data.swap(compressed_data);
 
       phiprof::stop("Compressing data");
       return compressedSize;
@@ -236,44 +235,24 @@ namespace vmesh {
       if (mustBeDecompressed) {
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
-         size_t sizes[numberOfBlocks];
          
-         int i;
-         for (i = 0; (p - compressed_data.data()) < compressed_data.size(); i++)
-         {
-            if (i >= numberOfBlocks) {
-               std::cerr << "size exceeded" << std::endl;
-               break;
-            }
-            sizes[i] = (*p & 0xFF);
-
-            if (sizes[i] == 0)
-            {
-               p++;
-               continue;
-            }
-            
-            if (sizes[i] >= BLOCK_SIZE - 4) p += BLOCK_SIZE + OFFSET;
-            else  p += sizes[i] + OFFSET + sizeof(ulong) / sizeof(Compf);
-         }
-
-         if (i < numberOfBlocks) std::cerr << "size too small" << std::endl;
-         p = compressed_data.data();
+         uint32_t size[numberOfBlocks];
+         uint32_t idx[numberOfBlocks];
+         LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks)
+         compressed_data.resize(compressedSize);
 
          Realf sum1 = 0, sum2 = 0;
          int z1 = 0, z2 = 0;
-         Realf temp[WID3]
+         Realf temp[WID3];
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
-            p += cBlock::get(temp, p);
+            cBlock::get(data + WID3*b, p + idx[b], size[b]);
             for (int i = 0; i < WID3; i++)
             {
                if (temp[i] <= MIN_VALUE) z1++; 
                if (data[i + b*WID3] <= MIN_VALUE) z2++;
                sum1 += temp[i];           
                sum2 += data[i + b*WID3];
-
-               if(temp[i] <= MIN_VALUE ^ data[i + b*WID3] <= MIN_VALUE) std::cerr << b << " error: " << data[i + b*WID3] << " -> " << temp[i] << std::endl;
             }
          }
          if (z1 != z2)

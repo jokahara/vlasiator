@@ -16,30 +16,25 @@ class CompressedBlock {
         CompressedBlock() { };
 
     public:
-        static int set(float* data, Compf* p);
-        static int get(float* data, Compf* p);
+        static void set(float* data, Compf* p, int size);
+        static void get(float* data, Compf* p, int size);
+
+        static int countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks);
+        static int countSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks);
 };
 
 // Compresses given data block to p.
-inline int CompressedBlock::set(float* data, Compf* p) {
-
-    ushort n_values = 0;
-    ushort nonzero[BLOCK_SIZE];
-    for (int i = 0; i < BLOCK_SIZE; i++)
-    {
-        nonzero[i] = (data[i] > MIN_VALUE);
-        n_values += nonzero[i];
-    }
+inline void CompressedBlock::set(float* data, Compf* p, int size) {
     
     // if block contains only zeroes, data pointer is NULL.
-    if (!n_values) {
+    if (size == 0) {
         *p = 0;
-        return 1;
+        return;
     }
 
     // find largest and smallest values to compress
     float_int max, min;
-    if (n_values == BLOCK_SIZE)
+    if (size == BLOCK_SIZE)
     {
         max.f = data[0];
         min.f = data[0];
@@ -59,25 +54,23 @@ inline int CompressedBlock::set(float* data, Compf* p) {
 
     uint range = (max.i - min.i + 0x3FFFFF) >> 21;
     uint magic = 0x3FFFC000 & ( min.i / range + 0x1FFFFF);
-    
-    int comp_size;
 
     // if block contains very few zeroes, the whole block is stored.
     // otherwise the locations of zeroes are marked into 64-bit int.
-    if (n_values >= BLOCK_SIZE - 4)
+    if (size >= BLOCK_SIZE - 4)
     {   
+
         Compf* temp = p + OFFSET;
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
-            if (nonzero[i]) {
+            if (data[i] > MIN_VALUE) {
                 value.f = data[i];
                 value.i = magic - ( value.i / range );
                 temp[i] = value.i >> 5;        
             } 
             else temp[i] = 0;
         }
-        comp_size = BLOCK_SIZE + OFFSET;
     }
     else
     {
@@ -91,7 +84,7 @@ inline int CompressedBlock::set(float* data, Compf* p) {
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
-            if (nonzero[i]) {
+            if (data[i] > MIN_VALUE) {
                 mask |= (1UL << i);
 
                 // compression of value with the fast inverse root method
@@ -100,28 +93,23 @@ inline int CompressedBlock::set(float* data, Compf* p) {
                 *temp++ = value.i >> 5;
             }
         }
-
-        comp_size = n_values + OFFSET + sizeof(ulong) / sizeof(Compf);
     }
     // saving number of values, range and magic number at start of the array
-    *p = n_values + (range << 8);
+    *p = size + (range << 7);
     *(p + 1) = (magic >> 14);
-
-    return comp_size;
 }
 
-inline int CompressedBlock::get(float *data, Compf *p) {
-    int n_values = (*p & 0xFF);
-    if (n_values == 0) {
+inline void CompressedBlock::get(float *data, Compf *p, int size) {
+    if (size == 0) {
         for (int i = 0; i < BLOCK_SIZE; i++) 
             data[i] = 0.f;
-        return 1;
+        return;
     }
 
-    int range = *p >> 8;
+    int range = *p >> 7;
     int magic = *(p+1) << 14;
-
-    if (n_values >= BLOCK_SIZE - 4)
+    
+    if (size >= BLOCK_SIZE - 4)
     {
         float_int value;
         Compf *temp = p + OFFSET;
@@ -134,7 +122,6 @@ inline int CompressedBlock::get(float *data, Compf *p) {
             }
             else data[i] = 0.f;
         }
-        return BLOCK_SIZE + OFFSET;
     }
     else
     {
@@ -151,6 +138,47 @@ inline int CompressedBlock::get(float *data, Compf *p) {
             }
             else data[i] = 0.f;
         }
-        return n_values + OFFSET + sizeof(ulong) / sizeof(Compf);
     }
+}
+
+
+inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks) {
+    int sum = 0;
+    for (int i = 0; i < n_blocks; i++)
+    {
+        indexes[i] = sum;
+
+        uint32_t n_values = 0;
+        for (int j = 0; j < BLOCK_SIZE; j++)
+            n_values += (data[j] > MIN_VALUE);
+            
+        sizes[i] = n_values;
+
+        if (n_values == 0) 
+            sum +=  1;
+        else if (n_values >= BLOCK_SIZE - 4) 
+            sum += BLOCK_SIZE + OFFSET;
+        else 
+            sum +=  n_values + OFFSET + sizeof(ulong) / sizeof(Compf);
+
+        data += BLOCK_SIZE;
+    }
+    return sum;
+}
+
+inline int CompressedBlock::countSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks) {
+    int sum = 0;
+    for (int i = 0; i < n_blocks; i++)
+    {
+        indexes[i] = sum;
+        sizes[i] = (p[sum] & 0x7F);
+
+        if (sizes[i] == 0) 
+            sum +=  1;
+        else if (sizes[i] >= BLOCK_SIZE - 4) 
+            sum += BLOCK_SIZE + OFFSET;
+        else 
+            sum +=  sizes[i] + OFFSET + sizeof(ulong) / sizeof(Compf);
+    }
+    return sum;
 }
