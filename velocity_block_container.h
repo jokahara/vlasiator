@@ -238,8 +238,7 @@ namespace vmesh {
          
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
-         LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks)
-         compressed_data.resize(compressedSize);
+         LID compressedSize = cBlock::countSizes(p, size, idx, numberOfBlocks);
 
          Realf sum1 = 0, sum2 = 0;
          int z1 = 0, z2 = 0;
