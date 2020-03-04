@@ -216,7 +216,7 @@ namespace vmesh {
 
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
-      LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks)
+      LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
       compressed_data.resize(compressedSize);
 
       // TODO: omp parallel for
