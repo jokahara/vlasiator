@@ -234,6 +234,7 @@ namespace vmesh {
    void VelocityBlockContainer<LID>::decompress() {
       phiprof::start("Decompressing data");
       if (mustBeDecompressed) {
+         mustBeDecompressed = false;
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
          
@@ -246,9 +247,6 @@ namespace vmesh {
          {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
          }
-      }
-      else if(numberOfBlocks > 0) {
-         std::cerr << "did not compress: " << numberOfBlocks << "\n";
       }
       
       phiprof::stop("Decompressing data");
@@ -283,12 +281,11 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
-      mustBeDecompressed = false;
-      compressed_data.resize(0);
-      //if (compressed_data.size() == 0) return; 
+      //compressed_data.resize(0);
+      if (compressed_data.size() == 0) return; 
       
-      //std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
-      //compressed_data.swap(dummy_data);
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
+      compressed_data.swap(dummy_data);
    }
 
    template<typename LID> inline
