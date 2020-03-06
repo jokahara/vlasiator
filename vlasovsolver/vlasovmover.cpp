@@ -305,7 +305,7 @@ void calculateAcceleration(const uint popID,const uint globalMaxSubcycles,const 
                            const Real& dt) {
    // Set active population
    SpatialCell::setCommunicatedSpecies(popID);
-   
+   cerr << "calculateAcceleration\n";
    // Calculate velocity moments, these are needed to 
    // calculate the transforms used in the accelerations.
    // Calculated moments are stored in the "_V" variables.
@@ -363,6 +363,8 @@ void calculateAcceleration(const uint popID,const uint globalMaxSubcycles,const 
    //- Only cells which were accerelated on this step need to be adjusted (blocks removed or added).
    //- Not done here on last step (done after loop)
    if(step < (globalMaxSubcycles - 1)) adjustVelocityBlocks(mpiGrid, propagatedCells, false, popID);
+   
+   cerr << "done\n";
 }
 
 /** Accelerate all particle populations to new time t+dt. 
