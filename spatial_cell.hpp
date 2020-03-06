@@ -831,7 +831,7 @@ namespace spatial_cell {
    }
 
    inline Compf* SpatialCell::compress_data(const uint popID) {
-      populations[popID].Compressed_Size = populations[popID].blockContainer.compress();
+      populations[popID].blockContainer.compress();
       return populations[popID].blockContainer.getCompressedData();
    }
 

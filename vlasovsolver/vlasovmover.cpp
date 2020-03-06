@@ -84,15 +84,22 @@ void calculateSpatialTranslation(
    if(P::zcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
       phiprof::start(trans_timer);
+
+      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
+      for (uint c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->compress_data(popID);
+      }
+      
+      mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
 
-      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       //local_target_cells
-      for (int c = 0; c < localCells.size(); c++)
+      for (uint c = 0; c < localCells.size(); c++)
       {
          mpiGrid[localCells[c]]->clear_compressed_data(popID);
       }
@@ -101,6 +108,7 @@ void calculateSpatialTranslation(
       for (int c = 0; c < remoteCells.size(); c++)
       {
          mpiGrid[remoteCells[c]]->decompress_data(popID);
+         mpiGrid[remoteCells[c]]->clear_compressed_data(popID);
       }
 
       phiprof::start("compute-mapping-z");
@@ -128,6 +136,13 @@ void calculateSpatialTranslation(
    if(P::xcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
       phiprof::start(trans_timer);
+
+      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
+      for (uint c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->compress_data(popID);
+      }
+
       mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
@@ -135,7 +150,6 @@ void calculateSpatialTranslation(
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
 
-      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       for (int c = 0; c < localCells.size(); c++)
       {
          mpiGrid[localCells[c]]->clear_compressed_data(popID);
@@ -145,6 +159,7 @@ void calculateSpatialTranslation(
       for (int c = 0; c < remoteCells.size(); c++)
       {
          mpiGrid[remoteCells[c]]->decompress_data(popID);
+         mpiGrid[remoteCells[c]]->clear_compressed_data(popID);
       }
 
       phiprof::start("compute-mapping-x");
@@ -172,6 +187,13 @@ void calculateSpatialTranslation(
    if(P::ycells_ini > 1) {
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-y","MPI");
       phiprof::start(trans_timer);
+
+      vector<CellID> localCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
+      for (uint c = 0; c < localCells.size(); c++)
+      {
+         mpiGrid[localCells[c]]->compress_data(popID);
+      }
+
       mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
@@ -189,6 +211,7 @@ void calculateSpatialTranslation(
       for (int c = 0; c < remoteCells.size(); c++)
       {
          mpiGrid[remoteCells[c]]->decompress_data(popID);
+         mpiGrid[remoteCells[c]]->clear_compressed_data(popID);
       }
 
       phiprof::start("compute-mapping-y");
@@ -305,7 +328,6 @@ void calculateAcceleration(const uint popID,const uint globalMaxSubcycles,const 
                            const Real& dt) {
    // Set active population
    SpatialCell::setCommunicatedSpecies(popID);
-   cerr << "calculateAcceleration\n";
    // Calculate velocity moments, these are needed to 
    // calculate the transforms used in the accelerations.
    // Calculated moments are stored in the "_V" variables.
@@ -363,8 +385,6 @@ void calculateAcceleration(const uint popID,const uint globalMaxSubcycles,const 
    //- Only cells which were accerelated on this step need to be adjusted (blocks removed or added).
    //- Not done here on last step (done after loop)
    if(step < (globalMaxSubcycles - 1)) adjustVelocityBlocks(mpiGrid, propagatedCells, false, popID);
-   
-   cerr << "done\n";
 }
 
 /** Accelerate all particle populations to new time t+dt. 

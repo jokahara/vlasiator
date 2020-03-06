@@ -462,6 +462,15 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
       }
 
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
+
+         for (unsigned int i=0;i<outgoing_cells_list.size();i++){
+            CellID cell_id=outgoing_cells_list[i];
+            SpatialCell* cell = mpiGrid[cell_id];
+            if (cell_id % num_part_transfers == transfer_part) {
+               cell->compress_data(p);
+            }
+         }
+         
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
 
@@ -516,7 +525,6 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             // to the active population.
             if (cell_id % num_part_transfers == transfer_part) {
                cell->clear(p);
-               cell->clear_compressed_data(p);
             }
          }
       } // for-loop over populations

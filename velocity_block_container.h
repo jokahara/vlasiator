@@ -51,7 +51,7 @@ namespace vmesh {
       Realf* getData(const LID& blockLID);
       const Realf* getData(const LID& blockLID) const;
 
-      LID compress();
+      void compress();
       void decompress();
       Compf* getCompressedData();
       LID getCompressedSize();
@@ -121,6 +121,9 @@ namespace vmesh {
       
       currentCapacity = 0;
       numberOfBlocks = 0;
+
+      std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_compdata;
+      compressed_data.swap(dummy_compdata);
    }
 
    template<typename LID> inline
@@ -205,9 +208,8 @@ namespace vmesh {
 
    // compress data for MPI transfer
    template<typename LID> inline
-   LID VelocityBlockContainer<LID>::compress() {
-      //if(compressed_data.size() > 0) return compressed_data.size();  // data has been already compressed
-      if(numberOfBlocks == 0) return 0;                              // nothing to compress
+   void VelocityBlockContainer<LID>::compress() {
+      if(numberOfBlocks == 0 || (compressed_data.size() > 0)) return;  // data has been already compressed
 
       phiprof::start("Compressing data");
       Realf* data = block_data.data();
@@ -226,7 +228,6 @@ namespace vmesh {
       }
 
       phiprof::stop("Compressing data");
-      return compressedSize;
    }
 
    template<typename LID> inline
@@ -246,17 +247,22 @@ namespace vmesh {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
          }
       }
+      else if(numberOfBlocks > 0) {
+         cerr << "did not compress: " << numberOfBlocks << "\n";
+      }
+      
       phiprof::stop("Decompressing data");
 
-      clearCompressedData();
+      //clearCompressedData();
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
       if (size == 0) return;
       
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(size);
-      compressed_data.swap(dummy_data);
+      //std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(size);
+      //compressed_data.swap(dummy_data);
+      compressed_data.resize(size);
       mustBeDecompressed = true;
    }
 
@@ -273,10 +279,11 @@ namespace vmesh {
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
       mustBeDecompressed = false;
-      if (compressed_data.size() == 0) return; 
+      compressed_data.resize(0);
+      //if (compressed_data.size() == 0) return; 
       
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
-      compressed_data.swap(dummy_data);
+      //std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
+      //compressed_data.swap(dummy_data);
    }
 
    template<typename LID> inline

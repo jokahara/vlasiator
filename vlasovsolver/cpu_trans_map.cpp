@@ -790,7 +790,7 @@ void update_remote_mapping_contribution(
             blockData[cell] += temp[cell];
          }
       }
-       
+      
       // send cell data is set to zero. This is to avoid double copy if
       // one cell is the neighbor on bot + and - side to the same
       // process

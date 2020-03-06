@@ -653,6 +653,14 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       // Then the block data in the reduced neighbourhood:
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
+      cerr << "compress boundary\n";
+      vector<CellID> boundaryCells;
+      getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),boundaryCells);
+      for (uint i=0; i<boundaryCells.size(); i++) {
+         mpiGrid[boundaryCells[i]]->compress_data(popID);
+      }
+      cerr << "compress boundary done\n";
+
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE,true);
       mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
@@ -682,17 +690,17 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       mpiGrid.wait_remote_neighbor_copy_update_receives(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
 
-      vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      vector<CellID> remoteCells;
+      getBoundaryCellList(mpiGrid,mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),remoteCells);
       for (uint c = 0; c < remoteCells.size(); c++)
       {
          mpiGrid[remoteCells[c]]->decompress_data(popID);
+         mpiGrid[remoteCells[c]]->clear_compressed_data(popID);
       }
 
       // Compute vlasov boundary on system boundary/process boundary cells
       timer=phiprof::initializeTimer("Compute process boundary cells");
       phiprof::start(timer);
-      vector<CellID> boundaryCells;
-      getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),boundaryCells);
       #pragma omp parallel for
       for (uint i=0; i<boundaryCells.size(); i++) {
          cuint sysBoundaryType = mpiGrid[boundaryCells[i]]->sysBoundaryFlag;

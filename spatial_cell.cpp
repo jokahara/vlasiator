@@ -638,7 +638,7 @@ namespace spatial_cell {
                populations[activePopID].Compressed_Size = 0;
             }
             else {
-               populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.compress();
+               populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.getCompressedSize();
             }
 
             // send compressed data size
