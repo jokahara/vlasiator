@@ -683,7 +683,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       phiprof::stop(timer);
 
       vector<CellID> remoteCells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
-      for (int c = 0; c < remoteCells.size(); c++)
+      for (uint c = 0; c < remoteCells.size(); c++)
       {
          mpiGrid[remoteCells[c]]->decompress_data(popID);
       }

@@ -210,13 +210,14 @@ namespace vmesh {
       if(numberOfBlocks == 0) return 0;                              // nothing to compress
 
       phiprof::start("Compressing data");
+      Realf* data = block_data.data();
+      
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
       compressed_data.resize(compressedSize);
 
       Compf* p = compressed_data.data();
-      Realf* data = block_data.data();
 
       // TODO: omp parallel for
       for (size_t b = 0; b < numberOfBlocks; b++)
@@ -239,26 +240,10 @@ namespace vmesh {
          uint32_t idx[numberOfBlocks];
          LID compressedSize = cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-         Realf sum1 = 0, sum2 = 0;
-         int z1 = 0, z2 = 0;
-         Realf temp[WID3];
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
-            for (int i = 0; i < WID3; i++)
-            {
-               if (temp[i] <= MIN_VALUE) z1++; 
-               if (data[i + b*WID3] <= MIN_VALUE) z2++;
-               sum1 += temp[i];           
-               sum2 += data[i + b*WID3];
-            }
          }
-         if (z1 != z2)
-         {
-            std::cerr << "average: " << sum2 / (WID3 * numberOfBlocks) << " -> " << sum1 / (WID3 * numberOfBlocks) << std::endl;
-            std::cerr << "zeroes: " << z2 << " -> " << z1 << std::endl;
-         }
-         
       }
       phiprof::stop("Decompressing data");
 
