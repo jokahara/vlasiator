@@ -653,13 +653,11 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       // Then the block data in the reduced neighbourhood:
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
-      cerr << "compress boundary\n";
       vector<CellID> boundaryCells;
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),boundaryCells);
       for (uint i=0; i<boundaryCells.size(); i++) {
          mpiGrid[boundaryCells[i]]->compress_data(popID);
       }
-      cerr << "compress boundary done\n";
 
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE,true);
       mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_NEIGHBORHOOD_ID);
@@ -673,7 +671,6 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       // Compute Vlasov boundary condition on system boundary/process inner cells
       vector<CellID> localCells;
       getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_not_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),localCells);
-   
       for (uint i=0; i<localCells.size(); i++) {
          cuint sysBoundaryType = mpiGrid[localCells[i]]->sysBoundaryFlag;
          this->getSysBoundary(sysBoundaryType)->vlasovBoundaryCondition(mpiGrid,localCells[i],popID,calculate_V_moments);

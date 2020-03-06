@@ -273,6 +273,11 @@ namespace vmesh {
 
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::getCompressedSize() {
+      if (compressed_data.size() == 0 && numberOfBlocks > 0)
+      {
+         std::cerr << "ERROR: cell has data but has not been compressed!"
+      }
+      
       return compressed_data.size();
    }
 
