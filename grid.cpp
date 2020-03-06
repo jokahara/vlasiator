@@ -462,7 +462,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
       }
 
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
-
+         // Compress data to be send
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
             CellID cell_id=outgoing_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
