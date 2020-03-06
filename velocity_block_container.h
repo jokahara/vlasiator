@@ -122,7 +122,7 @@ namespace vmesh {
       currentCapacity = 0;
       numberOfBlocks = 0;
 
-      std::vector<Realf,aligned_allocator<Realf,WID3> > dummy_compdata;
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_compdata;
       compressed_data.swap(dummy_compdata);
    }
 
@@ -248,7 +248,7 @@ namespace vmesh {
          }
       }
       else if(numberOfBlocks > 0) {
-         cerr << "did not compress: " << numberOfBlocks << "\n";
+         std::cerr << "did not compress: " << numberOfBlocks << "\n";
       }
       
       phiprof::stop("Decompressing data");
