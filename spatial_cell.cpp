@@ -633,6 +633,11 @@ namespace spatial_cell {
             block_lengths.push_back(sizeof(vmesh::GlobalID)*this->velocity_block_with_content_list_size);
          }
 
+         if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
+            displacements.push_back((uint8_t*) get_data(activePopID) - (uint8_t*) this);
+            block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * populations[activePopID].blockContainer.size());
+         }
+
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_SIZE) != 0) {
             if (receiving) {
                populations[activePopID].Compressed_Size = 0;
@@ -646,27 +651,13 @@ namespace spatial_cell {
             block_lengths.push_back(sizeof(vmesh::LocalID));
          }
 
-         if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_DATA) !=0) {
+         if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_DATA) !=0) {
             if (receiving) {
                populations[activePopID].blockContainer.setToBeDecompressed(populations[activePopID].Compressed_Size);
             }
-            
-            //displacements.push_back((uint8_t*) get_data(activePopID) - (uint8_t*) this);
-            //block_lengths.push_back(sizeof(Realf)*populations[activePopID].blockContainer.size() * WID3);
 
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(Compf)*populations[activePopID].blockContainer.getCompressedSize());
-         }
-
-         if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMPRESSED_SIZE) != 0) {
-            const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
-            if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
-               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-                  // block sizes are already prepared
-                  displacements.push_back((uint8_t*) &(this->neighbor_compressed_size[i]) - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(vmesh::LocalID));
-               }
-            }
+            block_lengths.push_back(sizeof(Compf) * populations[activePopID].blockContainer.getCompressedSize());
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
@@ -681,11 +672,36 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-                  /*
-                  if (receiving) {
-                     this->neighbor_block_data[i] 
-                        = (Compf*) aligned_malloc(this->neighbor_compressed_size[0] * sizeof(Compf), 1);
-                  }*/
+                  displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
+                  block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * this->neighbor_number_of_blocks[i]);
+               }
+               
+            }
+         }
+
+         if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMP_SIZE) != 0) {
+            const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
+            if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
+               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
+                  // block sizes are already prepared
+                  displacements.push_back((uint8_t*) &(this->neighbor_compressed_size[i]) - (uint8_t*) this);
+                  block_lengths.push_back(sizeof(vmesh::LocalID));
+               }
+            }
+         }
+
+         if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMP_DATA) != 0) {
+            /*We are actually transferring the data of a
+            * neighbor. The values of neighbor_block_data
+            * and neighbor_number_of_blocks should be set in
+            * solver.*/
+
+            // Send this data only to ranks that contain face neighbors
+            // this->neighbor_number_of_blocks has been initialized to 0, on other ranks it can stay that way.
+            const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
+            if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
+               
+               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(Compf) * neighbor_compressed_size[i]);
                }

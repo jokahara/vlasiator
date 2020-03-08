@@ -399,7 +399,6 @@ void setFaceNeighborRanks( dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& 
 }
 
 void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, SysBoundary& sysBoundaries){
-
    // Invalidate cached cell lists
    Parameters::meshRepartitioned = true;
 
@@ -434,7 +433,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
 
    const std::unordered_set<CellID>& outgoing_cells = mpiGrid.get_cells_removed_by_balance_load();
    std::vector<CellID> outgoing_cells_list (outgoing_cells.begin(),outgoing_cells.end()); 
-
+   
    /*transfer cells in parts to preserve memory*/
    phiprof::start("Data transfers");
    const uint64_t num_part_transfers=5;
@@ -462,20 +461,11 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
       }
 
       for (size_t p=0; p<getObjectWrapper().particleSpecies.size(); ++p) {
-         // Compress data to be send
-         for (unsigned int i=0;i<outgoing_cells_list.size();i++){
-            CellID cell_id=outgoing_cells_list[i];
-            SpatialCell* cell = mpiGrid[cell_id];
-            if (cell_id % num_part_transfers == transfer_part) {
-               cell->compress_data(p);
-            }
-         }
-         
          // Set active population
          SpatialCell::setCommunicatedSpecies(p);
 
          //Transfer velocity block list
-         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1 | Transfer::COMPRESSED_SIZE);
+         SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);
          mpiGrid.continue_balance_load();
          SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE2);
          mpiGrid.continue_balance_load();
@@ -498,22 +488,12 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             phiprof::start("Preparing receives");
             phiprof::stop("Preparing receives", 0, "Spatial cells");
          }
-
+         
          //do the actual transfer of data for the set of cells to be transferred
          phiprof::start("transfer_all_data");
          SpatialCell::set_mpi_transfer_type(Transfer::ALL_DATA);
          mpiGrid.continue_balance_load();
          phiprof::stop("transfer_all_data");
-
-         // decompressing received data
-         for (unsigned int i=0; i<incoming_cells_list.size(); i++) {
-            CellID cell_id=incoming_cells_list[i];
-            SpatialCell* cell = mpiGrid[cell_id];
-            if (cell_id % num_part_transfers == transfer_part) {
-               CellID cell_id=incoming_cells_list[i];
-               mpiGrid[cell_id]->decompress_data(p);
-            }
-         }
 
          // Free memory for cells that have been sent (the block data)
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
@@ -523,12 +503,9 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             // Free memory of this cell as it has already been transferred, 
             // it will not be used anymore. NOTE: Only clears memory allocated 
             // to the active population.
-            if (cell_id % num_part_transfers == transfer_part) {
-               cell->clear(p);
-            }
+            if (cell_id % num_part_transfers == transfer_part) cell->clear(p);
          }
       } // for-loop over populations
-
    } // for-loop over transfer parts
    phiprof::stop("Data transfers");
 
@@ -542,6 +519,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
    getObjectWrapper().meshData.reallocate();
    cells = mpiGrid.get_cells();
    for (uint i=0; i<cells.size(); ++i) mpiGrid[cells[i]]->set_mpi_transfer_enabled(true);
+
    // Communicate all spatial data for FULL neighborhood, which
    // includes all data with the exception of dist function data
    SpatialCell::set_mpi_transfer_type(Transfer::ALL_SPATIAL_DATA);
@@ -774,8 +752,8 @@ void updateRemoteVelocityBlockLists(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Ge
    phiprof::start("Preparing receives");
    const std::vector<uint64_t> incoming_cells
       = mpiGrid.get_remote_cells_on_process_boundary(DIST_FUNC_NEIGHBORHOOD_ID);
-
    #pragma omp parallel for
+
    for (unsigned int i=0; i<incoming_cells.size(); ++i) {
      uint64_t cell_id = incoming_cells[i];
      SpatialCell* cell = mpiGrid[cell_id];
