@@ -125,7 +125,7 @@ namespace spatial_cell {
       const uint64_t ALL_DATA =
       CELL_PARAMETERS
       | CELL_DERIVATIVES | CELL_BVOL_DERIVATIVES
-      | VEL_BLOCK_DATA
+      | COMPRESSED_DATA
       | CELL_SYSBOUNDARYFLAG
       | POP_METADATA | RANDOMGEN;
 
