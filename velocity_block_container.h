@@ -229,7 +229,7 @@ namespace vmesh {
 
       Compf* p = compressed_data.data();
 
-      #pragma omp parallel for
+      //#pragma omp parallel for
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
          cBlock::set(data + WID3*b, p + idx[b], size[b]);
@@ -249,7 +249,7 @@ namespace vmesh {
          uint32_t idx[numberOfBlocks];
          LID compressedSize = cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-         #pragma omp parallel for
+         //#pragma omp parallel for
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);

@@ -81,6 +81,7 @@ void calculateSpatialTranslation(
     MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
     
    // compress cells that will be propagated
+   #pragma omp parallel for
    for (uint c = 0; c < local_propagated_cells.size(); c++)
    {
       mpiGrid[local_propagated_cells[c]]->compress_data(popID);
@@ -98,6 +99,7 @@ void calculateSpatialTranslation(
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
 
+      #pragma omp parallel for
       for (uint c = 0; c < remoteTargetCellsz.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsz[c]];
@@ -138,7 +140,8 @@ void calculateSpatialTranslation(
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
-
+      
+      #pragma omp parallel for
       for (uint c = 0; c < remoteTargetCellsx.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsx[c]];
@@ -180,6 +183,7 @@ void calculateSpatialTranslation(
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
 
+      #pragma omp parallel for
       for (uint c = 0; c < remoteTargetCellsy.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsy[c]];
@@ -208,6 +212,7 @@ void calculateSpatialTranslation(
      
    }
 
+   #pragma omp parallel for
    for (uint c = 0; c < local_propagated_cells.size(); c++)
    {
       mpiGrid[local_propagated_cells[c]]->clear_compressed_data(popID);
