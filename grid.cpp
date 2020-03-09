@@ -509,11 +509,11 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             CellID cell_id=incoming_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
             if (cell_id % num_part_transfers == transfer_part) {
-               CellID cell_id=incoming_cells_list[i];
-               mpiGrid[cell_id]->decompress_data(p);
+               cell->decompress_data(p);
+               cell->clear_compressed_data(p);
             }
          }
-         
+
          // Free memory for cells that have been sent (the block data)
          for (unsigned int i=0;i<outgoing_cells_list.size();i++){
             CellID cell_id=outgoing_cells_list[i];

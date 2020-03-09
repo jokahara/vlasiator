@@ -229,7 +229,7 @@ namespace vmesh {
 
       Compf* p = compressed_data.data();
 
-      // TODO: omp parallel for
+      #pragma omp parallel for
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
          cBlock::set(data + WID3*b, p + idx[b], size[b]);
@@ -242,13 +242,14 @@ namespace vmesh {
       if (mustBeDecompressed) {
          mustBeDecompressed = false;
          Compf* p = compressed_data.data();
+         //vector<Realf, aligned_allocator<Realf,WID3> > new_data(numberOfBlocks*WID3);
          Realf* data = block_data.data();
          
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
          LID compressedSize = cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-         //#pragma omp parallel for
+         #pragma omp parallel for
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
