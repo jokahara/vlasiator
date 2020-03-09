@@ -80,6 +80,7 @@ void calculateSpatialTranslation(
     int myRank;
     MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
     
+   // compress cells that will be propagated
    for (uint c = 0; c < local_propagated_cells.size(); c++)
    {
       mpiGrid[local_propagated_cells[c]]->compress_data(popID);
@@ -99,7 +100,9 @@ void calculateSpatialTranslation(
 
       for (uint c = 0; c < remoteTargetCellsz.size(); c++)
       {
-         mpiGrid[remoteTargetCellsz[c]]->decompress_data(popID);
+         SpatialCell* cell = mpiGrid[remoteTargetCellsz[c]];
+         cell->decompress_data(popID);
+         cell->clear_compressed_data(popID);
       }
 
       phiprof::start("compute-mapping-z");
@@ -138,7 +141,9 @@ void calculateSpatialTranslation(
 
       for (uint c = 0; c < remoteTargetCellsx.size(); c++)
       {
-         mpiGrid[remoteTargetCellsx[c]]->decompress_data(popID);
+         SpatialCell* cell = mpiGrid[remoteTargetCellsx[c]];
+         cell->decompress_data(popID);
+         cell->clear_compressed_data(popID);
       }
 
       phiprof::start("compute-mapping-x");
@@ -177,7 +182,9 @@ void calculateSpatialTranslation(
 
       for (uint c = 0; c < remoteTargetCellsy.size(); c++)
       {
-         mpiGrid[remoteTargetCellsy[c]]->decompress_data(popID);
+         SpatialCell* cell = mpiGrid[remoteTargetCellsy[c]];
+         cell->decompress_data(popID);
+         cell->clear_compressed_data(popID);
       }
 
       phiprof::start("compute-mapping-y");
@@ -201,6 +208,10 @@ void calculateSpatialTranslation(
      
    }
 
+   for (uint c = 0; c < local_propagated_cells.size(); c++)
+   {
+      mpiGrid[local_propagated_cells[c]]->clear_compressed_data(popID);
+   }
    // MPI_Barrier(MPI_COMM_WORLD);
    // bailout(true, "", __FILE__, __LINE__);
 }
