@@ -90,12 +90,12 @@ void calculateSpatialTranslation(
    if(P::zcells_ini > 1){
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
       phiprof::start(trans_timer);
-
-      vector<CellID> boundaryCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID)
+      /*
+      vector<CellID> boundaryCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
          mpiGrid[boundaryCells[c]]->compress_data(popID);
-      }
+      }*/
 
       mpiGrid.set_send_single_cells(false);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
