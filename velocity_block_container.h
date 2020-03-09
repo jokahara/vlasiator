@@ -177,17 +177,11 @@ namespace vmesh {
    
    template<typename LID> inline
    Realf* VelocityBlockContainer<LID>::getData() {
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data must be decompressed!";
-      }
       return block_data.data();
    }
    
    template<typename LID> inline
    const Realf* VelocityBlockContainer<LID>::getData() const {
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data must be decompressed!";
-      }
       return block_data.data();
    }
 
@@ -197,9 +191,6 @@ namespace vmesh {
          if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"getData");
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data must be decompressed!";
-      }
       return block_data.data() + blockLID*WID3;
    }
    
@@ -209,9 +200,6 @@ namespace vmesh {
          if (blockLID >= numberOfBlocks) exitInvalidLocalID(blockLID,"const getData const");
          if (blockLID >= block_data.size()/WID3) exitInvalidLocalID(blockLID,"const getData const");
       #endif
-      if (mustBeDecompressed) {
-         std::cerr << "ERROR: data must be decompressed!";
-      }
       return block_data.data() + blockLID*WID3;
    }
 
@@ -229,7 +217,7 @@ namespace vmesh {
 
       Compf* p = compressed_data.data();
 
-      //#pragma omp parallel for
+      #pragma omp parallel for schedule(static,1)
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
          cBlock::set(data + WID3*b, p + idx[b], size[b]);
@@ -249,7 +237,7 @@ namespace vmesh {
          uint32_t idx[numberOfBlocks];
          LID compressedSize = cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-         //#pragma omp parallel for
+         #pragma omp parallel for schedule(static,1)
          for (size_t b = 0; b < numberOfBlocks; b++)
          {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
