@@ -724,15 +724,14 @@ void update_remote_mapping_contribution(
          //Receive data that mcell mapped to ccell to this local cell
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
-         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
+         //mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
          
          receive_cells.push_back(local_cells[c]);
-         receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+         //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
    }
-
+   
    // Do communication
-
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_SIZE);
    switch(dimension) {
@@ -750,6 +749,13 @@ void update_remote_mapping_contribution(
       break;
    }
    
+   for (uint c = 0; c < receive_cells.size(); c++)
+   {
+      SpatialCell* mcell = mpiGrid[receive_cells[c]];
+      mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
+      receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+   }
+
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
    case 0:
@@ -773,21 +779,21 @@ void update_remote_mapping_contribution(
       for (size_t c=0; c < receive_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
          Realf *blockData = spatial_cell->get_data(popID);
-         Realf temp[WID3 * spatial_cell->get_number_of_velocity_blocks(popID)];
-         
-         Compf* p = receiveBuffers[c];
-         uint32_t size[spatial_cell->get_number_of_velocity_blocks(popID)];
-         uint32_t idx[spatial_cell->get_number_of_velocity_blocks(popID)];
-         cBlock::countSizes(p, size, idx, spatial_cell->get_number_of_velocity_blocks(popID));
-#pragma omp for schedule(static,1)
-         for (size_t b = 0; b < spatial_cell->get_number_of_velocity_blocks(popID); b++)
-         {
-            cBlock::get(temp + VELOCITY_BLOCK_LENGTH * b, p + idx[b], size[b]);
-         }
 
-#pragma omp for 
-         for(unsigned int cell = 0; cell<VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
-            blockData[cell] += temp[cell];
+         Compf* p = receiveBuffers[c];
+         vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
+         uint32_t size[numberOfBlocks];
+         uint32_t idx[numberOfBlocks];
+         cBlock::countSizes(p, size, idx, numberOfBlocks);
+
+#pragma omp for schedule(static,1)
+         for (uint b = 0; b < numberOfBlocks; b++) {
+            Realf temp[WID3];
+            cBlock::get(temp, p + idx[b], size[b]);
+            for (uint c = 0; c < WID3; c++)
+            {
+               blockData[c+WID3*b] += temp[c];
+            }  
          }
       }
       

@@ -684,11 +684,8 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
-                  if (this->neighbor_compressed_size[i] > 0)
-                  {
-                     displacements.push_back((uint8_t*) &(this->neighbor_compressed_size[i]) - (uint8_t*) this);
-                     block_lengths.push_back(sizeof(vmesh::LocalID));
-                  }
+                  displacements.push_back((uint8_t*) this->neighbor_compressed_size.data() - (uint8_t*) this);
+                  block_lengths.push_back(sizeof(vmesh::LocalID) * MAX_NEIGHBORS_PER_DIM);
                }
             }
          }
@@ -699,9 +696,8 @@ namespace spatial_cell {
                
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   displacements.push_back((uint8_t*) this->neighbor_compressed_data[i] - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(Compf) * neighbor_compressed_size[i]);
-               }
-               
+                  block_lengths.push_back(sizeof(Compf) * this->neighbor_compressed_size[i]);
+               }  
             }
          }
 
