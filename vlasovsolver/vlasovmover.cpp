@@ -110,7 +110,6 @@ void calculateSpatialTranslation(
          cell->clear_compressed_data(popID);
       }
 
-      #pragma omp parallel for
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
          mpiGrid[boundaryCells[c]]->clear_compressed_data(popID);

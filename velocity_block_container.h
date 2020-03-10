@@ -268,11 +268,10 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
-      compressed_data.resize(0);
-      //if (compressed_data.size() == 0) return; 
+      if (compressed_data.size() == 0) return; 
       
-      //std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
-      //compressed_data.swap(dummy_data);
+      std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
+      compressed_data.swap(dummy_data);
    }
 
    template<typename LID> inline

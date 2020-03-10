@@ -650,9 +650,19 @@ void SysBoundary::applySysBoundaryVlasovConditions(
    for (uint popID=0; popID<getObjectWrapper().particleSpecies.size(); ++popID) {
       SpatialCell::setCommunicatedSpecies(popID);
 
+      vector<CellID> sendCells = mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      for (uint c = 0; c < sendCells.size(); c++)
+      {
+         SpatialCell* cell = mpiGrid[sendCells[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         cell->compress_data(popID);
+      }
+      
       // Then the block data in the reduced neighbourhood:
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
+      SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
+      mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
@@ -681,6 +691,14 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       mpiGrid.wait_remote_neighbor_copy_update_receives(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
 
+      vector<CellID> receiveCells = mpiGrid.get_remote_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      for (uint c = 0; c < receiveCells.size(); c++)
+      {
+         SpatialCell* cell = mpiGrid[receiveCells[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         cell->compress_data(popID);
+      }
+
       // Compute vlasov boundary on system boundary/process boundary cells
       timer=phiprof::initializeTimer("Compute process boundary cells");
       phiprof::start(timer);
@@ -703,6 +721,12 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       mpiGrid.wait_remote_neighbor_copy_update_sends();
       phiprof::stop(timer);
 
+      for (uint c = 0; c < sendCells.size(); c++)
+      {
+         SpatialCell* cell = mpiGrid[sendCells[c]];
+         cell->clear_compressed_data(popID);
+      }
+      
       // WARNING Blocks are changed but lists not updated now, if you need to use/communicate them before the next update is done, add an update here.
       updateRemoteVelocityBlockLists(mpiGrid, popID);
 
