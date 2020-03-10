@@ -87,7 +87,9 @@ void calculateSpatialTranslation(
       vector<CellID> boundaryCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
-         mpiGrid[boundaryCells[c]]->compress_data(popID);
+         SpatialCell* cell = mpiGrid[boundaryCells[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         cell->compress_data(popID);
       }
 
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
@@ -103,6 +105,7 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < remoteTargetCellsz.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsz[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
          cell->clear_compressed_data(popID);
       }
@@ -139,7 +142,9 @@ void calculateSpatialTranslation(
       vector<CellID> boundaryCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
-         mpiGrid[boundaryCells[c]]->compress_data(popID);
+         SpatialCell* cell = mpiGrid[boundaryCells[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         cell->compress_data(popID);
       }
       
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
@@ -154,6 +159,7 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < remoteTargetCellsx.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsx[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
          cell->clear_compressed_data(popID);
       }
@@ -190,7 +196,9 @@ void calculateSpatialTranslation(
       vector<CellID> boundaryCells = mpiGrid.get_local_cells_on_process_boundary(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
-         mpiGrid[boundaryCells[c]]->compress_data(popID);
+         SpatialCell* cell = mpiGrid[boundaryCells[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         cell->compress_data(popID);
       }
 
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-y","MPI");
@@ -205,6 +213,7 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < remoteTargetCellsy.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsy[c]];
+         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
          cell->clear_compressed_data(popID);
       }
