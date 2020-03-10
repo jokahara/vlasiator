@@ -684,25 +684,21 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   // block sizes are already prepared
-                  displacements.push_back((uint8_t*) &(this->neighbor_compressed_size[i]) - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(vmesh::LocalID));
+                  if (this->neighbor_compressed_size[i] > 0)
+                  {
+                     displacements.push_back((uint8_t*) &(this->neighbor_compressed_size[i]) - (uint8_t*) this);
+                     block_lengths.push_back(sizeof(vmesh::LocalID));
+                  }
                }
             }
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMP_DATA) != 0) {
-            /*We are actually transferring the data of a
-            * neighbor. The values of neighbor_block_data
-            * and neighbor_number_of_blocks should be set in
-            * solver.*/
-
-            // Send this data only to ranks that contain face neighbors
-            // this->neighbor_number_of_blocks has been initialized to 0, on other ranks it can stay that way.
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-                  displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
+                  displacements.push_back((uint8_t*) this->neighbor_compressed_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(Compf) * neighbor_compressed_size[i]);
                }
                

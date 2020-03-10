@@ -342,6 +342,7 @@ namespace spatial_cell {
       std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_number_of_blocks;
       std::array<Compf*,MAX_NEIGHBORS_PER_DIM> neighbor_compressed_data;
       std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_compressed_size;
+      
       std::map<int,std::set<int>> face_neighbor_ranks;
       uint sysBoundaryFlag;                                                   /**< What type of system boundary does the cell belong to. 
                                                                                * Enumerated in the sysboundarytype namespace's enum.*/
