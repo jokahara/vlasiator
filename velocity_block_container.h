@@ -206,7 +206,7 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
-      if(numberOfBlocks == 0 || (compressed_data.size() > 0)) return;  // data has been already compressed
+      if(numberOfBlocks == 0) return;  // data has been already compressed
 
       Realf* data = block_data.data();
       
