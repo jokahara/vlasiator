@@ -653,8 +653,7 @@ namespace spatial_cell {
 
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_DATA) !=0) {
             if (receiving) {
-               populations[activePopID].blockContainer
-                  .setToBeDecompressed(VELOCITY_BLOCK_LENGTH * populations[activePopID].blockContainer.size());
+               populations[activePopID].blockContainer.setToBeDecompressed(populations[activePopID].Compressed_Size);
             }
 
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);
