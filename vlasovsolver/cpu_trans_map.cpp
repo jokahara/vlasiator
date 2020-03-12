@@ -727,11 +727,11 @@ void update_remote_mapping_contribution(
          //Receive data that mcell mapped to ccell to this local cell
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
-         //mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
+         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
          
          receive_cells.push_back(local_cells[c]);
-         m_cells.push_back(m_ngbr);
-         //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+         //m_cells.push_back(m_ngbr);
+         receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
    }
    std::cerr << "sizes\n";
@@ -753,9 +753,9 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-
+   
    std::cerr << "data\n";
-   for (uint c = 0; c < m_cells.size(); c++)
+   /*for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
 
@@ -765,6 +765,7 @@ void update_remote_mapping_contribution(
    }
 
    std::cerr << "\n";
+   */
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
    case 0:
