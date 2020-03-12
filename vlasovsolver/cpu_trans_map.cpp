@@ -730,6 +730,17 @@ void update_remote_mapping_contribution(
          //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
    }
+   if (receive_cells.size() > 0)
+      std::cerr << "receive " << receive_cells.size() << "\n";
+   else {
+      std::cerr << "send ";
+
+      for (uint c = 0; c < send_cells.size(); c++)
+      {
+         std::cerr << mpiGrid[send_cells[c]]->get_compressed_size(popID) << " ";
+      }
+      std::cerr << "\n";
+   }
    
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
@@ -749,6 +760,17 @@ void update_remote_mapping_contribution(
       break;
    }
    
+   if (receive_cells.size() > 0)
+   {
+      std::cerr << "received: ";
+      for (uint c = 0; c < receive_cells.size(); c++)
+      {
+         std::cerr << mpiGrid[receive_cells[c]]->neighbor_compressed_size[0] << " ";
+      }
+      std::cerr << "\n "
+   }
+   
+
    for (uint c = 0; c < receive_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[receive_cells[c]];
