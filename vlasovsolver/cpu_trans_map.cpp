@@ -737,10 +737,11 @@ void update_remote_mapping_contribution(
       std::cerr << "send sizes: ";
       for (size_t i = 0; i < send_cells.size(); i++)
       {
-         std::cerr << mpiGrid[receive_cells[i]]->get_compressed_size(popID) << " ";
+         std::cerr << mpiGrid[send_cells[i]]->get_compressed_size(popID) << " ";
       }
+      std::cerr << "\n";
    }
-   else std::cerr << "receive";
+   else std::cerr << "receive\n";
 
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
@@ -777,8 +778,6 @@ void update_remote_mapping_contribution(
       mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
       receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
    }
-
-   std::cerr << "\n";
    
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
