@@ -766,7 +766,7 @@ void update_remote_mapping_contribution(
       std::cerr << "received sizes: ";
       for (size_t i = 0; i < m_cells.size(); i++)
       {
-         std::cerr << mpiGrid[m_cells[i]]->get_compressed_size(popID) << " ";
+         std::cerr << mpiGrid[m_cells[i]]->neighbor_compressed_size[0] << " ";
       }
       std::cerr << "\n";
    }
@@ -795,7 +795,7 @@ void update_remote_mapping_contribution(
       break;
    }
    
-   std::cerr << "done";
+   std::cerr << "done\n";
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
