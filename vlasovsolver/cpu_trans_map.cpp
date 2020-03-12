@@ -718,6 +718,8 @@ void update_remote_mapping_contribution(
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
             ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
             send_cells.push_back(p_ngbr);
+
+            std::cerr << ccell->neighbor_compressed_size[0] << " ";
          }
       if (m_ngbr != INVALID_CELLID &&
           !mpiGrid.is_local(m_ngbr) &&
@@ -732,7 +734,8 @@ void update_remote_mapping_contribution(
          //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
    }
-   
+   std::cerr << "sizes\n";
+
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_SIZE);
@@ -751,13 +754,17 @@ void update_remote_mapping_contribution(
       break;
    }
 
+   std::cerr << "data\n";
    for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
+
+      std::cerr << mcell->neighbor_compressed_size[0] << " ";
       mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
       receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
    }
 
+   std::cerr << "\n";
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
    case 0:
