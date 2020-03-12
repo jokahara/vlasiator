@@ -645,6 +645,7 @@ void update_remote_mapping_contribution(
    const vector<CellID> local_cells = mpiGrid.get_cells();
    const vector<CellID> remote_cells = mpiGrid.get_remote_cells_on_process_boundary(VLASOV_SOLVER_NEIGHBORHOOD_ID);
    vector<CellID> receive_cells;
+   vector<CellID> m_cells;
    vector<CellID> send_cells;
    vector<Compf*> receiveBuffers;
 
@@ -727,6 +728,7 @@ void update_remote_mapping_contribution(
          //mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
          
          receive_cells.push_back(local_cells[c]);
+         m_cells.push_back(m_ngbr);
          //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
    }
@@ -760,20 +762,19 @@ void update_remote_mapping_contribution(
       break;
    }
    
-   if (receive_cells.size() > 0)
+   if (m_cells.size() > 0)
    {
       std::cerr << "received: ";
       for (uint c = 0; c < receive_cells.size(); c++)
       {
-         std::cerr << mpiGrid[receive_cells[c]]->neighbor_compressed_size[0] << " ";
+         std::cerr << mpiGrid[m_cells[c]]->neighbor_compressed_size[0] << " ";
       }
-      std::cerr << "\n "
+      std::cerr << "\n ";
    }
-   
 
-   for (uint c = 0; c < receive_cells.size(); c++)
+   for (uint c = 0; c < m_cells.size(); c++)
    {
-      SpatialCell* mcell = mpiGrid[receive_cells[c]];
+      SpatialCell* mcell = mpiGrid[m_cells[c]];
       mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
       receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
    }
