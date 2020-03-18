@@ -647,7 +647,8 @@ void update_remote_mapping_contribution(
    vector<CellID> receive_cells;
    vector<CellID> m_cells;
    vector<CellID> send_cells;
-   vector<Compf*> receiveBuffers;
+   vector<Realf*> receiveBuffers;
+   vector<Compf*> compBuffers;
 
 //    int myRank;   
 //    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
@@ -664,11 +665,14 @@ void update_remote_mapping_contribution(
       //default values, to avoid any extra sends and receives
       for (uint i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
          if(i == 0) {
+            ccell->neighbor_block_data.at(i) = ccell->get_data(popID);
             ccell->neighbor_compressed_data.at(i) = ccell->get_compressed_data(popID);
          } else {
             ccell->neighbor_compressed_data.at(i) = NULL;
+            ccell->neighbor_block_data.at(i) = NULL;
          }
          ccell->neighbor_compressed_size.at(i) = 0;
+         ccell->neighbor_number_of_blocks.at(i) = 0;
       }
    }
 
@@ -679,11 +683,14 @@ void update_remote_mapping_contribution(
       //default values, to avoid any extra sends and receives
       for (uint i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
          if(i == 0) {
+            ccell->neighbor_block_data.at(i) = ccell->get_data(popID);
             ccell->neighbor_compressed_data.at(i) = ccell->get_compressed_data(popID);
          } else {
+            ccell->neighbor_block_data.at(i) = NULL;
             ccell->neighbor_compressed_data.at(i) = NULL;
          }
          ccell->neighbor_compressed_size.at(i) = 0;
+         ccell->neighbor_number_of_blocks.at(i) = 0;
       }
       CellID p_ngbr = INVALID_CELLID;
       CellID m_ngbr = INVALID_CELLID;
@@ -714,6 +721,9 @@ void update_remote_mapping_contribution(
             //mapped to if 1) it is a valid target,
             //2) is remote cell, 3) if the source cell in center was
             //translated
+            ccell->neighbor_block_data[0] = pcell->get_data(popID);
+            ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
+
             pcell->compress_data(popID);
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
             ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
@@ -727,7 +737,11 @@ void update_remote_mapping_contribution(
          //we will here allocate a receive buffer, since we need to aggregate values
          //mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(ccell->get_number_of_velocity_blocks(popID) * (WID3+2) * sizeof(Compf), 1);
          
+         mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);
+         mcell->neighbor_block_data[0] = (Realf*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * WID3 * sizeof(Realf), 64);
+         
          receive_cells.push_back(local_cells[c]);
+         receiveBuffers.push_back(mcell->neighbor_block_data[0]);
          m_cells.push_back(m_ngbr);
          //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
@@ -760,6 +774,23 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
+
+   SpatialCell::setCommunicatedSpecies(popID);
+   SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
+   switch(dimension) {
+   case 0:
+      if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_X_NEIGHBORHOOD_ID);
+      if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_X_NEIGHBORHOOD_ID);
+      break;
+   case 1:
+      if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_Y_NEIGHBORHOOD_ID);
+      if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Y_NEIGHBORHOOD_ID);
+      break;
+   case 2:
+      if(direction > 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_P_Z_NEIGHBORHOOD_ID);
+      if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
+      break;
+   }
    
    if (receive_cells.size() > 0 )
    {
@@ -771,14 +802,13 @@ void update_remote_mapping_contribution(
       std::cerr << "\n";
    }
    else std::cerr << "send data\n";
-
+/*
    for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
       mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
-      receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+      compBuffers.push_back(mcell->neighbor_compressed_data[0]);
    }
-   
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
    case 0:
@@ -796,6 +826,7 @@ void update_remote_mapping_contribution(
    }
    
    std::cerr << "done\n";
+   /*
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
@@ -804,7 +835,7 @@ void update_remote_mapping_contribution(
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
          Realf *blockData = spatial_cell->get_data(popID);
          
-         Compf* p = receiveBuffers[c];
+         Compf* p = compBuffers[c];
          vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
@@ -827,6 +858,35 @@ void update_remote_mapping_contribution(
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
          spatial_cell->clear_compressed_data(popID);
+         Realf * blockData = spatial_cell->get_data(popID);
+           
+#pragma omp for nowait
+         for(unsigned int cell = 0; cell< VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
+            // copy received target data to temporary array where target data is stored.
+            blockData[cell] = 0;
+         }
+      }
+   }
+*/
+#pragma omp parallel
+   {
+      //reduce data: sum received data in the data array to 
+      // the target grid in the temporary block container
+      for (size_t c=0; c < receive_cells.size(); ++c) {
+         SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
+         Realf *blockData = spatial_cell->get_data(popID);
+          
+#pragma omp for 
+         for(unsigned int cell = 0; cell<VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++cell) {
+            blockData[cell] += receiveBuffers[c][cell];
+         }
+      }
+       
+      // send cell data is set to zero. This is to avoid double copy if
+      // one cell is the neighbor on bot + and - side to the same
+      // process
+      for (size_t c=0; c<send_cells.size(); ++c) {
+         SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
          Realf * blockData = spatial_cell->get_data(popID);
            
 #pragma omp for nowait
