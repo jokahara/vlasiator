@@ -746,6 +746,7 @@ void update_remote_mapping_contribution(
          //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
    }
+   /*
    if (send_cells.size() > 0 )
    {
       std::cerr << "send sizes: ";
@@ -756,7 +757,7 @@ void update_remote_mapping_contribution(
       std::cerr << "\n";
    }
    else std::cerr << "receive\n";
-
+*/
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_SIZE);
@@ -792,6 +793,7 @@ void update_remote_mapping_contribution(
       break;
    }
 */
+/*
    if (receive_cells.size() > 0 )
    {
       std::cerr << "received sizes: ";
@@ -802,13 +804,14 @@ void update_remote_mapping_contribution(
       std::cerr << "\n";
    }
    else std::cerr << "send data\n";
-
+*/
    for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
       mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
       compBuffers.push_back(mcell->neighbor_compressed_data[0]);
    }
+
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
    case 0:
@@ -835,15 +838,13 @@ void update_remote_mapping_contribution(
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
          Realf *blockData = spatial_cell->get_data(popID);
          
-   std::cerr << "countSizes\n";
          Compf* p = compBuffers[c];
          vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
          cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-   std::cerr << "decompress\n";
-//#pragma omp for schedule(static,1)
+#pragma omp for schedule(static,1)
          for (uint b = 0; b < numberOfBlocks; b++) {
             Realf temp[WID3];
             cBlock::get(temp, p + idx[b], size[b]);
@@ -874,7 +875,10 @@ void update_remote_mapping_contribution(
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       //aligned_free(receiveBuffers[c]);
-      aligned_free(compBuffers[c]);
+      if (compBuffers[c])
+      {
+         aligned_free(compBuffers[c]);
+      }
    }
    
    std::cerr << "finished\n";
