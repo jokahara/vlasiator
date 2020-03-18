@@ -774,7 +774,7 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-
+/*
    SpatialCell::setCommunicatedSpecies(popID);
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_VEL_BLOCK_DATA);
    switch(dimension) {
@@ -791,7 +791,7 @@ void update_remote_mapping_contribution(
       if(direction < 0) mpiGrid.update_copies_of_remote_neighbors(SHIFT_M_Z_NEIGHBORHOOD_ID);
       break;
    }
-   
+*/
    if (receive_cells.size() > 0 )
    {
       std::cerr << "received sizes: ";
@@ -802,7 +802,7 @@ void update_remote_mapping_contribution(
       std::cerr << "\n";
    }
    else std::cerr << "send data\n";
-/*
+
    for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
@@ -826,7 +826,7 @@ void update_remote_mapping_contribution(
    }
    
    std::cerr << "done\n";
-   /*
+   
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
@@ -835,13 +835,15 @@ void update_remote_mapping_contribution(
          SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
          Realf *blockData = spatial_cell->get_data(popID);
          
+   std::cerr << "countSizes\n";
          Compf* p = compBuffers[c];
          vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
          cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-#pragma omp for schedule(static,1)
+   std::cerr << "decompress\n";
+//#pragma omp for schedule(static,1)
          for (uint b = 0; b < numberOfBlocks; b++) {
             Realf temp[WID3];
             cBlock::get(temp, p + idx[b], size[b]);
@@ -852,6 +854,7 @@ void update_remote_mapping_contribution(
          }
       }
       
+   std::cerr << "clear\n";
       // send cell data is set to zero. This is to avoid double copy if
       // one cell is the neighbor on bot + and - side to the same
       // process
@@ -867,7 +870,7 @@ void update_remote_mapping_contribution(
          }
       }
    }
-*/
+/*
 #pragma omp parallel
    {
       //reduce data: sum received data in the data array to 
@@ -896,10 +899,11 @@ void update_remote_mapping_contribution(
          }
       }
    }
-
+*/
    //and finally free temporary receive buffer
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
+      aligned_free(compBuffers[c]);
    }
    
    // MPI_Barrier(MPI_COMM_WORLD);
