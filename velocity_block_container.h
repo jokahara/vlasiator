@@ -219,11 +219,7 @@ namespace vmesh {
          return;
       }*/
 
-      compressed_data.resize(numberOfBlocks*26);
-      if (compressedSize > compressed_data.size())
-      {
-         std::cerr << "ERROR: " << compressedSize << " > " << compressed_data.size() << "\n";
-      }
+      compressed_data.resize(compressedSize);
 
       Compf* p = compressed_data.data();
 
