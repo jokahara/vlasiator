@@ -213,7 +213,7 @@ namespace vmesh {
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
 
-      compressed_data.resize(compressedSize);
+      compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
 
       Compf* p = compressed_data.data();
 
@@ -228,6 +228,8 @@ namespace vmesh {
    void VelocityBlockContainer<LID>::decompress() {
       if (mustBeDecompressed)
       {
+         mustBeDecompressed = false;
+
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
          

@@ -6,6 +6,7 @@ typedef ushort Compf;
 #define BLOCK_SIZE 64
 #define MIN_VALUE 1e-17f    // minimum between 1e-17f and 1e-18f recommended
 #define OFFSET 2
+#define COMPRESSION_FACTOR 26
 
 class CompressedBlock {
     private:
