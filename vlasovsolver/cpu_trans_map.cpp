@@ -718,8 +718,12 @@ void update_remote_mapping_contribution(
             pcell->compress_data(popID);
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
 <<<<<<< HEAD
+<<<<<<< HEAD
             /ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
             //ccell->neighbor_compressed_size[0] = pcell->get_number_of_velocity_blocks(popID) * 51; 
+=======
+            ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
+>>>>>>> parent of e8aa33f... testing compression ratios
 =======
             ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
 >>>>>>> parent of e8aa33f... testing compression ratios
@@ -733,8 +737,11 @@ void update_remote_mapping_contribution(
          //we will here allocate a receive buffer, since we need to aggregate values
          receive_cells.push_back(local_cells[c]);
 <<<<<<< HEAD
+<<<<<<< HEAD
          //mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(pcell->get_number_of_velocity_blocks(popID) * 51, 1);
          //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+=======
+>>>>>>> parent of e8aa33f... testing compression ratios
 =======
 >>>>>>> parent of e8aa33f... testing compression ratios
          m_cells.push_back(m_ngbr);
@@ -744,7 +751,10 @@ void update_remote_mapping_contribution(
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
 <<<<<<< HEAD
+<<<<<<< HEAD
    
+=======
+>>>>>>> parent of e8aa33f... testing compression ratios
 =======
 >>>>>>> parent of e8aa33f... testing compression ratios
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_SIZE);
