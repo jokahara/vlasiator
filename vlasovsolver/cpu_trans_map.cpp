@@ -717,7 +717,6 @@ void update_remote_mapping_contribution(
 
             pcell->compress_data(popID);
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
-            // ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
             ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID); 
             send_cells.push_back(p_ngbr);
          }

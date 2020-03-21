@@ -216,9 +216,8 @@ namespace vmesh {
       compressed_data.resize(numberOfBlocks*26);
       if (compressedSize > compressed_data.size())
       {
-         std::cerr << compressedSize << " > " << compressed_data.size() << "\n";
+         std::cerr << "ERROR: " << compressedSize << " > " << compressed_data.size() << "\n";
       }
-      
 
       Compf* p = compressed_data.data();
 
@@ -253,7 +252,7 @@ namespace vmesh {
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
       if (size == 0) return;
       
-      compressed_data.resize(size);
+      compressed_data.resize(numberOfBlocks*26);
       mustBeDecompressed = true;
    }
 
