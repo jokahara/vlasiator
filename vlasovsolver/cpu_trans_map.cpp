@@ -718,7 +718,7 @@ void update_remote_mapping_contribution(
             pcell->compress_data(popID);
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
             // ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
-            ccell->neighbor_compressed_size[0] = pcell->get_number_of_velocity_blocks(popID) * 51; 
+            ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID); 
             send_cells.push_back(p_ngbr);
          }
       if (m_ngbr != INVALID_CELLID &&
@@ -728,8 +728,8 @@ void update_remote_mapping_contribution(
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
          receive_cells.push_back(local_cells[c]);
-         mcell->neighbor_compressed_size[0] = pcell->get_number_of_velocity_blocks(popID) * 51;
-         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0], 1);
+         mcell->neighbor_compressed_size[0] = pcell->get_number_of_velocity_blocks(popID) * 26;
+         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
          receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
          //m_cells.push_back(m_ngbr);
       }

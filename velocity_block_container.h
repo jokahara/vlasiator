@@ -213,7 +213,7 @@ namespace vmesh {
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
 
-      compressed_data.resize(compressedSize);
+      compressed_data.resize(numberOfBlocks*26);
 
       Compf* p = compressed_data.data();
 
