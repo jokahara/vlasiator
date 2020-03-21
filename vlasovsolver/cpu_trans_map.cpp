@@ -802,7 +802,6 @@ void update_remote_mapping_contribution(
       // process
       for (size_t c=0; c<send_cells.size(); ++c) {
          SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
-         //spatial_cell->clear_compressed_data(popID);
          Realf * blockData = spatial_cell->get_data(popID);
            
          #pragma omp for nowait
@@ -817,13 +816,6 @@ void update_remote_mapping_contribution(
    for (size_t c=0; c < receiveBuffers.size(); ++c) {
       aligned_free(receiveBuffers[c]);
    }
-
-   /*
-   for (size_t c=0; c<send_cells.size(); ++c) {
-         SpatialCell* spatial_cell = mpiGrid[send_cells[c]];
-         spatial_cell->clear_compressed_data(popID);
-   }
-   */
 
    // MPI_Barrier(MPI_COMM_WORLD);
    // cout << "end update_remote_mapping_contribution, dimension = " << dimension << ", direction = " << direction << endl;

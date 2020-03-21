@@ -105,15 +105,8 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < remoteTargetCellsz.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsz[c]];
-         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
-         //cell->clear_compressed_data(popID);
       }
-      /*
-      for (uint c = 0; c < boundaryCells.size(); c++)
-      {
-         mpiGrid[boundaryCells[c]]->clear_compressed_data(popID);
-      }*/
 
       phiprof::start("compute-mapping-z");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -159,16 +152,8 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < remoteTargetCellsx.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsx[c]];
-         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
-         //cell->clear_compressed_data(popID);
       }
-      /*
-      #pragma omp parallel for
-      for (uint c = 0; c < boundaryCells.size(); c++)
-      {
-         mpiGrid[boundaryCells[c]]->clear_compressed_data(popID);
-      }*/
 
       phiprof::start("compute-mapping-x");
       if(P::amrMaxSpatialRefLevel == 0) {
@@ -214,16 +199,8 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < remoteTargetCellsy.size(); c++)
       {
          SpatialCell* cell = mpiGrid[remoteTargetCellsy[c]];
-         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
-         //cell->clear_compressed_data(popID);
       }
-      /*
-      #pragma omp parallel for
-      for (uint c = 0; c < boundaryCells.size(); c++)
-      {
-         mpiGrid[boundaryCells[c]]->clear_compressed_data(popID);
-      }*/
       
       phiprof::start("compute-mapping-y");
       if(P::amrMaxSpatialRefLevel == 0) {
