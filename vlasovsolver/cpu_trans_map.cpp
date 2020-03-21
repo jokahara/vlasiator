@@ -754,12 +754,11 @@ void update_remote_mapping_contribution(
       SpatialCell* mcell = mpiGrid[m_cells[c]];
       if (mcell->neighbor_compressed_size[0] > 1) {
          mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
-         receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
       }
       else {
          mcell->neighbor_compressed_size[0] = 0;
-         receiveBuffers.push_back(NULL);
       }
+      receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
    }
 
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
