@@ -143,7 +143,7 @@ inline void CompressedBlock::get(float *data, Compf *p, int size) {
 
 
 inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks) {
-    #pragma omp parallel for schedule(static,1)
+    int sum = 0;
     for (int b = 0; b < n_blocks; b++)
     {
         uint32_t n_values = 0;
@@ -151,11 +151,6 @@ inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* i
             n_values += (data[i + BLOCK_SIZE*b] > MIN_VALUE);
             
         sizes[b] = n_values;
-    }
-
-    int sum = 0;
-    for (int b = 0; b < n_blocks; b++)
-    {
         indexes[b] = sum;
 
         if (sizes[b] == 0) 
@@ -164,8 +159,6 @@ inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* i
             sum += BLOCK_SIZE + OFFSET;
         else 
             sum +=  sizes[b] + OFFSET + sizeof(ulong) / sizeof(Compf);
-
-        data += BLOCK_SIZE;
     }
     return sum;
 }
