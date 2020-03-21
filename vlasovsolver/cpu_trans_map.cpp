@@ -727,16 +727,15 @@ void update_remote_mapping_contribution(
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
          receive_cells.push_back(local_cells[c]);
-         mcell->neighbor_compressed_size[0] = ccell->get_number_of_velocity_blocks(popID) * 26;
-         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
-         receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
-         //m_cells.push_back(m_ngbr);
+         //mcell->neighbor_compressed_size[0] = ccell->get_number_of_velocity_blocks(popID) * 26;
+         //mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
+         //receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+         m_cells.push_back(m_ngbr);
       }
    }
 
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
-   /*
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_SIZE);
    switch(dimension) {
    case 0:
@@ -756,14 +755,9 @@ void update_remote_mapping_contribution(
    for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
-      if (mcell->neighbor_compressed_size[0] > 1) {
-         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
-      }
-      else {
-         mcell->neighbor_compressed_size[0] = 0;
-      }
+      mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
       receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
-   }*/
+   }
 
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
