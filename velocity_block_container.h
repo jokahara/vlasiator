@@ -214,6 +214,11 @@ namespace vmesh {
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
 
       compressed_data.resize(numberOfBlocks*26);
+      if (compressedSize > compressed_data.size())
+      {
+         std::cerr << compressedSize << " > " << compressed_data.size() << "\n";
+      }
+      
 
       Compf* p = compressed_data.data();
 
@@ -231,16 +236,6 @@ namespace vmesh {
          mustBeDecompressed = false;
          Compf* p = compressed_data.data();
          Realf* data = block_data.data();
-         
-         if (compressed_data.size() == 1)
-         {
-            #pragma omp parallel for
-            for (size_t b = 0; b < numberOfBlocks*WID3; b++)
-            {
-               compressed_data[b] = 0;
-            }
-            return;
-         }
          
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
