@@ -213,6 +213,12 @@ namespace vmesh {
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
+      
+      if (compressedSize == numberOfBlocks) {
+         compressed_data.resize(0);
+         return;
+      }
+
       compressed_data.resize(compressedSize);
 
       Compf* p = compressed_data.data();
@@ -230,8 +236,17 @@ namespace vmesh {
       if (mustBeDecompressed) {
          mustBeDecompressed = false;
          Compf* p = compressed_data.data();
-         //vector<Realf, aligned_allocator<Realf,WID3> > new_data(numberOfBlocks*WID3);
          Realf* data = block_data.data();
+         
+         if (compressed_data.size() == 0)
+         {
+            #pragma omp parallel for
+            for (size_t b = 0; b < numberOfBlocks*WID3; b++)
+            {
+               compressed_data[b] = 0;
+            }
+            return;
+         }
          
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
@@ -249,8 +264,6 @@ namespace vmesh {
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
       if (size == 0) return;
       
-      //std::vector<Compf,aligned_allocator<Compf,1> > dummy_data(size);
-      //compressed_data.swap(dummy_data);
       compressed_data.resize(size);
       mustBeDecompressed = true;
    }

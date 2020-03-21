@@ -654,7 +654,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       for (uint c = 0; c < sendCells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[sendCells[c]];
-         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->compress_data(popID);
       }
       
@@ -695,9 +695,9 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       for (uint c = 0; c < receiveCells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[receiveCells[c]];
-         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->decompress_data(popID);
-         cell->clear_compressed_data(popID);
+         //cell->clear_compressed_data(popID);
       }
 
       // Compute vlasov boundary on system boundary/process boundary cells
@@ -721,12 +721,12 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       phiprof::start(timer);
       mpiGrid.wait_remote_neighbor_copy_update_sends();
       phiprof::stop(timer);
-
+      /*
       for (uint c = 0; c < sendCells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[sendCells[c]];
          cell->clear_compressed_data(popID);
-      }
+      }*/
       
       // WARNING Blocks are changed but lists not updated now, if you need to use/communicate them before the next update is done, add an update here.
       updateRemoteVelocityBlockLists(mpiGrid, popID);
