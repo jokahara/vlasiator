@@ -656,13 +656,7 @@ namespace spatial_cell {
                populations[activePopID].blockContainer.setToBeDecompressed(populations[activePopID].Compressed_Size);
             }
             displacements.push_back((uint8_t*) get_compressed_data(activePopID) - (uint8_t*) this);
-            
-            if (populations[activePopID].blockContainer.getCompressedSize() == 1) {
-               block_lengths.push_back(0);
-            }
-            else {
-               block_lengths.push_back(sizeof(Compf) * populations[activePopID].blockContainer.getCompressedSize());
-            }
+            block_lengths.push_back(sizeof(Compf) * populations[activePopID].blockContainer.getCompressedSize();
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_VEL_BLOCK_DATA) != 0) {
