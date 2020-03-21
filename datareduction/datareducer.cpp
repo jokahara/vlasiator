@@ -391,6 +391,7 @@ void initializeDataReducers(DataReducer * outputReducer, DataReducer * diagnosti
          }
          continue;
       }
+<<<<<<< HEAD
       if(lowercase == "populations_energydensity" || lowercase == "populations_vg_energydensity") {
          // Per-population energy density in three energy ranges
          for(unsigned int i =0; i < getObjectWrapper().particleSpecies.size(); i++) {
@@ -416,6 +417,23 @@ void initializeDataReducers(DataReducer * outputReducer, DataReducer * diagnosti
          continue;
       }
       if(lowercase == "maxfieldsdt" || lowercase == "fg_maxfieldsdt" || lowercase == "fg_maxdt_fieldsolver") {
+=======
+      if(*it == "populations_EnergyDensity") {
+         // Per-population energy density in three energy ranges
+         for(unsigned int i =0; i < getObjectWrapper().particleSpecies.size(); i++) {
+            outputReducer->addOperator(new DRO::VariableEnergyDensity(i));
+         }
+         continue;
+      }
+      if(*it == "populations_PrecipitationFlux") {
+         // Per-population precipitation differential flux
+         for(unsigned int i =0; i < getObjectWrapper().particleSpecies.size(); i++) {
+            outputReducer->addOperator(new DRO::VariablePrecipitationDiffFlux(i));
+         }
+         continue;
+      }
+      if(*it == "MaxFieldsdt") {
+>>>>>>> origin
          // Maximum timestep constraint as calculated by the fieldsolver
          outputReducer->addOperator(new DRO::DataReductionOperatorFsGrid("fg_maxdt_fieldsolver",[](
                       FsGrid< std::array<Real, fsgrids::bfield::N_BFIELD>, 2>& perBGrid,
@@ -1184,6 +1202,7 @@ bool DataReducer::writeParameters(const unsigned int& operatorID, vlsv::Writer& 
    }
    return parameterOperator->writeParameters(vlsvWriter);
 }
+<<<<<<< HEAD
 /** Write all data thet the given DataReductionOperator wants to obtain from fsgrid into the output file.
  */
 bool DataReducer::writeFsGridData(
@@ -1206,3 +1225,5 @@ bool DataReducer::writeFsGridData(
       return DROf->writeFsGridData(perBGrid, EGrid, EHallGrid, EGradPeGrid, momentsGrid, dPerBGrid, dMomentsGrid, BgBGrid, volGrid, technicalGrid, meshName, vlsvWriter);
    }
 }
+=======
+>>>>>>> origin

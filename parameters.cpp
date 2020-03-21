@@ -215,6 +215,7 @@ bool Parameters::addParameters(){
    
 // Output variable parameters
    // NOTE Do not remove the : before the list of variable names as this is parsed by tools/check_vlasiator_cfg.sh
+<<<<<<< HEAD
    Readparameters::addComposing("variables.output", std::string()+"List of data reduction operators (DROs) to add to the grid file output.  Each variable to be added has to be on a new line output = XXX. Names are case insensitive.  "+
 				"Available (20190521): "+
 				"fg_b fg_b_background fg_b_perturbed fg_e "+
@@ -258,6 +259,9 @@ bool Parameters::addParameters(){
 				"Pressure vg_Pressure fg_Pressure populations_PTensor "+
 				"BVOLderivs b_vol_derivs");
 
+=======
+   Readparameters::addComposing("variables.output", "List of data reduction operators (DROs) to add to the grid file output. Each variable to be added has to be on a new line output = XXX. Available (20190320): B BackgroundB PerturbedB E Rhom Rhoq populations_Rho V populations_V populations_moments_Backstream populations_moments_NonBackstream populations_EffectiveSparsityThreshold populations_EnergyDensity populations_PrecipitationFlux populations_RhoLossAdjust LBweight MaxVdt MaxRdt populations_MaxVdt populations_MaxRdt MaxFieldsdt MPIrank FsGridRank FsGridBoundaryType BoundaryType BoundaryLayer populations_Blocks fSaved populations_accSubcycles VolE HallE GradPeE VolB BackgroundVolB PerturbedVolB Pressure populations_PTensor derivs BVOLderivs GridCoordinates Potential BackgroundVolE ChargeDensity PotentialError MeshData");
+>>>>>>> origin
    // NOTE Do not remove the : before the list of variable names as this is parsed by tools/check_vlasiator_cfg.sh
    Readparameters::addComposing("variables.diagnostic", std::string()+"List of data reduction operators (DROs) to add to the diagnostic runtime output. Each variable to be added has to be on a new line diagnostic = XXX. Names are case insensitive. "+
 				"Available (20190320): "+
