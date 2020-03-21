@@ -662,7 +662,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       int timer=phiprof::initializeTimer("Start comm of cell and block data","MPI");
       phiprof::start(timer);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE,true);
-      mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
+      mpiGrid.update_copies_of_remote_neighbors(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_DATA,true);
       mpiGrid.start_remote_neighbor_copy_updates(SYSBOUNDARIES_NEIGHBORHOOD_ID);
       phiprof::stop(timer);
@@ -703,7 +703,7 @@ void SysBoundary::applySysBoundaryVlasovConditions(
       timer=phiprof::initializeTimer("Compute process boundary cells");
       phiprof::start(timer);
       vector<CellID> boundaryCells;
-      getBoundaryCellList(mpiGrid,mpiGrid.get_local_cells_on_process_boundary(SYSBOUNDARIES_NEIGHBORHOOD_ID),boundaryCells);
+      getBoundaryCellList(mpiGrid,sendCells,boundaryCells);
       #pragma omp parallel for
       for (uint i=0; i<boundaryCells.size(); i++) {
          cuint sysBoundaryType = mpiGrid[boundaryCells[i]]->sysBoundaryFlag;

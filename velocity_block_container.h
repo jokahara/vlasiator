@@ -226,28 +226,22 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
+      Compf* p = compressed_data.data();
+      Realf* data = block_data.data();
+      
+      uint32_t size[numberOfBlocks];
+      uint32_t idx[numberOfBlocks];
+      cBlock::countSizes(p, size, idx, numberOfBlocks);
 
-      if (mustBeDecompressed) {
-         mustBeDecompressed = false;
-         Compf* p = compressed_data.data();
-         Realf* data = block_data.data();
-         
-         uint32_t size[numberOfBlocks];
-         uint32_t idx[numberOfBlocks];
-         cBlock::countSizes(p, size, idx, numberOfBlocks);
-
-         #pragma omp parallel for schedule(static,1)
-         for (size_t b = 0; b < numberOfBlocks; b++)
-         {
-            cBlock::get(data + WID3*b, p + idx[b], size[b]);
-         }
+      #pragma omp parallel for schedule(static,1)
+      for (size_t b = 0; b < numberOfBlocks; b++)
+      {
+         cBlock::get(data + WID3*b, p + idx[b], size[b]);
       }
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
-      if (size == 0) return;
-      
       compressed_data.resize(size);
       mustBeDecompressed = true;
    }
@@ -259,7 +253,6 @@ namespace vmesh {
 
    template<typename LID> inline
    LID VelocityBlockContainer<LID>::getCompressedSize() {
-      
       return compressed_data.size();
    }
 

@@ -645,7 +645,6 @@ namespace spatial_cell {
             else {
                populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.getCompressedSize();
             }
-
             // send compressed data size
             displacements.push_back((uint8_t*) &(populations[activePopID].Compressed_Size) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
