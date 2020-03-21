@@ -58,7 +58,6 @@ class DataReducer {
                   const std::vector<CellID>& cells,const std::string& meshName,
                   vlsv::Writer& vlsvWriter);
    bool writeParameters(const unsigned int& operatorID, vlsv::Writer& vlsvWriter);
-<<<<<<< HEAD
    bool writeFsGridData(
                       FsGrid< std::array<Real, fsgrids::bfield::N_BFIELD>, 2>& perBGrid,
                       FsGrid< std::array<Real, fsgrids::efield::N_EFIELD>, 2>& EGrid,
@@ -70,8 +69,6 @@ class DataReducer {
                       FsGrid< std::array<Real, fsgrids::bgbfield::N_BGB>, 2>& BgBGrid,
                       FsGrid< std::array<Real, fsgrids::volfields::N_VOL>, 2>& volGrid,
                       FsGrid< fsgrids::technical, 2>& technicalGrid, const std::string& meshName, const unsigned int operatorID, vlsv::Writer& vlsvWriter);
-=======
->>>>>>> origin
 
  private:
    /** Private copy-constructor to prevent copying the class.

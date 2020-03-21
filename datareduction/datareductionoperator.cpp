@@ -1342,26 +1342,16 @@ namespace DRO {
       }
    }
    VariablePrecipitationDiffFlux::~VariablePrecipitationDiffFlux() { }
-<<<<<<< HEAD
    
    std::string VariablePrecipitationDiffFlux::getName() const {return popName + "/vg_precipitationdifferentialflux";}
    
-=======
-
-   std::string VariablePrecipitationDiffFlux::getName() const {return popName + "/PrecipitationDiffFlux";}
-
->>>>>>> origin
    bool VariablePrecipitationDiffFlux::getDataVectorInfo(std::string& dataType,unsigned int& dataSize,unsigned int& vectorSize) const {
       dataType = "float";
       dataSize =  sizeof(Real);
       vectorSize = nChannels; //Number of energy channels
       return true;
    }
-<<<<<<< HEAD
    
-=======
-
->>>>>>> origin
    bool VariablePrecipitationDiffFlux::reduceData(const SpatialCell* cell,char* buffer) {
 
       dataDiffFlux.assign(nChannels,0.0);
@@ -1391,7 +1381,6 @@ namespace DRO {
 
       # pragma omp parallel
       {
-<<<<<<< HEAD
          std::vector<Real> thread_lossCone_sum(nChannels,0.0);
          std::vector<Real> thread_count(nChannels,0.0);
          
@@ -1432,48 +1421,6 @@ namespace DRO {
             }
          }
 
-=======
-	 std::vector<Real> thread_lossCone_sum(nChannels,0.0);
-	 std::vector<Real> thread_count(nChannels,0.0);
-
-         const Real* parameters  = cell->get_block_parameters(popID);
-         const Realf* block_data = cell->get_data(popID);
-
-         # pragma omp for
-         for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); n++) {
-	    for (uint k = 0; k < WID; ++k) for (uint j = 0; j < WID; ++j) for (uint i = 0; i < WID; ++i) {
-	       const Real VX 
-		  =          parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VXCRD] 
-		  + (i + 0.5)*parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVX];
-	       const Real VY 
-		  =          parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VYCRD] 
-		  + (j + 0.5)*parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVY];
-	       const Real VZ 
-		  =          parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VZCRD] 
-		  + (k + 0.5)*parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVZ];
-	       
-	       const Real DV3 
-		  = parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVX]
-		  * parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVY] 
-		  * parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVZ];
-	       
-	       const Real normV = sqrt(VX*VX + VY*VY + VZ*VZ);
-	       const Real VdotB_norm = (B[0]*VX + B[1]*VY + B[2]*VZ)/normV;
-	       Real countAndGate = floor(VdotB_norm/cosAngle);  // gate function: 0 outside loss cone, 1 inside
-	       countAndGate = max(0.,countAndGate);
-	       const Real energy = 0.5 * getObjectWrapper().particleSpecies[popID].mass * normV*normV; // in SI
-	       
-	       // Find the correct energy bin number to update
-	       int binNumber = round((log(energy) - log(emin)) / log(emax/emin) * (nChannels-1));
-	       binNumber = max(binNumber,0); // anything < emin goes to the lowest channel
-	       binNumber = min(binNumber,nChannels-1); // anything > emax goes to the highest channel
-	       
-	       thread_lossCone_sum[binNumber] += block_data[n * SIZE_VELBLOCK + cellIndex(i,j,k)] * countAndGate * normV*normV * DV3;
-	       thread_count[binNumber] += countAndGate * DV3;
-	    }
-         }
-	 
->>>>>>> origin
          // Accumulate contributions coming from this velocity block to the 
          // spatial cell velocity moments. If multithreading / OpenMP is used, 
          // these updates need to be atomic:
@@ -1497,22 +1444,14 @@ namespace DRO {
       for (uint i = 0; i < nChannels*sizeof(Real); ++i) buffer[i] = ptr[i];
       return true;
    }
-<<<<<<< HEAD
    
-=======
-
->>>>>>> origin
    bool VariablePrecipitationDiffFlux::setSpatialCell(const SpatialCell* cell) {
       return true;
    }
 
    bool VariablePrecipitationDiffFlux::writeParameters(vlsv::Writer& vlsvWriter) {
       for (int i=0; i<nChannels; i++) {
-<<<<<<< HEAD
          const Real channelev = channels[i]/physicalconstants::CHARGE; // in eV
-=======
-	 const Real channelev = channels[i]/physicalconstants::CHARGE; // in eV
->>>>>>> origin
          if( vlsvWriter.writeParameter(popName+"_PrecipitationCentreEnergy"+std::to_string(i), &channelev) == false ) { return false; }
       }
       if( vlsvWriter.writeParameter(popName+"_LossConeAngle", &lossConeAngle) == false ) { return false; }
@@ -1532,10 +1471,6 @@ namespace DRO {
     *    - EnergyDensityELimit1 (as scalar multiplier of EnergyDensityESW),
     *    - EnergyDensityELimit2 (as scalar multiplier of EnergyDensityESW).
     */
-<<<<<<< HEAD
-=======
-
->>>>>>> origin
    VariableEnergyDensity::VariableEnergyDensity(cuint _popID): DataReductionOperatorHasParameters(),popID(_popID) {
       popName = getObjectWrapper().particleSpecies[popID].name;
       // Store internally in SI units
@@ -1545,11 +1480,7 @@ namespace DRO {
    }
    VariableEnergyDensity::~VariableEnergyDensity() { }
    
-<<<<<<< HEAD
    std::string VariableEnergyDensity::getName() const {return popName + "/vg_energydensity";}
-=======
-   std::string VariableEnergyDensity::getName() const {return popName + "/EnergyDensity";}
->>>>>>> origin
    
    bool VariableEnergyDensity::getDataVectorInfo(std::string& dataType,unsigned int& dataSize,unsigned int& vectorSize) const {
       dataType = "float";
@@ -1560,17 +1491,11 @@ namespace DRO {
    
    bool VariableEnergyDensity::reduceData(const SpatialCell* cell,char* buffer) {
       const Real HALF = 0.5;
-<<<<<<< HEAD
 
       for(int i = 0; i < 3; i++) {
          EDensity[i] = 0.0;
       }
 
-=======
-      for(int i = 0; i < 3; i++) {
-	 EDensity[i] = 0.0;
-      }
->>>>>>> origin
       # pragma omp parallel
       {
          Real thread_E0_sum = 0.0;
@@ -1582,7 +1507,6 @@ namespace DRO {
         
          # pragma omp for
          for (vmesh::LocalID n=0; n<cell->get_number_of_velocity_blocks(popID); n++) {
-<<<<<<< HEAD
             const Real DV3 
                = parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVX]
                * parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVY] 
@@ -1606,29 +1530,6 @@ namespace DRO {
             }
          }
 
-=======
-	    const Real DV3 
-	       = parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVX]
-	       * parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVY] 
-	       * parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVZ];
-	    for (uint k = 0; k < WID; ++k) for (uint j = 0; j < WID; ++j) for (uint i = 0; i < WID; ++i) {
-	       const Real VX 
-		  =          parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VXCRD] 
-		  + (i + HALF)*parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVX];
-	       const Real VY 
-		  =          parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VYCRD] 
-		  + (j + HALF)*parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVY];
-	       const Real VZ 
-		  =          parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::VZCRD] 
-		  + (k + HALF)*parameters[n * BlockParams::N_VELOCITY_BLOCK_PARAMS + BlockParams::DVZ];
-	       
-	       const Real ENERGY = (VX*VX + VY*VY + VZ*VZ) * HALF * getObjectWrapper().particleSpecies[popID].mass;
-	       thread_E0_sum += block_data[n * SIZE_VELBLOCK+cellIndex(i,j,k)] * ENERGY * DV3;
-	       if (ENERGY > E1limit) thread_E1_sum += block_data[n * SIZE_VELBLOCK+cellIndex(i,j,k)] * ENERGY * DV3;
-	       if (ENERGY > E2limit) thread_E2_sum += block_data[n * SIZE_VELBLOCK+cellIndex(i,j,k)] * ENERGY * DV3;
-	    }
-         }
->>>>>>> origin
          // Accumulate contributions coming from this velocity block to the 
          // spatial cell velocity moments. If multithreading / OpenMP is used, 
          // these updates need to be atomic:
@@ -1644,10 +1545,7 @@ namespace DRO {
       EDensity[0] *= (1.0e-6)/physicalconstants::CHARGE;
       EDensity[1] *= (1.0e-6)/physicalconstants::CHARGE;
       EDensity[2] *= (1.0e-6)/physicalconstants::CHARGE;
-<<<<<<< HEAD
 
-=======
->>>>>>> origin
       const char* ptr = reinterpret_cast<const char*>(&EDensity);
       for (uint i = 0; i < 3*sizeof(Real); ++i) buffer[i] = ptr[i];
       return true;
@@ -1656,11 +1554,7 @@ namespace DRO {
    bool VariableEnergyDensity::setSpatialCell(const SpatialCell* cell) {
       return true;
    }
-<<<<<<< HEAD
    
-=======
-
->>>>>>> origin
    bool VariableEnergyDensity::writeParameters(vlsv::Writer& vlsvWriter) {
       // Output solar wind energy in eV
       Real swe = solarwindenergy/physicalconstants::CHARGE;
@@ -1674,8 +1568,4 @@ namespace DRO {
       return true;
    }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin
 } // namespace DRO

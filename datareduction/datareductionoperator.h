@@ -95,7 +95,6 @@ namespace DRO {
 
    class DataReductionOperatorHasParameters: public DataReductionOperator {
    public:
-<<<<<<< HEAD
       DataReductionOperatorHasParameters() : DataReductionOperator() {};
       virtual bool writeParameters(vlsv::Writer& vlsvWriter) = 0;
    };
@@ -136,10 +135,6 @@ namespace DRO {
                       FsGrid< std::array<Real, fsgrids::bgbfield::N_BGB>, 2>& BgBGrid,
                       FsGrid< std::array<Real, fsgrids::volfields::N_VOL>, 2>& volGrid,
                       FsGrid< fsgrids::technical, 2>& technicalGrid, const std::string& meshName, vlsv::Writer& vlsvWriter);
-=======
-   DataReductionOperatorHasParameters() : DataReductionOperator() {};
-     virtual bool writeParameters(vlsv::Writer& vlsvWriter) = 0;
->>>>>>> origin
    };
 
    class DataReductionOperatorCellParams: public DataReductionOperator {
@@ -531,10 +526,6 @@ namespace DRO {
       std::string popName;
    };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin
    class VariableEnergyDensity: public DataReductionOperatorHasParameters {
    public:
       VariableEnergyDensity(cuint popID);
@@ -554,30 +545,6 @@ namespace DRO {
       Real E1limit;
       Real E2limit;
    };
-<<<<<<< HEAD
-=======
-
-   // Precipitation directional differential number flux
-   class VariablePrecipitationDiffFlux: public DataReductionOperatorHasParameters {
-   public:
-      VariablePrecipitationDiffFlux(cuint popID);
-      virtual ~VariablePrecipitationDiffFlux();
-
-      virtual bool getDataVectorInfo(std::string& dataType,unsigned int& dataSize,unsigned int& vectorSize) const;
-      virtual std::string getName() const;
-      virtual bool reduceData(const SpatialCell* cell,char* buffer);
-      virtual bool setSpatialCell(const SpatialCell* cell);
-      virtual bool writeParameters(vlsv::Writer& vlsvWriter);
-
-   protected:
-      uint popID;
-      std::string popName;
-      int nChannels;
-      Real emin, emax;
-      Real lossConeAngle;
-      std::vector<Real> channels, dataDiffFlux;
-   };
->>>>>>> origin
    
    // Precipitation directional differential number flux
    class VariablePrecipitationDiffFlux: public DataReductionOperatorHasParameters {
