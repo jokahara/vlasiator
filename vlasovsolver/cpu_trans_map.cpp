@@ -717,7 +717,8 @@ void update_remote_mapping_contribution(
 
             pcell->compress_data(popID);
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
-            ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
+            // ccell->neighbor_compressed_size[0] = pcell->get_compressed_size(popID);
+            ccell->neighbor_compressed_size[0] = pcell->get_number_of_velocity_blocks(popID) * 51; 
             send_cells.push_back(p_ngbr);
          }
       if (m_ngbr != INVALID_CELLID &&
@@ -727,12 +728,15 @@ void update_remote_mapping_contribution(
          //data array, if 1) m is a valid source cell, 2) center cell is to be updated (normal cell) 3) m is remote
          //we will here allocate a receive buffer, since we need to aggregate values
          receive_cells.push_back(local_cells[c]);
-         m_cells.push_back(m_ngbr);
+         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(pcell->get_number_of_velocity_blocks(popID) * 51, 1);
+         receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+         //m_cells.push_back(m_ngbr);
       }
    }
 
    // Do communication
    SpatialCell::setCommunicatedSpecies(popID);
+   /*
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_SIZE);
    switch(dimension) {
    case 0:
@@ -759,7 +763,7 @@ void update_remote_mapping_contribution(
          mcell->neighbor_compressed_size[0] = 0;
       }
       receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
-   }
+   }*/
 
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
    switch(dimension) {
@@ -783,7 +787,7 @@ void update_remote_mapping_contribution(
       
       Compf* p = receiveBuffers[c];
       if (p == NULL) continue;
-      
+
       vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
