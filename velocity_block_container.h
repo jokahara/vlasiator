@@ -250,11 +250,12 @@ namespace vmesh {
       }
    }
 
+   /*
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed() {
       compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
       if (numberOfBlocks > 0) mustBeDecompressed = true;
-   }
+   }*/
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
