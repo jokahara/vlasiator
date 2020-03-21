@@ -752,8 +752,14 @@ void update_remote_mapping_contribution(
    for (uint c = 0; c < m_cells.size(); c++)
    {
       SpatialCell* mcell = mpiGrid[m_cells[c]];
-      mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
-      receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+      if (mcell->neighbor_compressed_size[0] > 1) {
+         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_compressed_size[0] * sizeof(Compf), 1);
+         receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
+      }
+      else {
+         mcell->neighbor_compressed_size[0] = 0;
+         receiveBuffers.push_back(NULL);
+      }
    }
 
    SpatialCell::set_mpi_transfer_type(Transfer::NEIGHBOR_COMP_DATA);
@@ -777,6 +783,8 @@ void update_remote_mapping_contribution(
       Realf *blockData = spatial_cell->get_data(popID);
       
       Compf* p = receiveBuffers[c];
+      if (p == NULL) continue;
+      
       vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
@@ -786,6 +794,8 @@ void update_remote_mapping_contribution(
       // the target grid in the temporary block container
       #pragma omp parallel for schedule(static,1)
       for (uint b = 0; b < numberOfBlocks; b++) {
+         if (size[b] == 0) continue;
+         
          Realf temp[WID3];
          cBlock::get(temp, p + idx[b], size[b]);
          for (uint c = 0; c < WID3; c++)
