@@ -248,7 +248,7 @@ namespace vmesh {
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
       if (size == 0) return;
       
-      compressed_data.resize(numberOfBlocks*26);
+      compressed_data.resize(size);
       mustBeDecompressed = true;
    }
 

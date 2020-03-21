@@ -88,13 +88,15 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[boundaryCells[c]];
-         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->compress_data(popID);
       }
 
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-z","MPI");
       phiprof::start(trans_timer);
       mpiGrid.set_send_single_cells(false);
+      SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
+      mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Z_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
@@ -141,6 +143,8 @@ void calculateSpatialTranslation(
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-x","MPI");
       phiprof::start(trans_timer);
       mpiGrid.set_send_single_cells(false);
+      SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
+      mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_X_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);
@@ -179,13 +183,15 @@ void calculateSpatialTranslation(
       for (uint c = 0; c < boundaryCells.size(); c++)
       {
          SpatialCell* cell = mpiGrid[boundaryCells[c]];
-         if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
+         //if (cell->sysBoundaryFlag == sysboundarytype::DO_NOT_COMPUTE) continue;
          cell->compress_data(popID);
       }
 
       trans_timer=phiprof::initializeTimer("transfer-stencil-data-y","MPI");
       phiprof::start(trans_timer);
       mpiGrid.set_send_single_cells(false);
+      SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_SIZE);
+      mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       SpatialCell::set_mpi_transfer_type(Transfer::COMPRESSED_DATA);
       mpiGrid.update_copies_of_remote_neighbors(VLASOV_SOLVER_Y_NEIGHBORHOOD_ID);
       phiprof::stop(trans_timer);

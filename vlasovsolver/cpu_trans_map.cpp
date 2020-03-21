@@ -780,9 +780,7 @@ void update_remote_mapping_contribution(
    for (size_t c=0; c < receive_cells.size(); ++c) {
       SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
       Realf *blockData = spatial_cell->get_data(popID);
-      
       Compf* p = receiveBuffers[c];
-      if (p == NULL) continue;
       
       vmesh::LocalID numberOfBlocks = spatial_cell->get_number_of_velocity_blocks(popID);
       uint32_t size[numberOfBlocks];
