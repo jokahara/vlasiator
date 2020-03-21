@@ -206,7 +206,7 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
-
+      
       Realf* data = block_data.data();
       
       uint32_t size[numberOfBlocks];
@@ -226,24 +226,27 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
-      Compf* p = compressed_data.data();
-      Realf* data = block_data.data();
-      
-      uint32_t size[numberOfBlocks];
-      uint32_t idx[numberOfBlocks];
-      cBlock::countSizes(p, size, idx, numberOfBlocks);
-
-      #pragma omp parallel for schedule(static,1)
-      for (size_t b = 0; b < numberOfBlocks; b++)
+      if (mustBeDecompressed)
       {
-         cBlock::get(data + WID3*b, p + idx[b], size[b]);
+         Compf* p = compressed_data.data();
+         Realf* data = block_data.data();
+         
+         uint32_t size[numberOfBlocks];
+         uint32_t idx[numberOfBlocks];
+         cBlock::countSizes(p, size, idx, numberOfBlocks);
+
+         #pragma omp parallel for schedule(static,1)
+         for (size_t b = 0; b < numberOfBlocks; b++)
+         {
+            cBlock::get(data + WID3*b, p + idx[b], size[b]);
+         }
       }
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
       compressed_data.resize(size);
-      mustBeDecompressed = true;
+      if (size > 0) mustBeDecompressed = true;
    }
 
    template<typename LID> inline
