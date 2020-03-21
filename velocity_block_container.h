@@ -214,6 +214,11 @@ namespace vmesh {
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
 
       compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
+      if (compressedSize > compressed_data.size())
+      {
+         std::cerr << "ERROR: " << compressedSize << " > " << compressed_data.size() << "\n";
+         compressed_data.resize(compressedSize);
+      }
 
       Compf* p = compressed_data.data();
 
@@ -243,6 +248,12 @@ namespace vmesh {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
          }
       }
+   }
+
+   template<typename LID> inline
+   void VelocityBlockContainer<LID>::setToBeDecompressed() {
+      compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
+      if (numberOfBlocks > 0) mustBeDecompressed = true;
    }
 
    template<typename LID> inline
