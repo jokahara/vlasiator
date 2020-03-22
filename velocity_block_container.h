@@ -253,7 +253,7 @@ namespace vmesh {
          
          uint32_t size[numberOfBlocks];
          uint32_t idx[numberOfBlocks];
-         cBlock::countSizes(p, size, idx, numberOfBlocks);
+         cBlock::getSizes(p, size, idx, numberOfBlocks);
 
          #pragma omp parallel for schedule(static,1)
          for (size_t b = 0; b < numberOfBlocks; b++)
