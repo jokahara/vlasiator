@@ -206,7 +206,6 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
-      
       int timer=phiprof::initializeTimer("compressing data","COMP");
       phiprof::start(timer);
 
@@ -222,13 +221,13 @@ namespace vmesh {
          min = 1e-16f;
          compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
       }
-
+   /*
       if (compressedSize > compressed_data.size())
       {
          std::cerr << "ERROR: " << compressedSize << " > " << compressed_data.size() << "\n";
          compressed_data.resize(compressedSize);
       }
-
+*/
       Compf* p = compressed_data.data();
 
       #pragma omp parallel for schedule(static,1)
