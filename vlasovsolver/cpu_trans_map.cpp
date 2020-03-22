@@ -668,7 +668,7 @@ void update_remote_mapping_contribution(
          } else {
             ccell->neighbor_compressed_data.at(i) = NULL;
          }
-         ccell->neighbor_compressed_size.at(i) = 0;
+         ccell->neighbor_number_of_blocks.at(i) = 0;
       }
    }
 
@@ -683,7 +683,7 @@ void update_remote_mapping_contribution(
          } else {
             ccell->neighbor_compressed_data.at(i) = NULL;
          }
-         ccell->neighbor_compressed_size.at(i) = 0;
+         ccell->neighbor_number_of_blocks.at(i) = 0;
       }
       CellID p_ngbr = INVALID_CELLID;
       CellID m_ngbr = INVALID_CELLID;

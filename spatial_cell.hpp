@@ -117,9 +117,9 @@ namespace spatial_cell {
       const uint64_t POP_METADATA             = (1ull<<26);
       const uint64_t RANDOMGEN                = (1ull<<27);
       const uint64_t CELL_GRADPE_TERM         = (1ull<<28);
-      const uint64_t COMPRESSED_SIZE          = (1ull<<29);
+      //const uint64_t COMPRESSED_SIZE          = (1ull<<29);
       const uint64_t COMPRESSED_DATA          = (1ull<<30);
-      const uint64_t NEIGHBOR_COMP_SIZE       = (1ull<<31);
+      //const uint64_t NEIGHBOR_COMP_SIZE       = (1ull<<31);
       const uint64_t NEIGHBOR_COMP_DATA       = (1ull<<32);
       //all data
       const uint64_t ALL_DATA =
