@@ -207,6 +207,9 @@ namespace vmesh {
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
       
+      int timer=phiprof::initializeTimer("compressing data","COMP");
+      phiprof::start(timer);
+
       Realf* data = block_data.data();
       
       float min = MIN_VALUE;
@@ -233,10 +236,15 @@ namespace vmesh {
       {
          cBlock::set(data + WID3*b, p + idx[b], size[b], min);
       }
+
+      phiprof::stop(timer);
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
+      int timer=phiprof::initializeTimer("decompressing data","COMP");
+      phiprof::start(timer);
+
       if (mustBeDecompressed)
       {
          mustBeDecompressed = false;
@@ -254,6 +262,8 @@ namespace vmesh {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
          }
       }
+
+      phiprof::stop(timer);
    }
 
    /*
