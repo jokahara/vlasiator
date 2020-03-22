@@ -751,8 +751,8 @@ void update_remote_mapping_contribution(
       break;
    }
 
-   int timer=phiprof::initializeTimer("decompressing data","COMP");
-   phiprof::start(timer);
+   //int timer=phiprof::initializeTimer("decompressing data","COMP");
+   //phiprof::start(timer);
    for (size_t c=0; c < receive_cells.size(); ++c) {
       SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
       Realf *blockData = spatial_cell->get_data(popID);
@@ -777,7 +777,7 @@ void update_remote_mapping_contribution(
          }  
       }
    }
-   phiprof::stop(timer);
+   //phiprof::stop(timer);
    
 #pragma omp parallel
    {

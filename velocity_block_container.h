@@ -206,7 +206,7 @@ namespace vmesh {
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
       //int timer=phiprof::initializeTimer("compressing data","COMP");
-      phiprof::start(timer);
+      //phiprof::start(timer);
 
       Realf* data = block_data.data();
       compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
@@ -236,7 +236,7 @@ namespace vmesh {
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
       //int timer=phiprof::initializeTimer("decompressing data","COMP");
-      phiprof::start(timer);
+      //phiprof::start(timer);
 
       if (mustBeDecompressed)
       {
