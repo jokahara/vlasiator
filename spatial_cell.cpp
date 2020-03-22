@@ -637,18 +637,6 @@ namespace spatial_cell {
             displacements.push_back((uint8_t*) get_data(activePopID) - (uint8_t*) this);
             block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * populations[activePopID].blockContainer.size());
          }
-         /*
-         if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_SIZE) != 0) {
-            if (receiving) {
-               populations[activePopID].Compressed_Size = 0;
-            }
-            else {
-               populations[activePopID].Compressed_Size = populations[activePopID].blockContainer.getCompressedSize();
-            }
-            // send compressed data size
-            displacements.push_back((uint8_t*) &(populations[activePopID].Compressed_Size) - (uint8_t*) this);
-            block_lengths.push_back(sizeof(vmesh::LocalID));
-         }*/
 
          if ((SpatialCell::mpi_transfer_type & Transfer::COMPRESSED_DATA) !=0) {
             if (receiving) {
@@ -676,17 +664,6 @@ namespace spatial_cell {
                
             }
          }
-         /*
-         if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMP_SIZE) != 0) {
-            const set<int>& ranks = this->face_neighbor_ranks[neighborhood];
-            if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
-               for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
-                  // send block sizes
-                  displacements.push_back((uint8_t*) this->neighbor_compressed_size.data() - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(vmesh::LocalID) * MAX_NEIGHBORS_PER_DIM);
-               }
-            }
-         }*/
 
          if ((SpatialCell::mpi_transfer_type & Transfer::NEIGHBOR_COMP_DATA) != 0) {
             const set<int>& ranks = this->face_neighbor_ranks[neighborhood];

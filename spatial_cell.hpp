@@ -94,6 +94,7 @@ namespace spatial_cell {
       const uint64_t VEL_BLOCK_LIST_STAGE1    = (1ull<<2);
       const uint64_t VEL_BLOCK_LIST_STAGE2    = (1ull<<3);
       const uint64_t VEL_BLOCK_DATA           = (1ull<<4);
+      const uint64_t COMPRESSED_DATA          = (1ull<<5);
       const uint64_t VEL_BLOCK_PARAMETERS     = (1ull<<6);
       const uint64_t VEL_BLOCK_WITH_CONTENT_STAGE1  = (1ull<<7); 
       const uint64_t VEL_BLOCK_WITH_CONTENT_STAGE2  = (1ull<<8); 
@@ -117,10 +118,7 @@ namespace spatial_cell {
       const uint64_t POP_METADATA             = (1ull<<26);
       const uint64_t RANDOMGEN                = (1ull<<27);
       const uint64_t CELL_GRADPE_TERM         = (1ull<<28);
-      //const uint64_t COMPRESSED_SIZE          = (1ull<<29);
-      const uint64_t COMPRESSED_DATA          = (1ull<<30);
-      //const uint64_t NEIGHBOR_COMP_SIZE       = (1ull<<31);
-      const uint64_t NEIGHBOR_COMP_DATA       = (1ull<<32);
+      const uint64_t NEIGHBOR_COMP_DATA       = (1ull<<29);
       //all data
       const uint64_t ALL_DATA =
       CELL_PARAMETERS
@@ -341,7 +339,6 @@ namespace spatial_cell {
                                                                                * cell block data. We do not allocate memory for the pointer.*/
       std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_number_of_blocks;
       std::array<Compf*,MAX_NEIGHBORS_PER_DIM> neighbor_compressed_data;
-      std::array<vmesh::LocalID,MAX_NEIGHBORS_PER_DIM> neighbor_compressed_size;
       
       std::map<int,std::set<int>> face_neighbor_ranks;
       uint sysBoundaryFlag;                                                   /**< What type of system boundary does the cell belong to. 

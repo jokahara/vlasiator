@@ -123,8 +123,7 @@ namespace vmesh {
       currentCapacity = 0;
       numberOfBlocks = 0;
 
-      std::vector<Compf,aligned_allocator<Compf,1> > dummy_compdata;
-      compressed_data.swap(dummy_compdata);
+      clearCompressedData();
    }
 
    template<typename LID> inline
@@ -217,17 +216,12 @@ namespace vmesh {
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
 
-      if (compressedSize > compressed_data.size()) {
-         min = 1e-16f;
+      // increase minimum until data fits in compressed_data
+      while (compressedSize > compressed_data.size()) {
+         min *= 3;
          compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
       }
-   /*
-      if (compressedSize > compressed_data.size())
-      {
-         std::cerr << "ERROR: " << compressedSize << " > " << compressed_data.size() << "\n";
-         compressed_data.resize(compressedSize);
-      }
-*/
+
       Compf* p = compressed_data.data();
 
       #pragma omp parallel for schedule(static,1)
@@ -283,8 +277,6 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::clearCompressedData() {
-      if (compressed_data.size() == 0) return; 
-      
       std::vector<Compf,aligned_allocator<Compf,1> > dummy_data;
       compressed_data.swap(dummy_data);
    }
