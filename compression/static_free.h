@@ -17,15 +17,15 @@ class CompressedBlock {
         CompressedBlock() { };
 
     public:
-        static void set(float* data, Compf* p, int size);
+        static void set(float* data, Compf* p, int size, float cmin);
         static void get(float* data, Compf* p, int size);
 
-        static int countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks);
+        static int countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks, float cmin);
         static int countSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks);
 };
 
 // Compresses given data block to p.
-inline void CompressedBlock::set(float* data, Compf* p, int size) {
+inline void CompressedBlock::set(float* data, Compf* p, int size, float cmin=MIN_VALUE) {
     
     // if block contains only zeroes, data pointer is NULL.
     if (size == 0) {
@@ -47,7 +47,7 @@ inline void CompressedBlock::set(float* data, Compf* p, int size) {
     else
     {
         max.f = data[0];
-        min.f = MIN_VALUE;
+        min.f = cmin;
         for (int i = 1; i < BLOCK_SIZE; i++){
             if (data[i] > max.f) max.f = data[i]; 
         }
@@ -65,7 +65,7 @@ inline void CompressedBlock::set(float* data, Compf* p, int size) {
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++) 
         {
-            if (data[i] > MIN_VALUE) {
+            if (data[i] > cmin) {
                 value.f = data[i];
                 value.i = magic - ( value.i / range );
                 temp[i] = value.i >> 5;        
@@ -78,14 +78,14 @@ inline void CompressedBlock::set(float* data, Compf* p, int size) {
         // pointer to start of compressed data
         Compf* temp = p + OFFSET + sizeof(ulong) / sizeof(Compf);
 
-        // bitmask for marking where values in the array are less than MIN_VALUE
+        // bitmask for marking where values in the array are less than cmin
         ulong &mask = *(ulong*) (p + OFFSET);
         mask = 0;
 
         float_int value; 
         for (int i = 0; i < BLOCK_SIZE; i++)
         {
-            if (data[i] > MIN_VALUE) {
+            if (data[i] > cmin) {
                 mask |= (1UL << i);
 
                 // compression of value with the fast inverse root method
@@ -143,13 +143,13 @@ inline void CompressedBlock::get(float *data, Compf *p, int size) {
 }
 
 
-inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks) {
+inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks, float cmin=MIN_VALUE) {
     int sum = 0;
     for (int b = 0; b < n_blocks; b++)
     {
         uint32_t n_values = 0;
         for (int i = 0; i < BLOCK_SIZE; i++)
-            n_values += (data[i + BLOCK_SIZE*b] > MIN_VALUE);
+            n_values += (data[i + BLOCK_SIZE*b] > cmin);
             
         sizes[b] = n_values;
         indexes[b] = sum;

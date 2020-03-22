@@ -209,9 +209,15 @@ namespace vmesh {
       
       Realf* data = block_data.data();
       
+      float min = MIN_VALUE;
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
-      LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks);
+      LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
+
+      if (compressedSize > numberOfBlocks * COMPRESSION_FACTOR) {
+         min = 1e-16f;
+         compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
+      }
 
       compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
       if (compressedSize > compressed_data.size())
