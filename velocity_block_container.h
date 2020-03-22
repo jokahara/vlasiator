@@ -55,7 +55,7 @@ namespace vmesh {
       void decompress();
       Compf* getCompressedData();
       LID getCompressedSize();
-      void setToBeDecompressed(LID size);
+      void prepareToDecompress();
       void clearCompressedData();
 
       Realf* getNullData();
@@ -211,18 +211,18 @@ namespace vmesh {
       phiprof::start(timer);
 
       Realf* data = block_data.data();
+      compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
       
       float min = MIN_VALUE;
       uint32_t size[numberOfBlocks];
       uint32_t idx[numberOfBlocks];
       LID compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
 
-      if (compressedSize > numberOfBlocks * COMPRESSION_FACTOR) {
+      if (compressedSize > compressed_data.size()) {
          min = 1e-16f;
          compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
       }
 
-      compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
       if (compressedSize > compressed_data.size())
       {
          std::cerr << "ERROR: " << compressedSize << " > " << compressed_data.size() << "\n";
@@ -266,17 +266,10 @@ namespace vmesh {
       phiprof::stop(timer);
    }
 
-   /*
    template<typename LID> inline
-   void VelocityBlockContainer<LID>::setToBeDecompressed() {
+   void VelocityBlockContainer<LID>::prepareToDecompress() {
+      mustBeDecompressed = true;
       compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
-      if (numberOfBlocks > 0) mustBeDecompressed = true;
-   }*/
-
-   template<typename LID> inline
-   void VelocityBlockContainer<LID>::setToBeDecompressed(LID size) {
-      compressed_data.resize(size);
-      if (size > 0) mustBeDecompressed = true;
    }
 
    template<typename LID> inline
