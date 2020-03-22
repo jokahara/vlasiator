@@ -205,7 +205,7 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
-      int timer=phiprof::initializeTimer("compressing data","COMP");
+      //int timer=phiprof::initializeTimer("compressing data","COMP");
       phiprof::start(timer);
 
       Realf* data = block_data.data();
@@ -230,12 +230,12 @@ namespace vmesh {
          cBlock::set(data + WID3*b, p + idx[b], size[b], min);
       }
 
-      phiprof::stop(timer);
+      //phiprof::stop(timer);
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
-      int timer=phiprof::initializeTimer("decompressing data","COMP");
+      //int timer=phiprof::initializeTimer("decompressing data","COMP");
       phiprof::start(timer);
 
       if (mustBeDecompressed)
@@ -256,7 +256,7 @@ namespace vmesh {
          }
       }
 
-      phiprof::stop(timer);
+      //phiprof::stop(timer);
    }
 
    template<typename LID> inline
