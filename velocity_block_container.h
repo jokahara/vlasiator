@@ -231,7 +231,7 @@ namespace vmesh {
       #pragma omp parallel for schedule(static,1)
       for (size_t b = 0; b < numberOfBlocks; b++)
       {
-         cBlock::set(data + WID3*b, p + idx[b], size[b]);
+         cBlock::set(data + WID3*b, p + idx[b], size[b], min);
       }
    }
 
