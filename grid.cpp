@@ -762,6 +762,32 @@ void updateRemoteVelocityBlockLists(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Ge
    // then list. For large we do it in two steps
    phiprof::initializeTimer("Velocity block list update","MPI");
    phiprof::start("Velocity block list update");
+   const std::vector<uint64_t> outgoing_cells
+      = mpiGrid.get_local_cells_on_process_boundary(DIST_FUNC_NEIGHBORHOOD_ID);
+   
+   #pragma omp parallel for
+   for (uint c = 0; c < outgoing_cells.size(); c++){
+      uint64_t cell_id = outgoing_cells[i];
+      SpatialCell* cell = mpiGrid[cell_id];
+      if (cell == NULL) {
+         for (const auto& cell: mpiGrid.local_cells) {
+            if (cell.id == cell_id) {
+               cerr << __FILE__ << ":" << __LINE__ << std::endl;
+               abort();
+            }
+            for (const auto& neighbor: cell.neighbors_of) {
+               if (neighbor.id == cell_id) {
+                  cerr << __FILE__ << ":" << __LINE__ << std::endl;
+                  abort();
+               }
+            }
+         }
+         continue;
+      }
+      cell->get_velocity_blocks(popID).updateCompressionFactor();
+   } 
+   
+
    SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);
    mpiGrid.update_copies_of_remote_neighbors(DIST_FUNC_NEIGHBORHOOD_ID);
    SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE2);

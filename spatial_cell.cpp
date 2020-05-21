@@ -610,6 +610,7 @@ namespace spatial_cell {
             } else {
                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
+               //populations[activePopID].blockContainer.updateCompressionFactor();
             }
 
             // send velocity block list
