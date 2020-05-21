@@ -766,7 +766,7 @@ void updateRemoteVelocityBlockLists(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Ge
       = mpiGrid.get_local_cells_on_process_boundary(DIST_FUNC_NEIGHBORHOOD_ID);
    
    #pragma omp parallel for
-   for (uint c = 0; c < outgoing_cells.size(); c++){
+   for (uint i = 0; i < outgoing_cells.size(); i++){
       uint64_t cell_id = outgoing_cells[i];
       SpatialCell* cell = mpiGrid[cell_id];
       if (cell == NULL) {
