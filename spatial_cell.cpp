@@ -600,6 +600,14 @@ namespace spatial_cell {
             // send velocity block list size
             displacements.push_back((uint8_t*) &(populations[activePopID].N_blocks) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
+
+            if (!receiving)
+            {
+               populations[activePopID].blockContainer.updateCompressionFactor();
+            }
+            
+            displacements.push_back((uint8_t*) populations[activePopID].blockContainer.getCompressionFactor() - (uint8_t*) this);
+            block_lengths.push_back(sizeof(vmesh::LocalID));
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_LIST_STAGE2) != 0) {

@@ -1592,7 +1592,7 @@ void update_remote_mapping_contribution_amr(
    
    // Reduce data: sum received data in the data array to 
    // the target grid in the temporary block container   
-   //#pragma omp parallel
+   #pragma omp parallel
    {
       for (size_t c = 0; c < receive_cells.size(); ++c) {
          SpatialCell* receive_cell = mpiGrid[receive_cells[c]];
@@ -1616,7 +1616,7 @@ void update_remote_mapping_contribution_amr(
       for (auto c : send_cells) {
          SpatialCell* spatial_cell = mpiGrid[c];
          Realf * blockData = spatial_cell->get_data(popID);
-         //#pragma omp for nowait
+         #pragma omp for nowait
          for(unsigned int vCell = 0; vCell < VELOCITY_BLOCK_LENGTH * spatial_cell->get_number_of_velocity_blocks(popID); ++vCell) {
             // copy received target data to temporary array where target data is stored.
             blockData[vCell] = 0;

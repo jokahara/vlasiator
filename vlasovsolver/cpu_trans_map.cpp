@@ -669,6 +669,7 @@ void update_remote_mapping_contribution(
             ccell->neighbor_compressed_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
+         ccell->neighbor_compression_factor[0] = DEFAULT_COMP_FACTOR;
       }
    }
 
@@ -684,6 +685,7 @@ void update_remote_mapping_contribution(
             ccell->neighbor_compressed_data.at(i) = NULL;
          }
          ccell->neighbor_number_of_blocks.at(i) = 0;
+         ccell->neighbor_compression_factor[0] = DEFAULT_COMP_FACTOR;
       }
       CellID p_ngbr = INVALID_CELLID;
       CellID m_ngbr = INVALID_CELLID;
@@ -728,7 +730,8 @@ void update_remote_mapping_contribution(
          //we will here allocate a receive buffer, since we need to aggregate values
          
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);   
-         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * COMPRESSION_FACTOR * sizeof(Compf), 1);
+         mcell->neighbor_compression_factor[0] =
+         mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * mcell->neighbor_compression_factor[0] * sizeof(Compf), 1);
 
          receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);
          receive_cells.push_back(local_cells[c]);
@@ -751,8 +754,6 @@ void update_remote_mapping_contribution(
       break;
    }
 
-   //int timer=phiprof::initializeTimer("decompressing data","COMP");
-   //phiprof::start(timer);
    for (size_t c=0; c < receive_cells.size(); ++c) {
       SpatialCell* spatial_cell = mpiGrid[receive_cells[c]];
       Realf *blockData = spatial_cell->get_data(popID);
@@ -777,7 +778,6 @@ void update_remote_mapping_contribution(
          }  
       }
    }
-   //phiprof::stop(timer);
    
 #pragma omp parallel
    {

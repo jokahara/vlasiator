@@ -56,6 +56,8 @@ namespace vmesh {
       Compf* getCompressedData();
       LID getCompressedSize();
       void prepareToDecompress();
+      void updateCompressionFactor();
+      LID& getCompressionFactor();
       void clearCompressedData();
 
       Realf* getNullData();
@@ -89,6 +91,7 @@ namespace vmesh {
       std::vector<Real,aligned_allocator<Real,BlockParams::N_VELOCITY_BLOCK_PARAMS> > parameters;
 
       std::vector<Compf,aligned_allocator<Compf,1>> compressed_data;
+      LID compression_factor;
       bool mustBeDecompressed;
    };
    
@@ -98,6 +101,7 @@ namespace vmesh {
       numberOfBlocks = 0;
       
       mustBeDecompressed = false;
+      compression_factor = DEFAULT_COMP_FACTOR;
    }
    
    template<typename LID> inline
@@ -205,11 +209,8 @@ namespace vmesh {
    // compress data for MPI transfer
    template<typename LID> inline
    void VelocityBlockContainer<LID>::compress() {
-      //int timer=phiprof::initializeTimer("compressing data","COMP");
-      //phiprof::start(timer);
-
       Realf* data = block_data.data();
-      compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
+      compressed_data.resize(numberOfBlocks * compression_factor);
       
       float min = MIN_VALUE;
       uint32_t size[numberOfBlocks];
@@ -218,7 +219,7 @@ namespace vmesh {
 
       // increase minimum until data fits in compressed_data
       while (compressedSize > compressed_data.size()) {
-         min *= 3;
+         min *= 2;
          compressedSize = cBlock::countSizes(data, size, idx, numberOfBlocks, min);
       }
 
@@ -229,15 +230,10 @@ namespace vmesh {
       {
          cBlock::set(data + WID3*b, p + idx[b], size[b], min);
       }
-
-      //phiprof::stop(timer);
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::decompress() {
-      //int timer=phiprof::initializeTimer("decompressing data","COMP");
-      //phiprof::start(timer);
-
       if (mustBeDecompressed)
       {
          mustBeDecompressed = false;
@@ -255,14 +251,23 @@ namespace vmesh {
             cBlock::get(data + WID3*b, p + idx[b], size[b]);
          }
       }
-
-      //phiprof::stop(timer);
    }
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::prepareToDecompress() {
       mustBeDecompressed = true;
-      compressed_data.resize(numberOfBlocks * COMPRESSION_FACTOR);
+      compressed_data.resize(numberOfBlocks * compression_factor);
+   }
+
+   template<typename LID> inline
+   void VelocityBlockContainer<LID>::updateCompressionFactor() {
+      float compressed_size = cBlock::countSizes(block_data.data(), numberOfBlocks) * BLOCK_ALLOCATION_FACTOR;
+      compression_factor = 1 + 0.4f * compressed_size;
+   }
+
+   template<typename LID> inline
+   LID& VelocityBlockContainer<LID>::getCompressionFactor() {
+      return &compression_factor;
    }
 
    template<typename LID> inline
