@@ -610,7 +610,6 @@ namespace spatial_cell {
             } else {
                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
-               populations[activePopID].blockContainer.updateCompressionFactor();
             }
 
             // send velocity block list
@@ -666,7 +665,6 @@ namespace spatial_cell {
                   displacements.push_back((uint8_t*) this->neighbor_block_data[i] - (uint8_t*) this);
                   block_lengths.push_back(sizeof(Realf) * VELOCITY_BLOCK_LENGTH * this->neighbor_number_of_blocks[i]);
                }
-               
             }
          }
 
@@ -675,7 +673,7 @@ namespace spatial_cell {
             if ( P::amrMaxSpatialRefLevel == 0 || receiving || ranks.find(receiver_rank) != ranks.end()) {
                for ( int i = 0; i < MAX_NEIGHBORS_PER_DIM; ++i) {
                   displacements.push_back((uint8_t*) this->neighbor_compressed_data[i] - (uint8_t*) this);
-                  block_lengths.push_back(sizeof(Compf) * this->neighbor_number_of_blocks[i] * COMPRESSION_FACTOR);
+                  block_lengths.push_back(sizeof(Compf) * this->neighbor_number_of_blocks[i] * this->neighbor_compression_factor[i]);
                }  
             }
          }

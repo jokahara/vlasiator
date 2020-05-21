@@ -469,6 +469,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             CellID cell_id=outgoing_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
             if (cell_id % num_part_transfers == transfer_part) {
+               cell->get_velocity_blocks(p).updateCompressionFactor();
                cell->compress_data(p);
             }
          }
