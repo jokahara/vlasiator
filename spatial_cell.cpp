@@ -600,14 +600,6 @@ namespace spatial_cell {
             // send velocity block list size
             displacements.push_back((uint8_t*) &(populations[activePopID].N_blocks) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
-
-            if (!receiving)
-            {
-               populations[activePopID].blockContainer.updateCompressionFactor();
-            }
-            
-            displacements.push_back((uint8_t*) populations[activePopID].blockContainer.getCompressionFactor() - (uint8_t*) this);
-            block_lengths.push_back(sizeof(vmesh::LocalID));
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_LIST_STAGE2) != 0) {
@@ -616,13 +608,18 @@ namespace spatial_cell {
                //mpi_number_of_blocks transferred earlier
                populations[activePopID].vmesh.setNewSize(populations[activePopID].N_blocks);
             } else {
-                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
-                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
+               //resize to correct size (it will avoid reallocation if it is big enough, I assume)
+               populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
+               populations[activePopID].blockContainer.updateCompressionFactor();
             }
 
             // send velocity block list
             displacements.push_back((uint8_t*) &(populations[activePopID].vmesh.getGrid()[0]) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::GlobalID) * populations[activePopID].vmesh.size());
+
+            // send updated compression factor
+            displacements.push_back((uint8_t*) populations[activePopID].blockContainer.getCompressionFactor() - (uint8_t*) this);
+            block_lengths.push_back(sizeof(vmesh::LocalID));
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_WITH_CONTENT_STAGE1) !=0) {

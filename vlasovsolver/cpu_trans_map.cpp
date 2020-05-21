@@ -719,6 +719,7 @@ void update_remote_mapping_contribution(
 
             pcell->compress_data(popID);
             ccell->neighbor_compressed_data[0] = pcell->get_compressed_data(popID);
+            ccell->neighbor_compression_factor[0] = pcell->get_compression_factor(popID);
             ccell->neighbor_number_of_blocks[0] = pcell->get_number_of_velocity_blocks(popID);
             send_cells.push_back(p_ngbr);
          }
@@ -730,7 +731,7 @@ void update_remote_mapping_contribution(
          //we will here allocate a receive buffer, since we need to aggregate values
          
          mcell->neighbor_number_of_blocks[0] = ccell->get_number_of_velocity_blocks(popID);   
-         mcell->neighbor_compression_factor[0] =
+         mcell->neighbor_compression_factor[0] = ccell->get_compression_factor(popID);
          mcell->neighbor_compressed_data[0] = (Compf*) aligned_malloc(mcell->neighbor_number_of_blocks[0] * mcell->neighbor_compression_factor[0] * sizeof(Compf), 1);
 
          receiveBuffers.push_back(mcell->neighbor_compressed_data[0]);

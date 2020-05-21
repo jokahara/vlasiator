@@ -57,7 +57,7 @@ namespace vmesh {
       LID getCompressedSize();
       void prepareToDecompress();
       void updateCompressionFactor();
-      LID& getCompressionFactor();
+      LID* getCompressionFactor();
       void clearCompressedData();
 
       Realf* getNullData();
@@ -266,7 +266,7 @@ namespace vmesh {
    }
 
    template<typename LID> inline
-   LID& VelocityBlockContainer<LID>::getCompressionFactor() {
+   LID* VelocityBlockContainer<LID>::getCompressionFactor() {
       return &compression_factor;
    }
 
