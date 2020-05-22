@@ -6,11 +6,11 @@ typedef ushort Compf;
 #define BLOCK_SIZE 64
 #define MIN_VALUE 1e-17f    // minimum between 1e-17f and 1e-18f recommended
 #define OFFSET 2
-#define DEFAULT_COMP_FACTOR 26
+#define DEFAULT_COMP_FACTOR 20
 
 class CompressedBlock {
     private:
-        typedef union {     
+        typedef union {
             float f;
             uint32_t i;
         } float_int;    // for converting float into integer format

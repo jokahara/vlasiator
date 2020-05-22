@@ -261,9 +261,15 @@ namespace vmesh {
 
    template<typename LID> inline
    void VelocityBlockContainer<LID>::updateCompressionFactor() {
-      float compressed_size = (float) cBlock::countSizes(block_data.data(), numberOfBlocks) * BLOCK_ALLOCATION_FACTOR;
-      if (numberOfBlocks == 0) compression_factor = 1;
-      else compression_factor = 1 + ceilf(0.4f * compressed_size / (float) numberOfBlocks);
+      if (numberOfBlocks == 0) {
+         compression_factor = DEFAULT_COMP_FACTOR;
+      }
+      else {
+         float compressed_size = (float) cBlock::countSizes(block_data.data(), numberOfBlocks) * BLOCK_ALLOCATION_FACTOR;
+         compression_factor = 1 + ceilf(0.4f * compressed_size / (float) numberOfBlocks);
+         
+         if (compression_factor < DEFAULT_COMP_FACTOR) compression_factor = DEFAULT_COMP_FACTOR;
+      }
    }
 
    template<typename LID> inline
