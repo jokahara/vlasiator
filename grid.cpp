@@ -469,7 +469,7 @@ void balanceLoad(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Geometry>& mpiGrid, S
             CellID cell_id=outgoing_cells_list[i];
             SpatialCell* cell = mpiGrid[cell_id];
             if (cell_id % num_part_transfers == transfer_part) {
-               cell->get_velocity_blocks(p).updateCompressionFactor();
+               //cell->get_velocity_blocks(p).updateCompressionFactor();
                cell->compress_data(p);
             }
          }
@@ -764,7 +764,7 @@ void updateRemoteVelocityBlockLists(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Ge
    phiprof::start("Velocity block list update");
    const std::vector<uint64_t> outgoing_cells
       = mpiGrid.get_local_cells_on_process_boundary(DIST_FUNC_NEIGHBORHOOD_ID);
-   
+   /*
    #pragma omp parallel for
    for (uint i = 0; i < outgoing_cells.size(); i++){
       uint64_t cell_id = outgoing_cells[i];
@@ -785,7 +785,7 @@ void updateRemoteVelocityBlockLists(dccrg::Dccrg<SpatialCell,dccrg::Cartesian_Ge
          continue;
       }
       cell->get_velocity_blocks(popID).updateCompressionFactor();
-   } 
+   } */
    
 
    SpatialCell::set_mpi_transfer_type(Transfer::VEL_BLOCK_LIST_STAGE1);

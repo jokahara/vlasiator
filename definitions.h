@@ -29,13 +29,9 @@
 //set floating point precision for storing the distribution function here. Default is single precision, use -DDPF to set double precision
 #ifdef DPF
 typedef double Realf;
-#include "compression/invroot_DP.h"
 #else
 typedef float Realf;
-#include "compression/static_free.h"
 #endif
-
-typedef CompressedBlock cBlock;
 
 //set general floating point precision here. Default is single precision, use -DDP to set double precision
 #ifdef DP

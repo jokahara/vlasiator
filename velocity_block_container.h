@@ -28,6 +28,9 @@
 #include "common.h"
 #include "unistd.h"
 
+#include "compressed_block.h"
+typedef CompressedBlock cBlock;
+
 #ifdef DEBUG_VBC
    #include <sstream>
 #endif
@@ -56,8 +59,8 @@ namespace vmesh {
       Compf* getCompressedData();
       LID getCompressedSize();
       void prepareToDecompress();
-      void updateCompressionFactor();
-      LID* getCompressionFactor();
+      //void updateCompressionFactor();
+      //LID* getCompressionFactor();
       void clearCompressedData();
 
       Realf* getNullData();
@@ -258,7 +261,7 @@ namespace vmesh {
       mustBeDecompressed = true;
       compressed_data.resize(numberOfBlocks * compression_factor);
    }
-
+/*
    template<typename LID> inline
    void VelocityBlockContainer<LID>::updateCompressionFactor() {
       if (numberOfBlocks == 0) {
@@ -267,11 +270,11 @@ namespace vmesh {
       else {
          float compressed_size = (float) cBlock::countSizes(block_data.data(), numberOfBlocks) * BLOCK_ALLOCATION_FACTOR;
          compression_factor = 1 + ceilf(0.4f * compressed_size / (float) numberOfBlocks);
-         
+
          if (compression_factor < DEFAULT_COMP_FACTOR) compression_factor = DEFAULT_COMP_FACTOR;
       }
    }
-
+*/
    template<typename LID> inline
    LID* VelocityBlockContainer<LID>::getCompressionFactor() {
       return &compression_factor;

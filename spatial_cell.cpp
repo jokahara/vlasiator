@@ -610,16 +610,16 @@ namespace spatial_cell {
             } else {
                //resize to correct size (it will avoid reallocation if it is big enough, I assume)
                populations[activePopID].N_blocks = populations[activePopID].blockContainer.size();
-               //populations[activePopID].blockContainer.updateCompressionFactor();
             }
 
             // send velocity block list
             displacements.push_back((uint8_t*) &(populations[activePopID].vmesh.getGrid()[0]) - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::GlobalID) * populations[activePopID].vmesh.size());
-
+            
             // send updated compression factor
-            displacements.push_back((uint8_t*) populations[activePopID].blockContainer.getCompressionFactor() - (uint8_t*) this);
+            /*displacements.push_back((uint8_t*) populations[activePopID].blockContainer.getCompressionFactor() - (uint8_t*) this);
             block_lengths.push_back(sizeof(vmesh::LocalID));
+            */
          }
 
          if ((SpatialCell::mpi_transfer_type & Transfer::VEL_BLOCK_WITH_CONTENT_STAGE1) !=0) {
