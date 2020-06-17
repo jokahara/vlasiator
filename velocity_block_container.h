@@ -29,7 +29,6 @@
 #include "unistd.h"
 
 #include "compressed_block.h"
-typedef CompressedBlock cBlock;
 
 #ifdef DEBUG_VBC
    #include <sstream>
@@ -60,7 +59,7 @@ namespace vmesh {
       LID getCompressedSize();
       void prepareToDecompress();
       //void updateCompressionFactor();
-      //LID* getCompressionFactor();
+      LID* getCompressionFactor();
       void clearCompressedData();
 
       Realf* getNullData();

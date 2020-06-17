@@ -6,27 +6,19 @@ typedef ushort Compf;
 #define BLOCK_SIZE 64
 #define MIN_VALUE 1e-17f    // minimum between 1e-17f and 1e-18f recommended
 #define OFFSET 2
-#define DEFAULT_COMP_FACTOR 20
+#define DEFAULT_COMP_FACTOR 26
 
-class CompressedBlock {
-    private:
-        typedef union {
-            float f;
-            uint32_t i;
-        } float_int;    // for converting float into integer format
-        CompressedBlock() { };
+// namespace for functions used to compress velocity data
+namespace cBlock 
+{
 
-    public:
-        static void set(float* data, Compf* p, int size, float cmin);
-        static void get(float* data, Compf* p, int size);
-
-        static int countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks, float cmin);
-        static int countSizes(float* data, int n_blocks, float cmin);
-        static int getSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks);
-};
+typedef union {
+    float f;
+    uint32_t i;
+} float_int;    // for converting float into integer format
 
 // Compresses given data block to p.
-inline void CompressedBlock::set(float* data, Compf* p, int size, float cmin=MIN_VALUE) {
+inline void set(float* data, Compf* p, int size, float cmin=MIN_VALUE) {
     
     // if block contains only zeroes, data pointer is NULL.
     if (size == 0) {
@@ -101,7 +93,7 @@ inline void CompressedBlock::set(float* data, Compf* p, int size, float cmin=MIN
     *(p + 1) = (magic >> 14);
 }
 
-inline void CompressedBlock::get(float *data, Compf *p, int size) {
+inline void get(float *data, Compf *p, int size) {
     if (size == 0) {
         for (int i = 0; i < BLOCK_SIZE; i++) 
             data[i] = 0.f;
@@ -144,7 +136,7 @@ inline void CompressedBlock::get(float *data, Compf *p, int size) {
 }
 
 // calculate the compressed size and index for each data block.
-inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks, float cmin=MIN_VALUE) {
+inline int countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks, float cmin=MIN_VALUE) {
    
     #pragma omp parallel for schedule(static,1)
     for (int b = 0; b < n_blocks; b++)
@@ -171,7 +163,7 @@ inline int CompressedBlock::countSizes(float* data, uint32_t* sizes, uint32_t* i
 }
 
 // return just the total compressed size.
-inline int CompressedBlock::countSizes(float* data, int n_blocks, float cmin=MIN_VALUE) {
+inline int countSizes(float* data, int n_blocks, float cmin=MIN_VALUE) {
     uint32_t n_values = 0;
     uint32_t sum = 0;
     for (int b = 0; b < n_blocks; b++)
@@ -190,7 +182,7 @@ inline int CompressedBlock::countSizes(float* data, int n_blocks, float cmin=MIN
     return sum;
 }
 
-inline int CompressedBlock::getSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks) {
+inline int getSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks) {
     int sum = 0;
     for (int i = 0; i < n_blocks; i++)
     {
@@ -206,4 +198,5 @@ inline int CompressedBlock::getSizes(Compf* p, uint32_t* sizes, uint32_t* indexe
     }
     
     return sum;
+}
 }
