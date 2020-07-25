@@ -18,15 +18,15 @@ class CompressedBlock {
         CompressedBlock() { };
 
     public:
-        static void set(float* data, Compf* p, int size);
-        static void get(float* data, Compf* p, int size);
+        static void set(float* __restrict__ data, Compf* __restrict__ p, int size);
+        static void get(float* __restrict__ data, Compf* __restrict__ p, int size);
 
         static int countSizes(float* data, uint32_t* sizes, uint32_t* indexes, int n_blocks);
         static int countSizes(Compf* p, uint32_t* sizes, uint32_t* indexes, int n_blocks);
 };
 
 // Compresses given data block to p.
-inline void CompressedBlock::set(float* data, Compf* p, int size) {
+inline void CompressedBlock::set(float* __restrict__ data, Compf* __restrict__ p, int size) {
     
     // if block contains only zeroes, data pointer is NULL.
     if (size == 0) {
@@ -77,7 +77,7 @@ inline void CompressedBlock::set(float* data, Compf* p, int size) {
     *p = size;
 }
 
-inline void CompressedBlock::get(float *data, Compf *p, int size) {
+inline void CompressedBlock::get(float* __restrict__ data, Compf* __restrict__ p, int size) {
     if (size == 0) {
         for (int i = 0; i < BLOCK_SIZE; i++) 
             data[i] = 0.f;
